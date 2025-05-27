@@ -82,10 +82,10 @@ function formatLabel(key) {
 <template>
   <div v-if="props.show" class="p-8 bg-gray-50 dark:bg-gray-900">
     <div
-      class="w-full bg-white rounded-lg shadow-xl dark:bg-gray-800 dark:border-gray-700"
+      class="w-full bg-white rounded-2xl shadow-xl dark:bg-gray-800 dark:border-gray-700"
     >
       <ul
-        class="grid w-full text-sm font-medium text-center text-gray-500 border-b border-gray-200 rounded-t-lg bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12 xl:grid-cols-17"
+        class="grid w-full text-sm font-medium text-center text-gray-500 border-b border-gray-200 rounded-t-2xl bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12 xl:grid-cols-17"
         role="tablist"
       >
         <li v-for="key in Object.keys(filteredData)" :key="key" class="flex relative">
@@ -115,7 +115,7 @@ function formatLabel(key) {
         <div
           v-if="activeTab && filteredData[activeTab]"
           :key="activeTab + searchValue"
-          class="p-4 bg-white rounded-lg md:p-8 dark:bg-gray-800"
+          class="p-4 rounded-xl md:p-8"
         >
           <h2
             class="mb-3 text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white"
@@ -129,7 +129,7 @@ function formatLabel(key) {
           <template
             v-if="filteredData[activeTab] && typeof filteredData[activeTab] === 'object'"
           >
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-x-3 gap-y-2">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-x-10 gap-y-2">
               <template
                 v-for="(propValue, propKey) in filteredData[activeTab]"
                 :key="propKey"

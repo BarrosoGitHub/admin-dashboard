@@ -6,6 +6,7 @@ import Navbar from "./components/navbar/Navbar.vue";
 import ConfigurationCard from "./components/tabs/ConfigurationCard.vue";
 import ConfirmationToast from "./components/toasts/ConfirmationToast.vue";
 import ConfirmConfigurationChanges from "./components/Modals/ConfirmConfigurationChangesModal.vue";
+import ConfigurationTemplateModal from "./components/Modals/ConfigurationTemplateModal.vue";
 import Footer from "./components/footer/Footer.vue";
 
 const showConfigModal = ref(false);
@@ -13,11 +14,19 @@ const sidebarOpen = ref(true);
 const optConfiguration = ref(null);
 const newOptConfiguration = ref(null);
 const showOPTConfiguration = ref(false);
+const showOPTConfigurationTemplate = ref(false);
 const toastRef = ref(null);
 const diffModalRef = ref(null);
+const templateData = ref({});
 
 function openConfigModal() {
   showConfigModal.value = true;
+}
+
+function handleConfigSubmitted(responseData) {
+  templateData.value = responseData;
+  showOPTConfigurationTemplate.value = true;
+
 }
 
 function showOPTConfigAddedToast() {
@@ -49,8 +58,11 @@ function handleUpdateConfiguration(data) {
       <ConfigurationModal
         :show="showConfigModal"
         @close="showConfigModal = false"
-        @submitted="showOPTConfigAddedToast"
+        @submitted="handleConfigSubmitted"
       />
+      <ConfigurationTemplateModal 
+      :show="showOPTConfigurationTemplate"
+      :data="templateData || {}" />
 
       <transition name="fade-slide">
         <ConfigurationCard
