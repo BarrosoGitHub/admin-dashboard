@@ -1,0 +1,5 @@
+@import "tailwindcss";
+
+.sidebar-shadow {
+  box-shadow: 8px 0 160px -4px rgba(0,0,0,0.150);
+}
