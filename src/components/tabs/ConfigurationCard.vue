@@ -82,7 +82,7 @@ function formatLabel(key) {
 <template>
   <div v-if="props.show" class="p-8 bg-gray-50 dark:bg-gray-900">
     <div
-      class="w-full bg-white border border-gray-200 rounded-lg shadow-xl dark:bg-gray-800 dark:border-gray-700"
+      class="w-full bg-white rounded-lg shadow-xl dark:bg-gray-800 dark:border-gray-700"
     >
       <ul
         class="grid w-full text-sm font-medium text-center text-gray-500 border-b border-gray-200 rounded-t-lg bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12 xl:grid-cols-17"
@@ -152,20 +152,31 @@ function formatLabel(key) {
                   </div>
 
                   <!-- Enum dropdown -->
-                  <div class="grid gap-6 mb-6 shadow-md rounded-full"  v-else-if="getEnumOptions(activeTab, propKey)">
+                  <div class="grid gap-6 mb-6 shadow-md rounded-full" v-else-if="getEnumOptions(activeTab, propKey)">
                     <select
-                   
-                    class="bg-gray-50 text-gray-900 text-sm rounded-full focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pl-5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    v-model="localData[activeTab][propKey]"
-                  >
-                    <option
-                      v-for="option in getEnumOptions(activeTab, propKey)"
-                      :key="option.value"
-                      :value="option.value"
+                      class="bg-gray-50 text-gray-900 text-sm rounded-full focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pl-5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      v-model="localData[activeTab][propKey]"
                     >
-                      {{ option.label }}
-                    </option>
-                  </select>
+                      <!-- Show selected option first -->
+                      <option
+                        v-if="getEnumOptions(activeTab, propKey).find(o => o.value === localData[activeTab][propKey])"
+                        :value="localData[activeTab][propKey]"
+                      >
+                        {{
+                          getEnumOptions(activeTab, propKey).find(o => o.value === localData[activeTab][propKey])?.label
+                        }}
+                      </option>
+                      <!-- Separator if there are other options -->
+                      <option disabled v-if="getEnumOptions(activeTab, propKey).length > 1">──────────</option>
+                      <!-- Show remaining options (not selected) -->
+                      <option
+                        v-for="option in getEnumOptions(activeTab, propKey).filter(o => o.value !== localData[activeTab][propKey])"
+                        :key="option.value"
+                        :value="option.value"
+                      >
+                        {{ option.label }}
+                      </option>
+                    </select>
                   </div>
                   
                   
