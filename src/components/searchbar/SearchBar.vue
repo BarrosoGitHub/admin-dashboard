@@ -5,8 +5,8 @@
       class="mb-1 text-sm font-medium text-gray-900 sr-only dark:text-white"
       >{{ label }}</label
     >
-    <div class="absolute right-80 flex justify-start">
-      <div class="absolute inset-y-4 end-3.5 flex items-center pe-0 pointer-events-none">
+    <div class=" flex justify-start">
+      <div class="absolute inset-y-0 pe-0 pointer-events-none">
         <svg
           class="w-3 h-3 text-gray-500 dark:text-gray-400 "
           aria-hidden="true"
