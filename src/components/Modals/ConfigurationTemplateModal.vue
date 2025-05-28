@@ -37,7 +37,36 @@
                     >{{ prop }}</label
                   >
                   <div class="shadow-md rounded-full">
+                    <!-- Use select if enum options exist -->
+                    <select
+                      v-if="getEnumOptions(filteredGroupLabels[currentPage], prop)"
+                      :id="`${filteredGroupLabels[currentPage]}-${prop}`"
+                      v-model="fields[filteredGroupLabels[currentPage]][prop]"
+                      class="bg-gray-500 text-white text-sm rounded-full focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pl-5 dark:bg-gray-500 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    >
+                      <!-- Show selected option first -->
+                      <option
+                        v-if="getEnumOptions(filteredGroupLabels[currentPage], prop).find(o => o.value === fields[filteredGroupLabels[currentPage]][prop])"
+                        :value="fields[filteredGroupLabels[currentPage]][prop]"
+                      >
+                        {{
+                          getEnumOptions(filteredGroupLabels[currentPage], prop).find(o => o.value === fields[filteredGroupLabels[currentPage]][prop])?.label
+                        }}
+                      </option>
+                      <!-- Separator if there are other options -->
+                      <option disabled v-if="getEnumOptions(filteredGroupLabels[currentPage], prop).length > 1">──────────</option>
+                      <!-- Show remaining options (not selected) -->
+                      <option
+                        v-for="option in getEnumOptions(filteredGroupLabels[currentPage], prop).filter(o => o.value !== fields[filteredGroupLabels[currentPage]][prop])"
+                        :key="option.value"
+                        :value="option.value"
+                      >
+                        {{ option.label }}
+                      </option>
+                    </select>
+                    <!-- Otherwise, fallback to text input -->
                     <input
+                      v-else
                       :id="`${filteredGroupLabels[currentPage]}-${prop}`"
                       v-model="fields[filteredGroupLabels[currentPage]][prop]"
                       type="text"
@@ -86,6 +115,10 @@
 
 <script setup>
 import { reactive, defineProps, defineEmits, watch, ref, computed } from 'vue';
+// Import getEnumOptions from your enums helper
+import enumOptions, { getEnumOptions as getEnumOptionsHelper } from '../../enums/enumOptions.js';
+
+const getEnumOptions = getEnumOptionsHelper;
 
 const props = defineProps({
   show: {
@@ -109,7 +142,6 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'submit']);
 
-// Deep clone to avoid mutating the prop directly
 function clone(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
@@ -117,14 +149,12 @@ function clone(obj) {
 const fields = reactive(clone(props.data));
 const currentPage = ref(0);
 
-// Only include non-null, non-undefined, and object group roots
 const filteredGroupLabels = computed(() =>
   Object.keys(fields).filter(
     key => fields[key] && typeof fields[key] === 'object' && Object.keys(fields[key]).length > 0
   )
 );
 
-// Helpers to split fields
 function nonBooleanFields(obj) {
   return Object.fromEntries(Object.entries(obj).filter(([k, v]) => typeof v !== 'boolean'));
 }
