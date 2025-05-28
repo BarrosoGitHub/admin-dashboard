@@ -45,7 +45,7 @@ function handleUpdateConfiguration(data) {
 </script>
 
 <template>
-  <div class="bg-gray-50 dark:bg-gray-900 min-h-screen">
+  <div class="bg-website-color min-h-screen">
     <Sidebar
       :show="sidebarOpen"
       @show-configuration-modal="openConfigModal"

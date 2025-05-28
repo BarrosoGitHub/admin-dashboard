@@ -1,6 +1,6 @@
 <template>
   
-  <div class="inset-shadow-indigo-900 black:bg-gray-500 dark:bg-gray-900 ">
+  <div class="inset-shadow-indigo-900">
     <nav class="border-white-200  ">
       <div class="flex items-center justify-start p-3">
         <button

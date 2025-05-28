@@ -5,9 +5,9 @@
   <!-- Sidebar -->
   <aside
   :class="[
-    'fixed top-0 left-0 z-40 w-64 h-screen p-4 overflow-y-auto bg-white dark:bg-gray-800',
-    'transition-transform duration-200 ease-in-out sidebar-shadow',
-    showSidebar ? 'translate-x-0' : '-translate-x-full'
+    'fixed top-0 left-0 z-40 w-64 h-screen p-4 overflow-y-auto bg-sidebar-color',
+    'transition-transform duration-200 ease-in-out ',
+    showSidebar ? 'translate-x-0 sidebar-shadow' : '-translate-x-full'
   ]"
 >
   

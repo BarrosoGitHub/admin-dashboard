@@ -1,5 +1,33 @@
 @import "tailwindcss";
 
 .sidebar-shadow {
-  box-shadow: 8px 0 160px -4px rgba(0,0,0,0.150);
+  box-shadow: 8px 0 30px -4px rgba(0,0,0,0.35);
+}
+
+.bg-modal-color {
+  background-color: #52525b;
+}
+
+.bg-website-color {
+  background-color: #434446;
+}
+
+.bg-sidebar-color {
+  background-color: #000000;
+}
+
+.bg-input-color {
+  background-color: #8b8e92;
+}
+
+.bg-button-active-color {
+  background-color: #e5e7eb;
+}
+
+.boolean-selector-active {
+  background-color: #9e9fa3;
+}
+
+.boolean-selector-inactive {
+  background-color: #757575;
 }

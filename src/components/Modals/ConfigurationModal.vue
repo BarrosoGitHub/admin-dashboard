@@ -2,20 +2,20 @@
   <transition name="fade-slide">
     <div
       v-if="props.show"
-      class="fixed top-0 right-0 left-0 z-50 flex justify-center items-center w-full h-full bg-gray-950/35 backdrop-blur-md"
+      class="fixed top-0 right-0 left-0 z-50 flex justify-center items-center w-full h-full bg-neutral-700/35 backdrop-blur-md"
       style="pointer-events: auto"
     >
       <div class="relative p-4 w-full max-w-md max-h-full">
-        <div class="relative bg-white rounded-lg shadow-sm dark:bg-gray-700">
+        <div class="relative bg-modal-color rounded-lg shadow-sm">
           <div
-            class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600 border-gray-200"
+            class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-neutral-600 border-gray-200"
           >
             <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
               Add new configuration
             </h3>
             <button
               type="button"
-              class="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-full text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+              class="end-2.5 text-gray-400 hover:bg-gray-200 hover:text-gray-900 rounded-full text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
               @click="emit('close')"
             >
               <svg
@@ -44,12 +44,13 @@
                   class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                   >StationId</label
                 >
+                <!-- StationId input -->
                 <input
                   v-model="form.stationId"
                   type="text"
                   name="stationId"
                   id="stationId"
-                  class="bg-gray-50 text-gray-900 text-sm rounded-full focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white shadow-xl"
+                  class="text-gray-900 text-sm rounded-full block w-full p-2.5 bg-modal-color bg-input-color dark:border-neutral-500 dark:text-white shadow-md"
                   required
                 />
               </div>
@@ -59,16 +60,17 @@
                   class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                   >WorkstationId</label
                 >
+                <!-- WorkstationId input -->
                 <input
                   v-model="form.workstationId"
                   type="text"
                   name="workstationId"
                   id="workstationId"
-                  class="bg-gray-50 text-gray-900 text-sm rounded-full focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white shadow-xl"
+                  class="text-gray-900 text-sm rounded-full block w-full p-2.5 bg-input-color dark:bg-neutral-500 dark:border-neutral-500 dark:text-white shadow-md"
                   required
                 />
               </div>
-              
+
               <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <label
@@ -76,11 +78,12 @@
                     class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                     >Company</label
                   >
+                  <!-- Company select -->
                   <select
                     v-model="form.company"
                     name="company"
                     id="company"
-                    class="bg-gray-50 text-gray-900 text-sm rounded-full focus:ring-blue-500 focus:border-blue-500 w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white shadow-xl"
+                    class="text-gray-900 text-sm rounded-full block w-full p-2.5 bg-input-color dark:bg-neutral-500 dark:border-neutral-500 dark:text-white shadow-md"
                     required
                   >
                     <option value="">Select company</option>
@@ -97,11 +100,12 @@
                     class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                     >Country</label
                   >
+                  <!-- Country select -->
                   <select
                     v-model="form.country"
                     name="country"
                     id="country"
-                    class="bg-gray-50 text-gray-900 text-sm rounded-full focus:ring-blue-500 focus:border-blue-500 w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white shadow-xl"
+                    class="text-gray-900 text-sm rounded-full block w-full p-2.5 bg-input-color dark:bg-neutral-500 dark:border-neutral-500 dark:text-white shadow-md"
                     required
                   >
                     <option value="">Select country</option>
@@ -117,23 +121,23 @@
                   class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                   >Network segment</label
                 >
+                <!-- Network Segment input -->
                 <input
                   v-model="form.networkSegment"
                   type="text"
                   name="networkSegment"
                   id="networkSegment"
-                  class="bg-gray-50 text-gray-900 text-sm rounded-full focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white shadow-xl"
+                  class="text-gray-900 text-sm rounded-full block w-full p-2.5 bg-input-color dark:bg-neutral-500 dark:border-neutral-500 dark:text-white shadow-md"
                   required
                 />
               </div>
               <div class="mt-10">
                 <button
                   type="submit"
-                  class=" w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                  class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                 >
                   Add Configuration
                 </button>
-                
               </div>
             </form>
           </div>
@@ -163,9 +167,10 @@ const form = reactive({
 async function submitForm(e) {
   e.preventDefault();
   try {
-const response = await axios.get("http://localhost:5087/configuration/opt/template", {
-      params: { ...form }
-    });    emit("submitted", response.data);
+    const response = await axios.get("http://localhost:5087/configuration/opt/template", {
+      params: { ...form },
+    });
+    emit("submitted", response.data);
     emit("close");
     form.stationId = "";
     form.workstationId = "";
@@ -195,11 +200,4 @@ const response = await axios.get("http://localhost:5087/configuration/opt/templa
   transform: translateY(20px); /* leave lower */
 }
 
-.modal {
-  /* Basic modal styling */
-  background: white;
-  padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-}
 </style>
