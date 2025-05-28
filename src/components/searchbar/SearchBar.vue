@@ -30,7 +30,7 @@
           'block transition-all duration-300 min-w-0 text-right',
           isFocused ? 'w-40 h-10.5 p-2 pe-8 text-sm' : 'w-8 h-10.5 p-2 pe-8 text-sm cursor-pointer'
         ]"
-        class="text-sm text-gray-900 rounded-full bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+        class="text-sm text-gray-900 rounded-full bg-gray-50 dark:bg-gray-100 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
         :placeholder="isFocused ? placeholder : ''"
         :value="modelValue"
         @input="onInput"

@@ -2,11 +2,11 @@
   <transition name="fade-slide">
     <div
       v-if="props.show"
-      class="fixed top-0 right-0 left-0 z-50 flex justify-center items-center w-full h-full bg-neutral-700/35 backdrop-blur-md"
+      class="fixed top-0 right-0 left-0 z-50 flex justify-center items-center w-full h-full bg-neutral-900/35 backdrop-blur-md"
       style="pointer-events: auto"
     >
       <div class="relative p-4 w-full max-w-md max-h-full">
-        <div class="relative bg-modal-color rounded-lg shadow-sm">
+        <div class="relative bg-modal-color rounded-2xl shadow-inner">
           <div
             class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-neutral-600 border-gray-200"
           >
@@ -50,7 +50,7 @@
                   type="text"
                   name="stationId"
                   id="stationId"
-                  class="text-gray-900 text-sm rounded-full block w-full p-2.5 bg-modal-color bg-input-color dark:border-neutral-500 dark:text-white shadow-md"
+                  class="text-gray-900 text-sm rounded-md border input-border-color block w-full p-2.5 bg-modal-color bg-input-color dark:border-neutral-500 dark:text-white shadow-md"
                   required
                 />
               </div>
@@ -66,7 +66,7 @@
                   type="text"
                   name="workstationId"
                   id="workstationId"
-                  class="text-gray-900 text-sm rounded-full block w-full p-2.5 bg-input-color dark:bg-neutral-500 dark:border-neutral-500 dark:text-white shadow-md"
+                  class="text-gray-900 text-sm rounded-md border input-border-color block w-full p-2.5 bg-input-color dark:bg-neutral-500 dark:border-neutral-500 dark:text-white shadow-md"
                   required
                 />
               </div>
@@ -83,7 +83,7 @@
                     v-model="form.company"
                     name="company"
                     id="company"
-                    class="text-gray-900 text-sm rounded-full block w-full p-2.5 bg-input-color dark:bg-neutral-500 dark:border-neutral-500 dark:text-white shadow-md"
+                    class="text-gray-900 text-sm rounded-md border input-border-color block w-full p-2.5 bg-input-color dark:bg-neutral-500 dark:border-neutral-500 dark:text-white shadow-md"
                     required
                   >
                     <option value="">Select company</option>
@@ -105,7 +105,7 @@
                     v-model="form.country"
                     name="country"
                     id="country"
-                    class="text-gray-900 text-sm rounded-full block w-full p-2.5 bg-input-color dark:bg-neutral-500 dark:border-neutral-500 dark:text-white shadow-md"
+                    class="text-gray-900 text-sm rounded-md border input-border-color block w-full p-2.5 bg-input-color dark:bg-neutral-500 dark:border-neutral-500 dark:text-white shadow-md"
                     required
                   >
                     <option value="">Select country</option>
@@ -127,7 +127,7 @@
                   type="text"
                   name="networkSegment"
                   id="networkSegment"
-                  class="text-gray-900 text-sm rounded-full block w-full p-2.5 bg-input-color dark:bg-neutral-500 dark:border-neutral-500 dark:text-white shadow-md"
+                  class="text-gray-900 text-sm rounded-md border input-border-color block w-full p-2.5 bg-input-color dark:bg-neutral-500 dark:border-neutral-500 dark:text-white shadow-md"
                   required
                 />
               </div>

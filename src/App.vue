@@ -26,7 +26,6 @@ function openConfigModal() {
 function handleConfigSubmitted(responseData) {
   templateData.value = responseData;
   showOPTConfigurationTemplate.value = true;
-
 }
 
 function showOPTConfigAddedToast() {
@@ -60,9 +59,11 @@ function handleUpdateConfiguration(data) {
         @close="showConfigModal = false"
         @submitted="handleConfigSubmitted"
       />
-      <ConfigurationTemplateModal 
-      :show="showOPTConfigurationTemplate"
-      :data="templateData || {}" />
+      <ConfigurationTemplateModal
+        :show="showOPTConfigurationTemplate"
+        :data="templateData || {}"
+        @submit="showOPTConfigurationTemplate = false"
+      />
 
       <transition name="fade-slide">
         <ConfigurationCard

@@ -10,9 +10,17 @@
     showSidebar ? 'translate-x-0 sidebar-shadow' : '-translate-x-full'
   ]"
 >
-  
-    <div class="flex justify-between items-center mb-6 " >
-      <h5 class="text-base font-semibold text-gray-500 uppercase dark:text-gray-400">Menu</h5>
+    <!-- Petrotec Icon -->
+    <div class="flex justify-center items-center mb-8">
+      <img
+        src="@/assets/Petrotec-icon.png"
+        alt="Petrotec Icon"
+        class="h-12 w-auto"
+      />
+    </div>
+    <!-- Add a horizontal line below the icon -->
+    <hr class="border-gray-600 mb-2 border-color" />
+    <div class="flex justify-between items-center " >
     </div>
     <div class="py-4 overflow-y-auto ">
       <ul class="space-y-2 font-medium">

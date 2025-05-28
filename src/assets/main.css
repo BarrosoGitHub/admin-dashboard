@@ -1,23 +1,23 @@
 @import "tailwindcss";
 
 .sidebar-shadow {
-  box-shadow: 8px 0 30px -4px rgba(0,0,0,0.35);
+  box-shadow: 8px 0 20px -4px rgba(0,0,0,0.15);
 }
 
 .bg-modal-color {
-  background-color: #52525b;
+  background-color: #2f2f2f;
 }
 
 .bg-website-color {
-  background-color: #434446;
+  background-color: #212121;
 }
 
 .bg-sidebar-color {
-  background-color: #000000;
+  background-color: #171717;
 }
 
 .bg-input-color {
-  background-color: #8b8e92;
+  background-color: #303030;
 }
 
 .bg-button-active-color {
@@ -25,9 +25,17 @@
 }
 
 .boolean-selector-active {
-  background-color: #9e9fa3;
+  background-color: #248538;
 }
 
 .boolean-selector-inactive {
-  background-color: #757575;
+  background-color: #2f2f2f;
+}
+
+.border-color {
+  border-color: #3a3a3a;
+}
+
+.input-border-color {
+  border-color: #4e4e4e;
 }

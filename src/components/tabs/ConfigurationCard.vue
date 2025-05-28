@@ -80,12 +80,12 @@ function formatLabel(key) {
 </script>
 
 <template>
-  <div v-if="props.show" class="p-8 bg-gray-50 dark:bg-gray-900">
+  <div v-if="props.show" class="p-10 ">
     <div
-      class="w-full bg-white rounded-2xl shadow-xl dark:bg-gray-800 dark:border-gray-700"
+      class="w-full bg-white rounded-2xl shadow-inner bg-modal-color border border-color"
     >
       <ul
-        class="grid w-full text-sm font-medium text-center text-gray-500 border-b border-gray-200 rounded-t-2xl bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12 xl:grid-cols-17"
+        class="grid w-full text-sm font-medium text-center text-gray-500 border-b border-neutral-100 rounded-t-2xl  dark:border-neutral-300 dark:text-gray-400 grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12 xl:grid-cols-17"
         role="tablist"
       >
         <li v-for="key in Object.keys(filteredData)" :key="key" class="flex relative">
@@ -140,10 +140,10 @@ function formatLabel(key) {
                   }}</label>
 
                   <!-- Boolean dropdown -->
-                  <div class="grid gap-6 mb-6 shadow-md rounded-full" v-if="typeof propValue === 'boolean'">
+                  <div class="grid gap-6 mb-6 shadow-sm rounded-md border input-border-color" v-if="typeof propValue === 'boolean'">
                     <select
                     
-                    class="bg-gray-50 text-gray-900 text-sm rounded-full focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pl-5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    class="bg-gray-50 text-gray-900 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pl-5 bg-input-color dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     v-model="localData[activeTab][propKey]"
                   >
                     <option :value="true">True</option>
@@ -152,9 +152,9 @@ function formatLabel(key) {
                   </div>
 
                   <!-- Enum dropdown -->
-                  <div class="grid gap-6 mb-6 shadow-md rounded-full" v-else-if="getEnumOptions(activeTab, propKey)">
+                  <div class="grid gap-6 mb-6 shadow-sm rounded-md border input-border-color" v-else-if="getEnumOptions(activeTab, propKey)">
                     <select
-                      class="bg-gray-50 text-gray-900 text-sm rounded-full focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pl-5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      class="bg-gray-50 text-gray-900 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pl-5 bg-input-color dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                       v-model="localData[activeTab][propKey]"
                     >
                       <!-- Show selected option first -->

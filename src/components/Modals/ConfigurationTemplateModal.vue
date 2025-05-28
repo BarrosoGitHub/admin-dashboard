@@ -11,7 +11,7 @@
     >
       <div class="relative p-4 w-full max-w-2xl max-h-full min-h-[500px] min-w-[800px] flex items-center justify-center">
         <!-- Modal content -->
-        <div class="relative bg-modal-color rounded-lg shadow-sm dark:bg-gray-700 w-full">
+        <div class="relative bg-modal-color rounded-2xl shadow-sm dark:bg-gray-700 w-full">
           <!-- Modal header -->
           <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600 border-gray-200">
             <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
@@ -41,7 +41,7 @@
                         v-if="getEnumOptions(filteredGroupLabels[currentPage], prop)"
                         :id="`${filteredGroupLabels[currentPage]}-${prop}`"
                         v-model="fields[filteredGroupLabels[currentPage]][prop]"
-                        class="bg-input-color text-gray-900 text-sm rounded-full focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pl-5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white shadow-sm"
+                        class="bg-input-color text-gray-900 text-sm rounded-md border input-border-color focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pl-5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white shadow-sm"
                       >
                         <!-- Show selected option first -->
                         <option
@@ -69,7 +69,7 @@
                         :id="`${filteredGroupLabels[currentPage]}-${prop}`"
                         v-model="fields[filteredGroupLabels[currentPage]][prop]"
                         type="text"
-                        class="bg-input-color text-gray-900 text-sm rounded-full focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pl-5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white shadow-xl"
+                        class="bg-input-color text-gray-900 text-sm rounded-md border input-border-color focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pl-5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white shadow-sm"
                       />
                     </div>
                   </div>
@@ -137,6 +137,8 @@
 import { reactive, defineProps, defineEmits, watch, ref, computed } from 'vue';
 // Import getEnumOptions from your enums helper
 import enumOptions, { getEnumOptions as getEnumOptionsHelper } from '../../enums/enumOptions.js';
+// Import axios
+import axios from 'axios';
 
 const getEnumOptions = getEnumOptionsHelper;
 
@@ -202,9 +204,19 @@ function prevPage() {
   }
 }
 
-function submitForm() {
-  emit('submit', clone(fields));
+// --- Use axios for HTTP POST ---
+async function submitForm() {
+  try {
+    const response = await axios.post(
+      'http://localhost:5087/configuration/opt/new',
+      clone(fields)
+    );
+    emit('submit', response.data);
+  } catch (error) {
+    alert(error?.response?.data?.message || error.message || 'Submission failed');
+  }
 }
+// --- End HTTP POST ---
 
 function formatLabel(label) {
   if (!label || typeof label !== 'string') return '';

@@ -7,7 +7,7 @@
                 <input
                     type="text"
                     id="first_name"
-                    class="bg-gray-50 text-gray-900 text-sm rounded-full focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pl-5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    class=" text-gray-900 text-sm rounded-sm border input-border-color block w-full p-2.5 pl-5 bg-input-color dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     :placeholder="placeholder"
                     :value="modelValue"
                     @input="emit('update:modelValue', $event.target.value)"
