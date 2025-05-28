@@ -11,19 +11,17 @@
   >
     <div class="relative p-4 w-full max-w-2xl max-h-full min-h-[500px] min-w-[800px] flex items-center justify-center">
       <!-- Modal content -->
-      <div class="relative bg-white rounded-lg shadow-sm dark:bg-gray-700 w-full h-full flex flex-col">
+      <div class="relative bg-white rounded-lg shadow-sm dark:bg-gray-700 shadow-xl">
         <!-- Modal header -->
         <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600 border-gray-200">
           <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-            Add configuration
+            {{ formatLabel(filteredGroupLabels[currentPage]) }}
           </h3>
-          
         </div>
         <!-- Modal body -->
         <div class="p-4 md:p-5 flex-1 overflow-auto">
           <form class="space-y-4 h-full" @submit.prevent="submitForm">
             <div v-if="filteredGroupLabels.length">
-              <h4 class="font-bold mb-2 dark:text-white">{{ filteredGroupLabels[currentPage] }}</h4>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Non-boolean fields first -->
                 <div
@@ -34,15 +32,16 @@
                   <label
                     :for="`${filteredGroupLabels[currentPage]}-${prop}`"
                     class="block mb-2 text-sm font-medium dark:text-white"
-                    >{{ prop }}</label
                   >
+                    {{ formatLabel(prop) }}
+                  </label>
                   <div class="shadow-md rounded-full">
                     <!-- Use select if enum options exist -->
                     <select
                       v-if="getEnumOptions(filteredGroupLabels[currentPage], prop)"
                       :id="`${filteredGroupLabels[currentPage]}-${prop}`"
                       v-model="fields[filteredGroupLabels[currentPage]][prop]"
-                      class="bg-gray-500 text-white text-sm rounded-full focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pl-5 dark:bg-gray-500 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      class="bg-gray-50 text-gray-900 text-sm rounded-full focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pl-5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white shadow-xl"
                     >
                       <!-- Show selected option first -->
                       <option
@@ -70,9 +69,13 @@
                       :id="`${filteredGroupLabels[currentPage]}-${prop}`"
                       v-model="fields[filteredGroupLabels[currentPage]][prop]"
                       type="text"
-                      class="bg-gray-500 text-white text-sm rounded-full focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pl-5 dark:bg-gray-500 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      class="bg-gray-50 text-gray-900 text-sm rounded-full focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pl-5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white shadow-xl"
                     />
                   </div>
+                </div>
+                <!-- Separator line before booleans -->
+                <div class="col-span-full">
+                  <hr class="my-4 border-gray-300 dark:border-gray-600" />
                 </div>
                 <!-- Boolean fields at the end -->
                 <div
@@ -90,7 +93,7 @@
                     <div
                       class="relative w-11 h-6 bg-gray-700 rounded-full dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"
                     ></div>
-                    <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">{{ prop }}</span>
+                    <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">{{ formatLabel(prop) }}</span>
                   </label>
                 </div>
               </div>
@@ -184,5 +187,11 @@ function prevPage() {
 
 function submitForm() {
   emit('submit', clone(fields));
+}
+
+function formatLabel(label) {
+  return label
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/^./, str => str.toUpperCase());
 }
 </script>
