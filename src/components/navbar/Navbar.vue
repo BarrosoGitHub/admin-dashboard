@@ -1,7 +1,14 @@
+<script setup>
+  import Avatar from '../Avatar.vue';
+</script>
+
 <template>
   
   <div class="inset-shadow-indigo-900">
+
     <nav class="border-white-200  ">
+            
+
       <div class="flex items-center justify-start p-3">
         <button
           type="button"
@@ -27,8 +34,12 @@
             />
           </svg>
         </button>
+        <div class="flex-1"></div>
+        <div class="flex justify-end ">
+          <Avatar />
+        </div>
       </div>
+
     </nav>
-    
   </div>
 </template>

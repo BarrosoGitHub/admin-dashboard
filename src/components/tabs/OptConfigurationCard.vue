@@ -132,7 +132,7 @@ function booleanFields(obj) {
   <div v-if="props.show" class="py-10 px-30 ">
     <div class="w-full  bg-white rounded-2xl shadow-inner bg-modal-color border border-color flex flex-col">
       <!-- Top line with label -->
-      <div class="w-full flex items-center border-b border-color px-10 py-4 mb-2">
+      <div class="w-full flex items-center border-b border-color px-5 py-4 mb-2">
         <span class="text-lg font-semibold text-gray-900 dark:text-white tracking-wide">OPT Configuration</span>
         <div class="justify-end flex-1 flex items-start">
           <SearchBar
@@ -280,7 +280,7 @@ function booleanFields(obj) {
         </div>
       </div>
       <!-- Search and Button always at the bottom of the card -->
-      <div class="flex flex-col md:flex-row items-center justify-between gap-4 mt-8 mb-4 px-8">
+      <div class="flex flex-col md:flex-row items-center justify-end gap-4 mt-8 mb-4 px-8">
         
         <button
           @click="updateConfiguration"
