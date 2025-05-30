@@ -1,14 +1,14 @@
 <template>
-  <form class="max-w-none mx-0" @submit="onSubmit">
+  <form class="max-w-xs mx-0" @submit="onSubmit">
     <label
       for="default-search"
-      class="mb-1 text-sm font-medium text-gray-900 sr-only dark:text-white"
+      class="mb-0 text-sm font-medium text-gray-900 sr-only dark:text-white"
       >{{ label }}</label
     >
-    <div class=" flex justify-start">
-      <div class="absolute inset-y-0 pe-0 pointer-events-none">
+    <div class="relative inline justify-start">
+      <div class="absolute inset-y-4 start-3.5 flex items-center ps-0 pointer-events-none">
         <svg
-          class="w-3 h-3 text-gray-500 dark:text-gray-400 "
+          class="w-3 h-3 text-gray-500 dark:text-gray-400"
           aria-hidden="true"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -27,10 +27,10 @@
         type="search"
         id="default-search"
         :class="[
-          'block transition-all duration-300 min-w-0 text-right',
-          isFocused ? 'w-40 h-10.5 p-2 pe-8 text-sm' : 'w-8 h-10.5 p-2 pe-8 text-sm cursor-pointer'
+          'block transition-all duration-300 min-w-0 text-left outline-none ring-0 focus:ring-0 focus:outline-none',
+          isFocused ? 'w-40 h-10.5 p-2 ps-8 text-sm' : 'w-8 h-10.5 p-2 ps-8 text-sm cursor-pointer'
         ]"
-        class="text-sm text-gray-900 rounded-full bg-gray-50 dark:bg-gray-100 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+        class="text-sm text-gray-900 rounded-2xl bg-gray-50 dark:bg-gray-100 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white border-0"
         :placeholder="isFocused ? placeholder : ''"
         :value="modelValue"
         @input="onInput"

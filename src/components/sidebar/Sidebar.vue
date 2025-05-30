@@ -4,12 +4,13 @@
 
   <!-- Sidebar -->
   <aside
-  :class="[
-    'fixed top-0 left-0 z-40 w-64 h-screen p-4 overflow-y-auto bg-sidebar-color',
-    'transition-transform duration-200 ease-in-out ',
-    showSidebar ? 'translate-x-0 sidebar-shadow' : '-translate-x-full'
-  ]"
->
+    :class=" [
+      'fixed top-0 left-0 z-40 w-64 h-screen p-4 overflow-y-auto bg-sidebar-color',
+      'transition-transform duration-200 ease-in-out ',
+      showSidebar ? 'translate-x-0 sidebar-shadow' : '-translate-x-full'
+    ]"
+    aria-label="Sidebar"
+  >
     <!-- Petrotec Icon -->
     <div class="flex justify-center items-center mb-8">
       <img
@@ -33,25 +34,54 @@
             <span class="ms-3">Dashboard</span>
           </a>
         </li>
+        <!-- Multilevel Configuration -->
         <li>
-          <a
-            href="#"
-            class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
-            @click.prevent="fetchOptConfiguration"
+          <button
+            type="button"
+            class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+            @click="toggleConfigDropdown"
+            aria-controls="dropdown-config"
+            :aria-expanded="configDropdownOpen.toString()"
           >
-            <svg class="shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 18 18">
-              <path d="M6.143 0H1.857A1.857 1.857 0 0 0 0 1.857v4.286C0 7.169.831 8 1.857 8h4.286A1.857 1.857 0 0 0 8 6.143V1.857A1.857 1.857 0 0 0 6.143 0Zm10 0h-4.286A1.857 1.857 0 0 0 10 1.857v4.286C10 7.169 10.831 8 11.857 8h4.286A1.857 1.857 0 0 0 18 6.143V1.857A1.857 1.857 0 0 0 16.143 0Zm-10 10H1.857A1.857 1.857 0 0 0 0 11.857v4.286C0 17.169.831 18 1.857 18h4.286A1.857 1.857 0 0 0 8 16.143v-4.286A1.857 1.857 0 0 0 6.143 10Zm10 0h-4.286A1.857 1.857 0 0 0 10 11.857v4.286c0 1.026.831 1.857 1.857 1.857h4.286A1.857 1.857 0 0 0 18 16.143v-4.286A1.857 1.857 0 0 0 16.143 10Z"/>
+            <!-- Changed icon to a settings/gear icon -->
+            <svg class="shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.01c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.01 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.01 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0-2.572 1.01c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0-2.573-1.01c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0-1.01-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.01-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.246.07 2.573-1.01z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
             </svg>
-            <span class="flex-1 ms-3 whitespace-nowrap">OPT Configuration</span>
-          </a>
+            <span class="flex-1 ms-3 text-left whitespace-nowrap">Configuration</span>
+            <svg class="w-3 h-3 transition-transform" :class="configDropdownOpen ? 'rotate-180' : ''" fill="none" viewBox="0 0 10 6">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+            </svg>
+          </button>
+          <ul
+            id="dropdown-config"
+            class="py-2 space-y-2"
+            :class="configDropdownOpen ? '' : 'hidden'"
+          >
+            <li>
+              <a
+                href="#"
+                class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                @click.prevent="fetchOptConfiguration"
+              >
+                OPT Configuration
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                @click.prevent="fetchUserInterfaceConfiguration"
+              >
+                User Interface
+              </a>
+            </li>
+          </ul>
         </li>
-  
-       
       </ul>
     </div>
   </aside>
-  
-    </div>
+</div>
 
 </template>
 
@@ -65,12 +95,20 @@ const props = defineProps({
     default: true
   }
 });
-const emit = defineEmits(['show-configuration-modal', 'sidebar-toggle', 'opt-configuration']);
+const emit = defineEmits([
+  'show-configuration-modal',
+  'sidebar-toggle',
+  'opt-configuration',
+  'user-interface-configuration'
+]);
 
-// Use the prop to control sidebar visibility
 const showSidebar = ref(props.show);
+const configDropdownOpen = ref(false);
 
-// Keep showSidebar in sync with the prop
+function toggleConfigDropdown() {
+  configDropdownOpen.value = !configDropdownOpen.value;
+}
+
 watch(
   () => props.show,
   (val) => {
@@ -78,7 +116,6 @@ watch(
   }
 );
 
-// Emit sidebar state changes to parent if closed from inside
 watch(showSidebar, (val) => {
   emit('sidebar-toggle', val);
 });
@@ -86,14 +123,21 @@ watch(showSidebar, (val) => {
 function fetchOptConfiguration() {
   axios.get('http://localhost:5087/configuration/opt')
     .then(response => {
-      console.log('OPT Configuration:', response.data);
       emit('opt-configuration', response.data);
     })
     .catch(error => {
-      console.error('Error fetching OPT Configuration:', error);
       if (error.response && error.response.status === 404) {
         emit('show-configuration-modal');
       }
+    });
+}
+
+function fetchUserInterfaceConfiguration() {
+  axios.get('http://localhost:5087/configuration/ui')
+    .then(response => {
+      emit('user-interface-configuration', response.data);
+    })
+    .catch(error => {
     });
 }
 </script>

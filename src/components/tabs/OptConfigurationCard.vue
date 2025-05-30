@@ -133,8 +133,16 @@ function booleanFields(obj) {
     <div class="w-full  bg-white rounded-2xl shadow-inner bg-modal-color border border-color flex flex-col">
       <!-- Top line with label -->
       <div class="w-full flex items-center border-b border-color px-10 py-4 mb-2">
-        <span class="text-lg font-semibold text-gray-900 dark:text-white tracking-wide">Configuration</span>
+        <span class="text-lg font-semibold text-gray-900 dark:text-white tracking-wide">OPT Configuration</span>
+        <div class="justify-end flex-1 flex items-start">
+          <SearchBar
+            v-model="searchValue"
+            label="Search"
+            placeholder="Type to search..."
+          />
+        </div>
       </div>
+      
       <div class="flex flex-1 min-h-0">
         <!-- Tabs on the left -->
         <ul
@@ -273,13 +281,7 @@ function booleanFields(obj) {
       </div>
       <!-- Search and Button always at the bottom of the card -->
       <div class="flex flex-col md:flex-row items-center justify-between gap-4 mt-8 mb-4 px-8">
-        <div class="w-full md:w-1/2">
-          <SearchBar
-            v-model="searchValue"
-            label="Search"
-            placeholder="Type to search..."
-          />
-        </div>
+        
         <button
           @click="updateConfiguration"
           class="p-4 text-white bg-blue-600 focus:outline-none hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 font-medium rounded-full text-sm px-10 py-2.5 dark:bg-blue-700 dark:text-white dark:border-blue-600 dark:hover:bg-blue-800 dark:hover:border-blue-600 dark:focus:ring-blue-800"
