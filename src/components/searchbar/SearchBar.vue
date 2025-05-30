@@ -2,11 +2,11 @@
   <form class="max-w-xs mx-0" @submit="onSubmit">
     <label
       for="default-search"
-      class="mb-0 text-sm font-medium text-gray-900 sr-only dark:text-white"
+      class="mb-0 text-sm font-medium text-gray-900 sr-only dark:text-white "
       >{{ label }}</label
     >
-    <div class="relative inline justify-start">
-      <div class="absolute inset-y-4 start-3.5 flex items-center ps-0 pointer-events-none">
+    <div class="relative inline justify-start ">
+      <div class="absolute inset-y-4 start-3.5 flex items-center ps-0 pointer-events-none ">
         <svg
           class="w-3 h-3 text-gray-500 dark:text-gray-400"
           aria-hidden="true"
@@ -27,7 +27,7 @@
         type="search"
         id="default-search"
         :class="[
-          'block transition-all duration-300 min-w-0 text-left outline-none ring-0 focus:ring-0 focus:outline-none',
+          'block transition-all duration-300 min-w-0 text-left outline-none ring-0 focus:ring-0 focus:outline-none boolean-selector-inactive',
           isFocused ? 'w-40 h-10.5 p-2 ps-8 text-sm' : 'w-8 h-10.5 p-2 ps-8 text-sm cursor-pointer'
         ]"
         class="text-sm text-gray-900 rounded-2xl bg-gray-50 dark:bg-gray-100 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white border-0"
