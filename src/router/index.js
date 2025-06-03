@@ -3,6 +3,10 @@ import axios from 'axios';
 
 const routes = [
   {
+    path: '',
+    redirect: { name: 'Home' }
+  },
+  {
     path: '/login',
     name: 'Login',
     component: () => import('@/views/LoginView.vue'),
