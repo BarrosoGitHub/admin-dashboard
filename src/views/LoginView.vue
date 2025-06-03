@@ -15,28 +15,28 @@
       <div
         class="w-full max-w-sm p-4 bg-white border border-gray-200 rounded-lg shadow-sm sm:p-6 md:p-8 bg-modal-color border-color shadow-md"
       >
-      <!-- Petrotec Icon at the top center -->
-    <div class="flex justify-center -translate-y-5">
-      <img
-        :src="petrotecIcon"
-        alt="Petrotec Icon"
-        class="h-16 w-auto"
-      />
-    </div>
-      
-        <form class="space-y-6" action="#">
-      
+        <!-- Petrotec Icon at the top center -->
+        <div class="flex justify-center -translate-y-5">
+          <img
+            :src="petrotecIcon"
+            alt="Petrotec Icon"
+            class="h-16 w-auto"
+          />
+        </div>
+        <form class="space-y-6" @submit.prevent="handleLogin">
+          <div v-if="error" class="text-red-500 text-sm">{{ error }}</div>
           <div>
             <label
-              for="Username"
+              for="username"
               class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
               >Username</label
             >
             <input
-              type="Username"
+              type="text"
               name="username"
               id="username"
-                    class=" text-gray-900 text-sm rounded-sm border input-border-color block w-full p-2.5 pl-5 bg-input-color dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              v-model="username"
+              class="text-gray-900 text-sm rounded-sm border input-border-color block w-full p-2.5 pl-5 bg-input-color dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
               placeholder="Username"
               required
             />
@@ -51,17 +51,11 @@
               type="password"
               name="password"
               id="password"
+              v-model="password"
               placeholder="••••••••"
-                    class=" text-gray-900 text-sm rounded-sm border input-border-color block w-full p-2.5 pl-5 bg-input-color dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              class="text-gray-900 text-sm rounded-sm border input-border-color block w-full p-2.5 pl-5 bg-input-color dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
               required
             />
-          </div>
-          <div class="flex items-start">
-            <div class="flex items-start">
-           
-             
-            </div>
-           
           </div>
           <button
             type="submit"
@@ -78,9 +72,16 @@
 <script setup>
 import { onMounted, onBeforeUnmount, ref } from 'vue';
 import petrotecIcon from '@/assets/Petrotec-icon.png';
+import axios from 'axios';
+import { useRouter } from 'vue-router';
 
 const lottie = ref(null);
 const fadeIn = ref(false);
+
+const username = ref('');
+const password = ref('');
+const error = ref('');
+const router = useRouter();
 
 let speed = 0.2;
 let targetSpeed = 0.2;
@@ -94,7 +95,6 @@ let rafId = null;
 function setLottieSpeed(val) {
   if (lottie.value) {
     lottie.value.setSpeed(val);
-    // Optionally pause when stopped for efficiency
     if (val === 0) lottie.value.pause();
     else lottie.value.play();
   }
@@ -106,20 +106,15 @@ function handleMouseMove() {
 }
 
 function animate() {
-  // Accelerate or decelerate towards targetSpeed
   if (targetSpeed > speed) {
     speed = Math.min(targetSpeed, speed + acceleration);
   } else if (targetSpeed < speed) {
     speed = Math.max(targetSpeed, speed - deceleration);
   }
-
   setLottieSpeed(speed);
-
-  // If no mouse movement for 100ms, decelerate to full stop
   if (Date.now() - lastMove > 100) {
     targetSpeed = minSpeed;
   }
-
   rafId = requestAnimationFrame(animate);
 }
 
@@ -133,7 +128,6 @@ function handleLottieReady() {
 onMounted(() => {
   window.addEventListener('mousemove', handleMouseMove);
   rafId = requestAnimationFrame(animate);
-  // Trigger fade in
   setTimeout(() => {
     fadeIn.value = true;
   }, 50);
@@ -143,6 +137,36 @@ onBeforeUnmount(() => {
   window.removeEventListener('mousemove', handleMouseMove);
   if (rafId) cancelAnimationFrame(rafId);
 });
+
+// --- JWT login logic ---
+async function handleLogin() {
+  error.value = '';
+  try {
+    const response = await axios.post('http://localhost:5087/auth/login', {
+      username: username.value,
+      password: password.value,
+    });
+    console.log(response.data);
+
+    const token = response.data.Token
+
+    localStorage.setItem('jwt', token);
+
+    const validateResp = await axios.get(
+      `http://localhost:5087/auth/validate?token=${encodeURIComponent(token)}`
+    );
+
+    if (validateResp.status === 200) {
+      router.push('/home');
+    } else {
+      error.value = 'Token validation failed.';
+      localStorage.removeItem('jwt');
+    }
+  } catch (err) {
+    error.value = err.response?.data?.message || 'Login failed';
+    localStorage.removeItem('jwt');
+  }
+}
 </script>
 
 <style>

@@ -1,7 +1,6 @@
 <script setup>
 import { ref, defineProps, watch, computed, defineEmits } from "vue";
 import Input from "../inputs/Input.vue";
-import SearchBar from "../searchbar/SearchBar.vue";
 import { DeviceTabletIcon } from '@heroicons/vue/24/outline'
 
 const props = defineProps({

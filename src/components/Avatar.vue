@@ -43,6 +43,7 @@
     <div class="py-1">
       <a
         href="#"
+        @click.prevent="handleSignOut"
         class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
         >Sign out</a
       >
@@ -51,9 +52,30 @@
 </template>
 <script setup>
 import { ref } from "vue";
+import axios from "axios";
+import { useRouter } from "vue-router";
+
 const showDropdown = ref(false);
+const router = useRouter();
+
 function toggleDropdown() {
   showDropdown.value = !showDropdown.value;
 }
+
+async function handleSignOut() {
+  const token = localStorage.getItem('jwt');
+  if (token && token !== 'undefined' && token !== 'null') {
+    try {
+      await axios.post('http://localhost:5087/auth/signout', null, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    } catch (e) {
+      // cenas de erro
+    }
+  }
+  localStorage.removeItem('jwt');
+  router.push('/login');
+}
+
 defineExpose({ toggleDropdown });
 </script>
