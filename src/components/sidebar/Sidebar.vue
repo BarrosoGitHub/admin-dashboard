@@ -76,6 +76,15 @@
                 User Interface
               </a>
             </li>
+            <li>
+              <a
+                href="#"
+                class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                @click.prevent="fetchNetworkConfiguration"
+              >
+                Network
+              </a>
+            </li>
           </ul>
         </li>
       </ul>
@@ -139,5 +148,10 @@ function fetchUserInterfaceConfiguration() {
     })
     .catch(error => {
     });
+}
+
+function fetchNetworkConfiguration() {
+  // TODO: Implement network configuration fetch logic
+  alert('Network configuration clicked!');
 }
 </script>

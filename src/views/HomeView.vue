@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import Sidebar from "../components/sidebar/Sidebar.vue";
 import ConfigurationModal from "../components/Modals/ConfigurationModal.vue";
 import Navbar from "../components/navbar/Navbar.vue";
@@ -68,15 +68,14 @@ function handleUserInterfaceConfig(data) {
 
 function handleUpdateConfiguration(data) {
   newOptConfiguration.value = data;
-  diffModalRef.value?.showDiff(optConfiguration.value, newOptConfiguration.value.config);
+  diffModalRef.value?.showDiff(optConfiguration.value, newOptConfiguration.value.config, 'opt');
 }
 
 function handleUpdateUserInterfaceConfig(data) {
   newUserInterfaceConfig.value = data;
-  uiDiffModalRef.value?.showDiff(userInterfaceConfig.value, newUserInterfaceConfig.value.config);
+  uiDiffModalRef.value?.showDiff(userInterfaceConfig.value, newUserInterfaceConfig.value.config, 'ui');
 }
 
-// Called after leave transition ends
 function onOptConfigAfterLeave() {
   if (pendingToShow.value?.type === "ui") {
     showUserInterfaceConfig.value = true;
@@ -91,6 +90,19 @@ function onUiConfigAfterLeave() {
     pendingToShow.value = null;
   }
 }
+
+const stepperSteps = [
+  { label: "Add Configuration", completed: true, description: "Fill in the configuration details to get started." },
+  { label: "Template Details", completed: false, description: "Review and complete the template details before saving." },
+];
+const currentStep = ref(0);
+
+watch(showConfigModal, (val) => {
+  if (val) currentStep.value = 0;
+});
+watch(showOPTConfigurationTemplate, (val) => {
+  if (val) currentStep.value = 1;
+});
 </script>
 
 <template>
@@ -116,6 +128,7 @@ function onUiConfigAfterLeave() {
         @submit="showOPTConfigurationTemplate = false"
       />
 
+
       <transition name="fade-slide" @after-leave="onOptConfigAfterLeave">
         <ConfigurationCard
           v-if="showOPTConfiguration"
@@ -133,7 +146,7 @@ function onUiConfigAfterLeave() {
           @update="handleUpdateUserInterfaceConfig"
         />
       </transition>
-
+      
       <!-- <Footer /> -->
     </div>
   </div>

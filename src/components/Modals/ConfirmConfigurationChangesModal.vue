@@ -88,25 +88,30 @@ function isPlainObject(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function showDiff(obj1, obj2) {
+function showDiff(obj1, obj2, type = 'opt') {
   objectA.value = obj1;
   objectB.value = obj2;
   changes.value = computeDiff(obj1, obj2);
   show.value = true;
+  showDiff.type = type;
 }
 
 function confirm() {
+  let url = 'http://localhost:5087/configuration/opt';
+  if (showDiff.type === 'ui') {
+    url = 'http://localhost:5087/configuration/ui';
+  }
   axios
-    .put("http://localhost:5087/configuration/opt", objectB.value, {
+    .put(url, objectB.value, {
       headers: { "Content-Type": "application/json" },
     })
     .then((response) => {
       show.value = false;
       emit("onUpdatedData", response.data);
-      console.log("OPT Configuration:", response.data);
+      console.log("Configuration updated:", response.data);
     })
     .catch((error) => {
-      console.error("Error fetching OPT Configuration:", error);
+      console.error("Error updating configuration:", error);
       if (error.response && error.response.status === 404) {
         console.error("Configuration not found");
       }
@@ -128,12 +133,12 @@ defineExpose({
 
 .fade-slide-enter-from {
   opacity: 0;
-  transform: translateY(20px); /* start lower */
+  transform: translateY(20px);
 }
 
 .fade-slide-leave-to {
   opacity: 0;
-  transform: translateY(20px); /* leave lower */
+  transform: translateY(20px);
 }
 
 .modal {

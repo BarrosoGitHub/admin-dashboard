@@ -9,20 +9,57 @@
       class="fixed top-0 right-0 left-0 z-50 flex justify-center items-center w-full h-full bg-neutral-950/35 backdrop-blur-md"
       style="pointer-events: auto"
     >
-      <div class="relative p-4 w-full max-w-2xl max-h-full min-h-[500px] min-w-[800px] flex items-center justify-center">
+      <div
+        class="relative p-8 w-full max-w-5xl max-h-full min-h-[600px] min-w-[1100px] flex items-center justify-center"
+      >
+      
         <!-- Modal content -->
-        <div class="relative bg-modal-color rounded-2xl shadow-sm dark:bg-gray-700 w-full">
-          <!-- Modal header -->
-          <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600 border-gray-200">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-              {{ formatLabel(filteredGroupLabels[currentPage]) }}
-            </h3>
+        <div
+          class="relative bg-modal-color rounded-2xl shadow-inner border border-color flex flex-col w-full"
+          style="width: 1100px; height: 700px; min-width: 1300px; min-height: 900px; max-width: 1300px; max-height: 900px;"
+        >
+          <!-- Top line with label and search -->
+          <div class="w-full flex items-center border-b border-color px-5 py-4 mb-2">
+            <span class="text-lg font-semibold text-gray-900 dark:text-white tracking-wide">OPT Configuration</span>
+            <div class="justify-end flex-1 flex items-start">
+              <SearchBar
+                v-model="searchValue"
+                label="Search"
+                placeholder="Type to search..."
+              />
+            </div>
           </div>
-          <!-- Modal body -->
-          <div class="p-4 md:p-5 flex-1 overflow-auto">
-            <form class="space-y-4 h-full" @submit.prevent="submitForm">
-              <div v-if="filteredGroupLabels.length">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="flex flex-1 min-h-0">
+            <!-- Tabs on the left -->
+            <ul
+              class="flex flex-col w-63 min-w-44 text-sm font-medium text-left text-white-900 dark:text-white-900 py-1 px-5"
+              role="tablist"
+            >
+              <li v-for="(label, idx) in filteredGroupLabels" :key="label" class="flex">
+                <button
+                  type="button"
+                  class="flex items-center flex-1 text-left px-2 py-2 rounded-md my-0.75 mx-3 cursor-pointer"
+                  :class="currentPage === idx
+                    ? 'text-white bg-neutral-700 font-semibold'
+                    : 'text-gray-700 dark:text-gray-300'"
+                  @click="currentPage = idx"
+                >
+                  <component
+                    :is="iconMap[label] || Cog6ToothIcon"
+                    class="w-5 h-5 mr-2"
+                  />
+                  {{ formatLabel(label).replace(/configuration/i, '').trim() }}
+                </button>
+              </li>
+            </ul>
+            <!-- Content on the right -->
+            <div class="flex-1 min-h-0 table flex-col">
+              <div
+                v-if="filteredGroupLabels[currentPage] && fields[filteredGroupLabels[currentPage]]"
+                :key="filteredGroupLabels[currentPage] + searchValue"
+                class="rounded-xl md:px-20 flex-1 overflow-y-auto"
+              >
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <!-- Non-boolean fields first -->
                   <div
                     v-for="(value, prop) in nonBooleanFields(fields[filteredGroupLabels[currentPage]])"
@@ -43,7 +80,6 @@
                         v-model="fields[filteredGroupLabels[currentPage]][prop]"
                         class="bg-input-color text-gray-900 text-sm rounded-md border input-border-color focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pl-5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white shadow-sm"
                       >
-                        <!-- Show selected option first -->
                         <option
                           v-if="getEnumOptions(filteredGroupLabels[currentPage], prop).find(o => o.value === fields[filteredGroupLabels[currentPage]][prop])"
                           :value="fields[filteredGroupLabels[currentPage]][prop]"
@@ -52,9 +88,7 @@
                             getEnumOptions(filteredGroupLabels[currentPage], prop).find(o => o.value === fields[filteredGroupLabels[currentPage]][prop])?.label
                           }}
                         </option>
-                        <!-- Separator if there are other options -->
                         <option disabled v-if="getEnumOptions(filteredGroupLabels[currentPage], prop).length > 1">──────────</option>
-                        <!-- Show remaining options (not selected) -->
                         <option
                           v-for="option in getEnumOptions(filteredGroupLabels[currentPage], prop).filter(o => o.value !== fields[filteredGroupLabels[currentPage]][prop])"
                           :key="option.value"
@@ -73,17 +107,22 @@
                       />
                     </div>
                   </div>
-                  <!-- Separator line before booleans -->
-                  <div class="col-span-full">
-                    <hr class="my-4 border-gray-300 dark:border-gray-600" />
-                  </div>
+                  <!-- Separator line before booleans, only if there are boolean fields -->
+                  <template v-if="Object.keys(booleanFields(fields[filteredGroupLabels[currentPage]])).length">
+                    <div class="col-span-full">
+                      <hr class="my-4 border border-color" />
+                    </div>
+                  </template>
                   <!-- Boolean fields at the end -->
                   <div
                     v-for="(value, prop) in booleanFields(fields[filteredGroupLabels[currentPage]])"
                     :key="prop"
-                    class="mb-2 dark:text-white"
+                    class="mb-2 dark:text-white flex items-center space-x-3"
                   >
-                    <label class="inline-flex items-center cursor-pointer">
+                    <label :for="`${filteredGroupLabels[currentPage]}-${prop}`" class="block text-sm font-medium text-gray-900 dark:text-white flex-1 mb-0">
+                      {{ formatLabel(prop) }}
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer ml-auto">
                       <input
                         type="checkbox"
                         class="sr-only peer"
@@ -99,33 +138,24 @@
                         ]"
                         style="border: 0px solid var(--toggle-border);"
                       ></div>
-                      <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">{{ formatLabel(prop) }}</span>
                     </label>
                   </div>
                 </div>
               </div>
-              <div class="flex justify-between mt-4" v-if="filteredGroupLabels.length > 1">
-                <button
-                  type="button"
-                  @click="prevPage"
-                  :disabled="currentPage === 0"
-                  class="px-4 py-2 rounded bg-button-active-color"
-                >Previous</button>
-                <button
-                  type="button"
-                  @click="nextPage"
-                  :disabled="currentPage === filteredGroupLabels.length - 1"
-                  class="px-4 py-2 rounded bg-button-active-color"
-                >Next</button>
+              <div v-else-if="fields[filteredGroupLabels[currentPage]] === null" class="text-gray-500 dark:text-gray-400">
+                No data
               </div>
-              <button
-                v-if="currentPage === filteredGroupLabels.length - 1"
-                type="submit"
-                class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 mt-4"
-              >
-                Add OPT Configuration
-              </button>
-            </form>
+              <pre v-else class="text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-900 rounded p-2 overflow-x-auto">{{ fields[filteredGroupLabels[currentPage]] }}</pre>
+            </div>
+          </div>
+               <div class="flex justify-end mt-8 px-3 py-3">
+                  <button
+                    type="submit"
+                    @click="submitForm"
+                    class="px-8 py-2.5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                  >
+                    Create Template
+                  </button>
           </div>
         </div>
       </div>
@@ -134,35 +164,53 @@
 </template>
 
 <script setup>
-import { reactive, defineProps, defineEmits, watch, ref, computed } from 'vue';
-// Import getEnumOptions from your enums helper
-import enumOptions, { getEnumOptions as getEnumOptionsHelper } from '../../enums/enumOptions.js';
+import { reactive, defineProps, defineEmits, watch, ref, computed } from "vue";
+import enumOptions, {
+  getEnumOptions as getEnumOptionsHelper,
+} from "../../enums/enumOptions.js";
 // Import axios
-import axios from 'axios';
+import axios from "axios";
+import {
+  HomeIcon,
+  CreditCardIcon,
+  Cog6ToothIcon,
+  DeviceTabletIcon,
+  PrinterIcon,
+  QrCodeIcon,
+  GlobeAltIcon,
+  CurrencyEuroIcon,
+  ClockIcon,
+  UserGroupIcon,
+  TagIcon,
+  BanknotesIcon,
+  BuildingStorefrontIcon,
+  ServerStackIcon,
+  IdentificationIcon,
+} from "@heroicons/vue/24/outline";
 
 const getEnumOptions = getEnumOptionsHelper;
 
 const props = defineProps({
   show: {
     type: Boolean,
-    default: false
+    default: false,
   },
   data: {
     type: Object,
     default: () => ({
       "User Info": {
-        "Name": "",
-        "Email": ""
+        Name: "",
+        Email: "",
       },
-      "Settings": {
-        "Theme": "Light",
-        "Notifications": true
-      }
-    })
-  }
+      Settings: {
+        Theme: "Light",
+        Notifications: true,
+      },
+    }),
+  },
 });
 
-const emit = defineEmits(['close', 'submit']);
+const emit = defineEmits(["close", "submit"]);
 
 function clone(obj) {
   return JSON.parse(JSON.stringify(obj));
@@ -170,18 +218,26 @@ function clone(obj) {
 
 const fields = reactive(clone(props.data));
 const currentPage = ref(0);
+const searchValue = ref('');
 
 const filteredGroupLabels = computed(() =>
   Object.keys(fields).filter(
-    key => fields[key] && typeof fields[key] === 'object' && Object.keys(fields[key]).length > 0
+    (key) =>
+      fields[key] &&
+      typeof fields[key] === "object" &&
+      Object.keys(fields[key]).length > 0
   )
 );
 
 function nonBooleanFields(obj) {
-  return Object.fromEntries(Object.entries(obj).filter(([k, v]) => typeof v !== 'boolean'));
+  return Object.fromEntries(
+    Object.entries(obj).filter(([k, v]) => typeof v !== "boolean")
+  );
 }
 function booleanFields(obj) {
-  return Object.fromEntries(Object.entries(obj).filter(([k, v]) => typeof v === 'boolean'));
+  return Object.fromEntries(
+    Object.entries(obj).filter(([k, v]) => typeof v === "boolean")
+  );
 }
 
 watch(
@@ -193,35 +249,47 @@ watch(
   { deep: true }
 );
 
-function nextPage() {
-  if (currentPage.value < filteredGroupLabels.value.length - 1) {
-    currentPage.value++;
-  }
-}
-function prevPage() {
-  if (currentPage.value > 0) {
-    currentPage.value--;
-  }
-}
-
 // --- Use axios for HTTP POST ---
 async function submitForm() {
   try {
     const response = await axios.post(
-      'http://localhost:5087/configuration/opt/new',
+      "http://localhost:5087/configuration/opt/new",
       clone(fields)
     );
-    emit('submit', response.data);
+    emit("submit", response.data);
   } catch (error) {
-    alert(error?.response?.data?.message || error.message || 'Submission failed');
+    alert(error?.response?.data?.message || error.message || "Submission failed");
   }
 }
 // --- End HTTP POST ---
 
 function formatLabel(label) {
-  if (!label || typeof label !== 'string') return '';
+  if (!label || typeof label !== "string") return "";
   return label
-    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-    .replace(/^./, str => str.toUpperCase());
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/^./, (str) => str.toUpperCase());
 }
+
+const iconMap = {
+  OptMainConfiguration: HomeIcon,
+  PinpadConfiguration: CreditCardIcon,
+  FdcConfiguration: Cog6ToothIcon,
+  DisplayConfiguration: DeviceTabletIcon,
+  PrinterConfiguration: PrinterIcon,
+  EpsClientConfiguration: QrCodeIcon,
+  ViaVerdeConfiguration: GlobeAltIcon,
+  RemoteServicesConfiguration: ServerStackIcon,
+  GalpConfiguration: CurrencyEuroIcon,
+  RegionalSettings: GlobeAltIcon,
+  BnaConfiguration: BanknotesIcon,
+  HeadOfficeConfiguration: BuildingStorefrontIcon,
+  TimingsConfiguration: ClockIcon,
+  LocalCreditConfiguration: UserGroupIcon,
+  BankingCardPaymentConfiguration: CreditCardIcon,
+  DiscountsConfiguration: TagIcon,
+  PrioConfiguration: IdentificationIcon,
+  IngenicoConfiguration: CreditCardIcon,
+  IntermarcheConfiguration: BuildingStorefrontIcon,
+  BongasConfiguration: GlobeAltIcon,
+};
 </script>

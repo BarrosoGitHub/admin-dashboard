@@ -62,6 +62,24 @@ function booleanFields(obj) {
     Object.entries(obj).filter(([k, v]) => typeof v === 'boolean')
   );
 }
+
+function addGradeColor() {
+  if (!Array.isArray(localData.value.GradeColors)) {
+    localData.value.GradeColors = [];
+  }
+  
+  let nextNumber = localData.value.GradeColors.length + 1;
+  let newKey = `New${nextNumber}`;
+  while (localData.value.GradeColors.some(g => Object.keys(g)[0] === newKey)) {
+    newKey = `New${++nextNumber}`;
+  }
+  localData.value.GradeColors.push({ [newKey]: '' });
+}
+function removeGradeColor(idx) {
+  if (Array.isArray(localData.value.GradeColors)) {
+    localData.value.GradeColors.splice(idx, 1);
+  }
+}
 </script>
 
 <template>
@@ -168,7 +186,22 @@ function booleanFields(obj) {
                         v-model="localData.GradeColors[idx][Object.keys(grade)[0]]"
                         class="w-full"
                       />
+                      <button
+                        type="button"
+                        class="ml-2 px-2 py-1 rounded bg-red-500 text-white text-xs hover:bg-red-600"
+                        @click="removeGradeColor(idx)"
+                        title="Remove this grade color"
+                      >
+                        Remove
+                      </button>
                     </div>
+                    <button
+                      type="button"
+                      class="mt-2 px-3 py-1 rounded bg-green-600 text-white text-xs hover:bg-green-700 w-fit"
+                      @click="addGradeColor"
+                    >
+                      + Add Grade Color
+                    </button>
                   </div>
                 </div>
               </template>

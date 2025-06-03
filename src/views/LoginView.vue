@@ -3,7 +3,7 @@
     <dotlottie-player
       ref="lottie"
       class="blur-none glow-animation"
-      :class="{ 'fade-in': fadeIn }"
+      :class="[{ 'fade-in': fadeIn }, { 'fade-out': isFadingOut }]"
       src="https://lottie.host/049c5461-1ede-40f0-9cdb-8cf785d082df/dVTgImPE9j.lottie"
       background="transparent"
       speed="1"
@@ -11,7 +11,10 @@
       loop
       @ready="handleLottieReady"
     ></dotlottie-player>
-    <div class="absolute inset-0 flex items-center justify-center z-10 custom-blur">
+    <div
+      class="absolute inset-0 flex items-center justify-center z-10 custom-blur"
+      :class="{ 'fade-out': isFadingOut }"
+    >
       <div
         class="w-full max-w-sm p-4 bg-white border border-gray-200 rounded-lg shadow-sm sm:p-6 md:p-8 bg-modal-color border-color shadow-md"
       >
@@ -77,6 +80,7 @@ import { useRouter } from 'vue-router';
 
 const lottie = ref(null);
 const fadeIn = ref(false);
+const isFadingOut = ref(false);
 
 const username = ref('');
 const password = ref('');
@@ -148,8 +152,7 @@ async function handleLogin() {
     });
     console.log(response.data);
 
-    const token = response.data.Token
-
+    const token = response.data.Token;
     localStorage.setItem('jwt', token);
 
     const validateResp = await axios.get(
@@ -157,7 +160,10 @@ async function handleLogin() {
     );
 
     if (validateResp.status === 200) {
-      router.push('/home');
+      isFadingOut.value = true;
+      setTimeout(() => {
+        router.push('/home');
+      }, 700); // Match the transition duration
     } else {
       error.value = 'Token validation failed.';
       localStorage.removeItem('jwt');
@@ -177,5 +183,10 @@ async function handleLogin() {
 }
 .fade-in {
   opacity: 1;
+}
+.fade-out {
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
 }
 </style>

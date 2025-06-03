@@ -18,7 +18,6 @@ const routes = [
     component: () => import('@/views/HomeView.vue'),
     meta: { requiresAuth: true }
   },
-  // ...other routes...
 ];
 
 const router = createRouter({

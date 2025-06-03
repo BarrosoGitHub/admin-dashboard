@@ -171,7 +171,7 @@ function booleanFields(obj) {
           </li>
         </ul>
         <!-- Content on the right -->
-        <div class="flex-1 min-h-0 flex flex-col">
+        <div class="flex-1 min-h-0 table flex-col">
           <div
             v-if="activeTab && filteredData[activeTab]"
             :key="activeTab + searchValue"
