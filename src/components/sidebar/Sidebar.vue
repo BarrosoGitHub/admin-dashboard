@@ -55,8 +55,8 @@
           </button>
           <ul
             id="dropdown-config"
-            class="py-2 space-y-2"
-            :class="configDropdownOpen ? '' : 'hidden'"
+            class="py-2 space-y-2 transition-all duration-300 overflow-hidden"
+            :class="configDropdownOpen ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'"
           >
             <li>
               <a
@@ -152,6 +152,21 @@ function fetchUserInterfaceConfiguration() {
 
 function fetchNetworkConfiguration() {
   // TODO: Implement network configuration fetch logic
-  alert('Network configuration clicked!');
 }
 </script>
+
+<style scoped>
+#dropdown-config {
+  transition-property: max-height, opacity;
+  transition-duration: 0.3s;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+#dropdown-config.max-h-40 {
+  max-height: 10rem; /* adjust as needed for content */
+  opacity: 1;
+  pointer-events: auto;
+}
+</style>
