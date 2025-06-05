@@ -1,18 +1,16 @@
 <template>
   <div class="bg-website-color min-h-screen w-full flex items-center justify-center relative">
-    <dotlottie-player
-      ref="lottie"
-      class="blur-none glow-animation"
-      :class="[{ 'fade-in': fadeIn }, { 'fade-out': isFadingOut }]"
-      src="https://lottie.host/049c5461-1ede-40f0-9cdb-8cf785d082df/dVTgImPE9j.lottie"
-      background="transparent"
-      speed="1"
-      style="width: 75vh; height: 75vh"
-      loop
-      @ready="handleLottieReady"
-    ></dotlottie-player>
+    <div ref="vantaRef" class="absolute inset-0 w-full h-full z-0"></div>
     <div
-      class="absolute inset-0 flex items-center justify-center z-10 custom-blur"
+      v-if="!fadeInBgDone"
+      class="absolute inset-0 w-full h-full z-10 bg-website-color bg-opacity-90 fade-bg-in"
+    ></div>
+    <div
+      v-if="isFadingOut"
+      class="absolute inset-0 w-full h-full z-10 bg-website-color bg-opacity-90 fade-bg"
+    ></div>
+    <div
+      class="absolute inset-0 flex items-center justify-center z-20 custom-blur"
       :class="{ 'fade-out': isFadingOut }"
     >
       <div
@@ -78,68 +76,87 @@ import petrotecIcon from '@/assets/Petrotec-icon.png';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 
-const lottie = ref(null);
 const fadeIn = ref(false);
 const isFadingOut = ref(false);
+const vantaRef = ref(null);
+let vantaEffect = null;
 
 const username = ref('');
 const password = ref('');
 const error = ref('');
 const router = useRouter();
+const fadeInBgDone = ref(false);
 
-let speed = 0.2;
-let targetSpeed = 0.2;
-const minSpeed = 0;
-const maxSpeed = 1.0;
-const acceleration = 0.2;
-const deceleration = 0.03;
-let lastMove = Date.now();
-let rafId = null;
+let vantaTargetPoints = 30;
+let vantaTargetMaxDist = 30;
+let vantaAnimFrame = null;
 
-function setLottieSpeed(val) {
-  if (lottie.value) {
-    lottie.value.setSpeed(val);
-    if (val === 0) lottie.value.pause();
-    else lottie.value.play();
+function animateVantaReduction() {
+  if (vantaEffect) {
+    let currPoints = vantaEffect.options.points;
+    let currMaxDist = vantaEffect.options.maxDistance;
+    let changed = false;
+    if (currPoints > 0) {
+      currPoints = Math.max(0, currPoints - 1.5);
+      vantaEffect.setOptions({ points: currPoints });
+      changed = true;
+    }
+    if (currMaxDist > 0) {
+      currMaxDist = Math.max(0, currMaxDist - 2);
+      vantaEffect.setOptions({ maxDistance: currMaxDist });
+      changed = true;
+    }
+    if (changed) {
+      vantaAnimFrame = requestAnimationFrame(animateVantaReduction);
+    }
   }
 }
 
-function handleMouseMove() {
-  lastMove = Date.now();
-  targetSpeed = maxSpeed;
-}
-
-function animate() {
-  if (targetSpeed > speed) {
-    speed = Math.min(targetSpeed, speed + acceleration);
-  } else if (targetSpeed < speed) {
-    speed = Math.max(targetSpeed, speed - deceleration);
-  }
-  setLottieSpeed(speed);
-  if (Date.now() - lastMove > 100) {
-    targetSpeed = minSpeed;
-  }
-  rafId = requestAnimationFrame(animate);
-}
-
-function handleLottieReady() {
-  if (lottie.value) {
-    lottie.value.play();
-    setLottieSpeed(speed);
-  }
-}
-
-onMounted(() => {
-  window.addEventListener('mousemove', handleMouseMove);
-  rafId = requestAnimationFrame(animate);
+onMounted(async () => {
   setTimeout(() => {
     fadeIn.value = true;
+    setTimeout(() => {
+      fadeInBgDone.value = true;
+    }, 200); // Match fade-in duration
   }, 50);
+
+  // Dynamically load three.js and vanta.net
+    if (!window.THREE) {
+    await new Promise(resolve => {
+      const script = document.createElement('script');
+      script.src = '/three.min.js';
+      script.onload = resolve;
+      document.head.appendChild(script);
+    });
+  }
+  if (!window.VANTA || !window.VANTA.NET) {
+    await new Promise(resolve => {
+      const script = document.createElement('script');
+      script.src = '/vanta.net.min.js';
+      script.onload = resolve;
+      document.head.appendChild(script);
+    });
+  }
+  if (window.VANTA && window.VANTA.NET && vantaRef.value) {
+    vantaEffect = window.VANTA.NET({
+      el: vantaRef.value,
+      mouseControls: false,
+      minHeight: 200.00,
+      minWidth: 200.00,
+      scale: 1.00,
+      scaleMobile: 1.00,
+      color: 0x248538,
+      backgroundColor: 0x212121,
+      points: 3,
+      maxDistance: 35,
+      spacing: 25
+    });
+  }
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener('mousemove', handleMouseMove);
-  if (rafId) cancelAnimationFrame(rafId);
+  if (vantaEffect && vantaEffect.destroy) vantaEffect.destroy();
+  if (vantaAnimFrame) cancelAnimationFrame(vantaAnimFrame);
 });
 
 // --- JWT login logic ---
@@ -161,9 +178,12 @@ async function handleLogin() {
 
     if (validateResp.status === 200) {
       isFadingOut.value = true;
+      if (vantaEffect) {
+        vantaAnimFrame = requestAnimationFrame(animateVantaReduction);
+      }
       setTimeout(() => {
         router.push('/home');
-      }, 700); // Match the transition duration
+      }, 500); // Match the transition duration
     } else {
       error.value = 'Token validation failed.';
       localStorage.removeItem('jwt');
@@ -188,5 +208,19 @@ async function handleLogin() {
   opacity: 0;
   transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
+}
+.fade-bg {
+  animation: fadeInBg 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+.fade-bg-in {
+  animation: fadeOutBg 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes fadeInBg {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes fadeOutBg {
+  from { opacity: 1; }
+  to { opacity: 0; }
 }
 </style>

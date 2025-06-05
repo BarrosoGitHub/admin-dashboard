@@ -11,7 +11,7 @@ export default defineConfig({
     vue({
       template: {
         compilerOptions: {
-          isCustomElement: tag => tag === 'dotlottie-player'
+          isCustomElement: tag => ['ConfigurationTemplateModal'].includes(tag)
         }
       }
     }),

@@ -52,7 +52,6 @@
 </template>
 <script setup>
 import { ref } from "vue";
-import axios from "axios";
 import { useRouter } from "vue-router";
 
 const showDropdown = ref(false);
@@ -63,18 +62,12 @@ function toggleDropdown() {
 }
 
 async function handleSignOut() {
-  const token = localStorage.getItem('jwt');
-  if (token && token !== 'undefined' && token !== 'null') {
-    try {
-      await axios.post('http://localhost:5087/auth/signout', null, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-    } catch (e) {
-      // cenas de erro
-    }
-  }
-  localStorage.removeItem('jwt');
-  router.push('/login');
+  const event = new CustomEvent('sidebar-close');
+  window.dispatchEvent(event);
+  setTimeout(() => {
+    localStorage.removeItem('jwt');
+    router.push('/login');
+  }, 300); // Match sidebar close animation duration
 }
 
 defineExpose({ toggleDropdown });
