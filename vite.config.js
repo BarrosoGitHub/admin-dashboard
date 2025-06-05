@@ -11,7 +11,7 @@ export default defineConfig({
     vue({
       template: {
         compilerOptions: {
-          isCustomElement: tag => ['ConfigurationTemplateModal'].includes(tag)
+          isCustomElement: tag => [].includes(tag)
         }
       }
     }),

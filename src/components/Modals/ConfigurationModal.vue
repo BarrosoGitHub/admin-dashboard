@@ -129,6 +129,8 @@
                   id="networkSegment"
                   class="text-gray-900 text-sm rounded-md border input-border-color block w-full p-2.5 bg-input-color dark:bg-neutral-500 dark:border-neutral-500 dark:text-white shadow-md"
                   required
+                  pattern="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
+                  title="Please enter a valid IPv4 address (e.g., 192.168.1.1)"
                 />
               </div>
               <div class="mt-10">
