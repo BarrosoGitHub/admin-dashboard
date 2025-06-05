@@ -210,12 +210,12 @@ onMounted(() => {
         v-if="activeModal === 'appInfo' && showAppInfoCard"
         id="popup-modal"
         tabindex="-1"
-        class="fixed top-0 right-0 left-0 z-50 flex justify-center items-center w-full h-full pointer-events-none"
+        class="fixed top-0 right-0 left-0 z-50 flex justify-center items-center  h-full pointer-events-none"
       >
-        <div class="relative p-4 w-full max-w-5xl max-h-full pointer-events-auto">
-            <div class="p-4 md:p-5 text-center">
+        <div class="relative p-2 pointer-events-auto">
+            <div class=" text-center">
 
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-7">
                 <AppInfoCard
                   v-for="(info, idx) in appInfoData"
                   :key="idx"
