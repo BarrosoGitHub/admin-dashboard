@@ -143,7 +143,10 @@ function fetchOptConfiguration() {
 }
 
 function fetchUserInterfaceConfiguration() {
-  axios.get('http://localhost:5087/configuration/ui')
+  const token = localStorage.getItem('jwt');
+  axios.get('http://localhost:5087/configuration/ui', {
+    headers: token ? { Authorization: `Bearer ${token}` } : {}
+  })
     .then(response => {
       emit('user-interface-configuration', response.data);
     })
