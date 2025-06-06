@@ -131,7 +131,10 @@ watch(showSidebar, (val) => {
 });
 
 function fetchOptConfiguration() {
-  axios.get('http://localhost:5087/configuration/opt')
+  const token = localStorage.getItem('jwt');
+  axios.get('http://localhost:5087/configuration/opt', {
+    headers: token ? { Authorization: `Bearer ${token}` } : {}
+  })
     .then(response => {
       emit('opt-configuration', response.data);
     })
@@ -160,7 +163,10 @@ function fetchNetworkConfiguration() {
 }
 
 function handleDashboardClick() {
-  axios.get('http://localhost:5087/info/services')
+  const token = localStorage.getItem('jwt');
+  axios.get('http://localhost:5087/info/services', {
+    headers: token ? { Authorization: `Bearer ${token}` } : {}
+  })
     .then(response => {
       emit('dashboard', response.data);
     })

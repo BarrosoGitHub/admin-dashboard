@@ -2,11 +2,11 @@
   <transition name="fade-slide">
     <div
       v-if="show"
-      class="fixed top-0 right-0 left-0 z-50 flex justify-center items-center w-full h-full bg-gray-950/35 backdrop-blur-md shadow-xl"
+      class="fixed top-0 right-0 left-0 z-50 flex justify-center items-center w-full h-full bg-neutral-950/35 backdrop-blur-md shadow-xl"
       style="pointer-events: auto"
     >
       <div class="relative p-4 w-full max-w-md max-h-full">
-        <div class="relative bg-white rounded-lg shadow-sm dark:bg-gray-700">
+        <div class="relative bg-white rounded-lg shadow-sm bg-modal-color border border-color">
           <div class="p-4 md:p-5 text-left text-sm text-gray-800 dark:text-gray-200">
             <h3 class="text-lg font-bold mb-4">Confirm changes:</h3>
             <ul v-if="Object.keys(changes).length">
@@ -101,9 +101,13 @@ function confirm() {
   if (showDiff.type === 'ui') {
     url = 'http://localhost:5087/configuration/ui';
   }
+  const token = localStorage.getItem('jwt');
   axios
     .put(url, objectB.value, {
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      },
     })
     .then((response) => {
       show.value = false;

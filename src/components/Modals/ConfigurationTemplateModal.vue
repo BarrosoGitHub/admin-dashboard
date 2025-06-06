@@ -20,15 +20,15 @@
         >
           <!-- Top line with label and search -->
           <div class="w-full flex items-center border-b border-color px-5 py-4 mb-2">
-            <span class="text-lg font-semibold text-gray-900 dark:text-white tracking-wide">OPT Configuration</span>
-            <div class="justify-end flex-1 flex items-start">
-              <SearchBar
-                v-model="searchValue"
-                label="Search"
-                placeholder="Type to search..."
-              />
-            </div>
-          </div>
+        <span class="text-lg font-semibold text-gray-900 dark:text-white tracking-wide">OPT Configuration</span>
+        <div class="justify-end flex-1 flex items-start">
+          <SearchBar
+            v-model="searchValue"
+            label="Search"
+            placeholder="Type to search..."
+          />
+        </div>
+      </div>
           <div class="flex flex-1 min-h-0">
             <!-- Tabs on the left -->
             <ul
@@ -62,7 +62,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <!-- Non-boolean fields first -->
                   <div
-                    v-for="(value, prop) in nonBooleanFields(fields[filteredGroupLabels[currentPage]])"
+                    v-for="(value, prop) in nonBooleanFields(filteredFields)"
                     :key="prop"
                     class="mb-2 dark:text-white"
                   >
@@ -108,14 +108,14 @@
                     </div>
                   </div>
                   <!-- Separator line before booleans, only if there are boolean fields -->
-                  <template v-if="Object.keys(booleanFields(fields[filteredGroupLabels[currentPage]])).length">
+                  <template v-if="Object.keys(booleanFields(filteredFields)).length">
                     <div class="col-span-full">
                       <hr class="my-4 border border-color" />
                     </div>
                   </template>
                   <!-- Boolean fields at the end -->
                   <div
-                    v-for="(value, prop) in booleanFields(fields[filteredGroupLabels[currentPage]])"
+                    v-for="(value, prop) in booleanFields(filteredFields)"
                     :key="prop"
                     class="mb-2 dark:text-white flex items-center space-x-3"
                   >
@@ -164,6 +164,7 @@
 </template>
 
 <script setup>
+import SearchBar from "../searchbar/SearchBar.vue";
 import { reactive, defineProps, defineEmits, watch, ref, computed } from "vue";
 import enumOptions, {
   getEnumOptions as getEnumOptionsHelper,
@@ -220,24 +221,41 @@ const fields = reactive(clone(props.data));
 const currentPage = ref(0);
 const searchValue = ref('');
 
-const filteredGroupLabels = computed(() =>
-  Object.keys(fields).filter(
-    (key) =>
-      fields[key] &&
-      typeof fields[key] === "object" &&
-      Object.keys(fields[key]).length > 0
-  )
-);
+// --- Filtered group labels based on search ---
+const filteredGroupLabels = computed(() => {
+  const search = searchValue.value.trim().toLowerCase();
+  return Object.keys(fields).filter((key) => {
+    const group = fields[key];
+    if (!group || typeof group !== 'object' || !Object.keys(group).length) return false;
+    if (!search) return true;
+    if (key.toLowerCase().includes(search)) return true;
+    // Only include group if at least one field matches
+    return Object.entries(group).some(([prop, value]) =>
+      prop.toLowerCase().includes(search) || String(value).toLowerCase().includes(search)
+    );
+  });
+});
 
-function nonBooleanFields(obj) {
+// --- Filtered fields for the current tab, based on search ---
+const filteredFields = computed(() => {
+  const group = filteredGroupLabels.value[currentPage.value];
+  if (!group) return {};
+  const allFields = fields[group] || {};
+  const search = searchValue.value.trim().toLowerCase();
+  if (!search) return allFields;
+  // Only show fields that match search in key or value
   return Object.fromEntries(
-    Object.entries(obj).filter(([k, v]) => typeof v !== "boolean")
+    Object.entries(allFields).filter(([prop, value]) =>
+      prop.toLowerCase().includes(search) || String(value).toLowerCase().includes(search)
+    )
   );
+});
+
+function nonBooleanFields(obj = {}) {
+  return Object.fromEntries(Object.entries(obj).filter(([_, v]) => typeof v !== 'boolean'));
 }
-function booleanFields(obj) {
-  return Object.fromEntries(
-    Object.entries(obj).filter(([k, v]) => typeof v === "boolean")
-  );
+function booleanFields(obj = {}) {
+  return Object.fromEntries(Object.entries(obj).filter(([_, v]) => typeof v === 'boolean'));
 }
 
 watch(
