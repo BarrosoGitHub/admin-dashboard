@@ -1,19 +1,21 @@
 <template>
   <div>
   <div
-    class="bg-modal-color-gradient rounded-3xl shadow-lg flex flex-col transition-all duration-300 overflow-hidden m-5 p-4 min-w-[300px] min-h-[120px] max-w-lg relative group"
+    class="bg-modal-color-gradient rounded-3xl flex flex-col transition-all duration-300 overflow-hidden m-5 p-4 min-w-[200px] min-h-[120px] max-w-lg relative group border border-color"
+    :class="[hovering ? 'shadow-lg' : 'shadow-sm']"
     style="min-height: 3.5rem;"
     @mouseenter="hovering = true"
     @mouseleave="hovering = false"
+    
   >
     <div
-      class="w-full flex items-center justify-between cursor-pointer select-none mb-3"
+      class="w-full flex items-center justify-between cursor-pointer select-none mb-3 "
       :aria-expanded="true"
       :aria-controls="'app-info-body'"
       role="button"
       tabindex="0"
     >
-      <div class="contents items-center">
+      <div class="contents items-center ">
         <div class="w-10 h-10 rounded-full bg-neutral-300 contents items-center justify-center shadow ">
           <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" />
@@ -21,12 +23,12 @@
         </div>
         <div style="min-width: 0; min-height: 0; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; width: 100%; height: 2.5em;"
           :class="[
-            'p-2 transition-all duration-300',
+            'p-2 transition-all duration-300 ',
             hovering ? 'items-center justify-center' : '',
-            info.Status === 'Stopped' ? 'text-neutral-500' : 'text-neutral-200'
+            info.Status === 'Stopped' ? 'text-neutral-500 text-bold' : 'text-neutral-200'
           ]"
         >
-          <div class="font-thin leading-tight max-w-full my-2 transition-all duration-200"
+          <div class="leading-tight max-w-full my-2 transition-all duration-200"
             :class="['py-2',
               hovering ? 'text-lg ' : 'text-2xl ',
               info.Status === 'Stopped' ? 'text-neutral-500 dark:text-neutral-500' : 'text-neutral-200'
@@ -49,11 +51,11 @@
         style="min-height: 80px; max-height: 100px;"
       >
         <div class="flex flex-col gap-1 px-2 py-4 items-center justify-center h-full">
-          <span class="flex items-center justify-center gap-1 transition-all group-hover:translate-y-0 translate-y-7 opacity-0 group-hover:opacity-100 duration-400"
+          <span class="flex items-center justify-center gap-1 transition-all group-hover:translate-y-0 translate-y-7 opacity-0 group-hover:opacity-100 duration-150"
             :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-gray-400'"
             style="min-height:48px;"
           >
-            <component :is="iconMap.Hash" class="w-8 h-8" :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-gray-400'" />
+            <component :is="iconMap.Hash" class="w-6 h-6" :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-neutral-300'" />
           </span>
           <span class="font-semibold break-all text-xs flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
             :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-gray-700 dark:text-white'"
@@ -62,11 +64,11 @@
           </span>
         </div>
         <div class="flex flex-col gap-1 px-2 py-4 items-center justify-center h-full">
-          <span class="flex items-center justify-center gap-1 transition-all group-hover:translate-y-0 translate-y-7 opacity-0 group-hover:opacity-100 duration-400"
+          <span class="flex items-center justify-center gap-1 transition-all group-hover:translate-y-0 translate-y-7 opacity-0 group-hover:opacity-100 duration-300"
             :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-gray-400'"
             style="min-height:48px;"
           >
-            <component :is="iconMap.Version" class="w-8 h-8" :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-gray-400'" />
+            <component :is="iconMap.Version" class="w-6 h-6" :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-neutral-300'" />
           </span>
           <span class="font-semibold break-all text-xs flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
             :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-gray-700 dark:text-white'"
@@ -75,11 +77,11 @@
           </span>
         </div>
         <div class="flex flex-col gap-1 px-2 py-4 items-center justify-center h-full ">
-          <span class="flex items-center justify-center gap-1 transition-all group-hover:translate-y-0 translate-y-7 opacity-0 group-hover:opacity-100 duration-400"
+          <span class="flex items-center justify-center gap-1 transition-all group-hover:translate-y-0 translate-y-7 opacity-0 group-hover:opacity-100 duration-450"
             :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-gray-400'"
             style="min-height:48px;"
           >
-            <component :is="iconMap.StartUpTime" class="w-8 h-8" :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-gray-400'" />
+            <component :is="iconMap.StartUpTime" class="w-6 h-6" :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-neutral-300'" />
           </span>
           <span class="font-semibold break-all text-xs flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
             :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-gray-700 dark:text-white'"
@@ -87,7 +89,7 @@
             {{ formatDate(info.StartUpTime) }}
           </span>
         </div>
-        <div class="col-span-3 mt-2 pt-2 flex flex-col gap-1 px-2">
+        <div class="col-span-3 mt-1 pt-2 flex flex-col gap-1 px-2 items-center">
           <span class="font-semibold break-all text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200"
             :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-gray-700 dark:text-white'"
           >
@@ -99,12 +101,12 @@
     <!-- Status icon in bottom right -->
     <span
       :class="[
-        'flex items-center justify-center w-full transition-all duration-200',
-        hovering ? 'opacity-0 translate-y-1' : 'opacity-100 -translate-y-4',
+        'flex items-center justify-end w-full transition-all duration-200',
+        hovering ? 'opacity-0 translate-y-1' : 'opacity-100',
         info.Status === 'Stopped' ? 'text-neutral-500' : 'text-neutral-200'
       ]"
     >
-      <CheckIcon v-if="info.Status === 'Healthy'" class="h-10 w-10" />
+      <CheckCircleIcon v-if="info.Status === 'Healthy'" class="h-10 w-10" />
       <ExclamationTriangleIcon v-else class="h-10 w-10" />
     </span>
   </div>
@@ -118,7 +120,7 @@ import {
   TagIcon,
   ClockIcon,
   ServerIcon,
-  CheckIcon,
+  CheckCircleIcon,
   ExclamationTriangleIcon,
 } from '@heroicons/vue/24/outline'
 

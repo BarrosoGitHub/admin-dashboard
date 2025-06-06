@@ -37,6 +37,46 @@ const templateData = ref({});
 const pendingToShow = ref(null);
 const activeModal = ref(null); // 'opt', 'ui', 'appInfo', or null
 
+// --- Persistence helpers ---
+function persistModalState() {
+  const state = {
+    activeModal: activeModal.value,
+    showOPTConfiguration: showOPTConfiguration.value,
+    showUserInterfaceConfig: showUserInterfaceConfig.value,
+    showAppInfoCard: showAppInfoCard.value,
+    optConfiguration: optConfiguration.value,
+    userInterfaceConfig: userInterfaceConfig.value,
+    appInfoData: appInfoData.value,
+  };
+  localStorage.setItem('modalState', JSON.stringify(state));
+}
+
+function restoreModalState() {
+  const stateStr = localStorage.getItem('modalState');
+  if (!stateStr) return;
+  try {
+    const state = JSON.parse(stateStr);
+    activeModal.value = state.activeModal;
+    showOPTConfiguration.value = state.showOPTConfiguration;
+    showUserInterfaceConfig.value = state.showUserInterfaceConfig;
+    showAppInfoCard.value = state.showAppInfoCard;
+    optConfiguration.value = state.optConfiguration;
+    userInterfaceConfig.value = state.userInterfaceConfig;
+    appInfoData.value = state.appInfoData;
+  } catch {}
+}
+
+// Watchers to persist state
+watch([
+  activeModal,
+  showOPTConfiguration,
+  showUserInterfaceConfig,
+  showAppInfoCard,
+  optConfiguration,
+  userInterfaceConfig,
+  appInfoData
+], persistModalState, { deep: true });
+
 function openConfigModal() {
   showConfigModal.value = true;
 }
@@ -162,6 +202,27 @@ onMounted(() => {
   setTimeout(() => {
     sidebarOpen.value = true;
   }, 150); // Adjust delay as needed for effect
+
+  // Restore modal state on refresh
+  restoreModalState();
+
+  // Show dashboard if coming from login
+  if (localStorage.getItem('showDashboardOnHome') === 'true') {
+    localStorage.removeItem('showDashboardOnHome');
+    // Fetch dashboard data (same as handleDashboardClick in Sidebar)
+    const token = localStorage.getItem('jwt');
+    import('axios').then(({ default: axios }) => {
+      axios.get('http://localhost:5087/info/services', {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      })
+        .then(response => {
+          handleDashboard(response.data);
+        })
+        .catch(() => {
+          handleDashboard([]);
+        });
+    });
+  }
 });
 </script>
 
@@ -211,17 +272,16 @@ onMounted(() => {
           v-if="activeModal === 'appInfo' && showAppInfoCard"
           id="popup-modal"
           tabindex="-1"
-          class="fixed top-0 right-0 left-0 z-50 flex justify-center items-center h-full pointer-events-none"
+          :class="['appinfo-modal-transition', { 'ml-64': sidebarOpen } ]"
+          style="position: absolute; top: 64px; left: 0; z-index: 50; max-width: calc(100vw - 16rem); pointer-events: none; overflow-x: auto;"
         >
-          <div class="relative p-2 pointer-events-auto">
-            <div class="text-center">
-              <div class="grid grid-cols-1 md:grid-cols-3 internal-grid-borders">
-                <AppInfoCard
-                  v-for="(info, idx) in appInfoData"
-                  :key="idx"
-                  :info="info"
-                />
-              </div>
+          <div class="relative p-4 pointer-events-auto w-fit max-w-9xl" style="margin-left: 0;">
+            <div class="grid grid-cols-1 md:grid-cols-3 internal-grid-borders">
+              <AppInfoCard
+                v-for="(info, idx) in appInfoData"
+                :key="idx"
+                :info="info"
+              />
             </div>
           </div>
         </div>

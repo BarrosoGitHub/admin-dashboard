@@ -181,6 +181,8 @@ async function handleLogin() {
       if (vantaEffect) {
         vantaAnimFrame = requestAnimationFrame(animateVantaReduction);
       }
+      // Set flag to show dashboard after login
+      localStorage.setItem('showDashboardOnHome', 'true');
       setTimeout(() => {
         router.push('/home');
       }, 500); // Match the transition duration

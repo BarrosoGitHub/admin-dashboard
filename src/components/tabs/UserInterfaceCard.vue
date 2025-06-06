@@ -86,8 +86,8 @@ function removeGradeColor(idx) {
   <div v-if="props.show" class="py-10 px-30 ">
     <div class="w-full bg-white rounded-2xl shadow-inner bg-modal-color border border-color flex flex-col">
       <!-- Top line with label -->
-      <div class="w-full flex items-center border-b border-color px-10 py-4 mb-2">
-        <span class="text-lg font-semibold text-gray-900 dark:text-white tracking-wide">User Interface</span>
+      <div class="w-full flex items-center border-b border-color px-8 py-4 mb-2">
+        <span class="text-xl font-semibold text-gray-900 dark:text-white tracking-wide">User Interface</span>
       </div>
       <div class="flex flex-1 min-h-0">
         <!-- Tabs on the left (only one tab for this object) -->

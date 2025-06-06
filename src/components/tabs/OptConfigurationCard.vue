@@ -132,8 +132,8 @@ function booleanFields(obj) {
   <div v-if="props.show" class="py-10 px-30 ">
     <div class="w-full  bg-white rounded-2xl shadow-inner bg-modal-color border border-color flex flex-col">
       <!-- Top line with label -->
-      <div class="w-full flex items-center border-b border-color px-5 py-4 mb-2">
-        <span class="text-lg font-semibold text-gray-900 dark:text-white tracking-wide">OPT Configuration</span>
+      <div class="w-full flex items-center border-b border-color px-8 py-4 mb-2">
+        <span class="text-xl font-semibold text-gray-900 dark:text-white tracking-wide">OPT Configuration</span>
         <div class="justify-end flex-1 flex items-start">
           <SearchBar
             v-model="searchValue"
