@@ -1,76 +1,131 @@
 <template>
+  <div>
   <div
-    class="bg-white rounded-2xl shadow-inner bg-modal-color border border-color flex flex-col transition-all duration-300 overflow-hidden m-5"
-    :class="{ 'max-h-16 cursor-pointer': closed, 'max-h-[600px]': !closed }"
-    @click="closed ? openCard() : null"
-    style="min-height: 3.5rem"
+    class="bg-modal-color-gradient rounded-3xl shadow-lg flex flex-col transition-all duration-300 overflow-hidden m-5 p-4 min-w-[300px] min-h-[120px] max-w-lg relative group"
+    style="min-height: 3.5rem;"
+    @mouseenter="hovering = true"
+    @mouseleave="hovering = false"
   >
     <div
-      class="w-full flex items-center px-4 py-2.5 m-2 justify-between cursor-pointer select-none"
-      @click.stop="closed = !closed"
-      :aria-expanded="!closed"
+      class="w-full flex items-center justify-between cursor-pointer select-none mb-3"
+      :aria-expanded="true"
       :aria-controls="'app-info-body'"
       role="button"
       tabindex="0"
     >
-      <span class="font-semibold text-gray-900 dark:text-white flex items-center">
-        <component :is="iconMap['Id']" class="w-5 h-5 mr-2" />
-        {{ info.Id }}
-      </span>
-      <span class="font-semibold text-gray-900 dark:text-white flex items-center">
-        <component :is="iconMap['Status']" class="w-5 h-5 mr-2" />
-        Status: {{ info.Status }}
-      </span>
-      <svg
-        class="w-2.5 h-2.5 ml-2 transition-transform duration-200"
-        :class="closed ? '' : 'rotate-180'"
-        fill="none"
-        viewBox="0 0 10 6"
-        stroke="white"
-        stroke-width="2"
-      >
-        <path stroke-linecap="round" stroke-linejoin="round" d="m1 1 4 4 4-4" />
-      </svg>
-    </div>
-    <div v-show="!closed"
-      class="bg-white rounded-2xl shadow-inner modal-color-dark border border-color-light overflow-hidden m-2"
-      style="min-height: 3.5rem"
-    >
-      <div class="grid grid-cols-1 md:grid-cols-1 gap-x-10 gap-y-2 p-4">
-        <div class="font-semibold text-gray-900 dark:text-white flex items-center">
-          <component :is="iconMap['Hash']" class="w-5 h-5 mr-2" />
-          <span class="font-semibold">Hash:</span> {{ info.Hash }}
+      <div class="contents items-center">
+        <div class="w-10 h-10 rounded-full bg-neutral-300 contents items-center justify-center shadow ">
+          <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" />
+          </svg>
         </div>
-        <div class="font-semibold text-gray-900 dark:text-white flex items-center">
-          <component :is="iconMap['Version']" class="w-5 h-5 mr-2" />
-          <span class="font-semibold">Version:</span> {{ info.Version }}
-        </div>
-        <div class="font-semibold text-gray-900 dark:text-white flex items-center">
-          <component :is="iconMap['StartUpTime']" class="w-5 h-5 mr-2" />
-          <span class="font-semibold">Start Up Time:</span>
-          {{ formatDate(info.StartUpTime) }}
-        </div>
-        <div class="font-semibold text-gray-900 dark:text-white flex items-center">
-          <component :is="iconMap['Message']" class="w-5 h-5 mr-2" />
-          <span class="font-semibold">Message:</span> {{ info.Message }}
+        <div style="min-width: 0; min-height: 0; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; width: 100%; height: 2.5em;"
+          :class="[
+            'p-2 transition-all duration-300',
+            hovering ? 'items-center justify-center' : '',
+            info.Status === 'Stopped' ? 'text-neutral-500' : 'text-neutral-200'
+          ]"
+        >
+          <div class="font-thin leading-tight max-w-full my-2 transition-all duration-200"
+            :class="['py-2',
+              hovering ? 'text-lg ' : 'text-2xl ',
+              info.Status === 'Stopped' ? 'text-neutral-500 dark:text-neutral-500' : 'text-neutral-200'
+            ]"
+            style="line-height: 1; height: 1.2em;"
+          >{{ info.Id }}</div>
+          <div class="leading-tight max-w-full transition-all duration-200"
+            :class="[
+              hovering ? 'text-sm' : 'text-md',
+              info.Status === 'Stopped' ? 'text-neutral-500' : 'text-neutral-300'
+            ]"
+            style="line-height: 1; height: 1.3em;"
+          >Status: <span :class="(info.Status === 'Stopped' ? 'text-neutral-500' : 'text-neutral-300')">{{ info.Status }}</span></div>
         </div>
       </div>
     </div>
+    <transition name="fade-slide">
+      <div
+        class="grid grid-cols-3 gap-x-4 gap-y-2 text-xs group"
+        style="min-height: 80px; max-height: 100px;"
+      >
+        <div class="flex flex-col gap-1 px-2 py-4 items-center justify-center h-full">
+          <span class="flex items-center justify-center gap-1 transition-all group-hover:translate-y-0 translate-y-7 opacity-0 group-hover:opacity-100 duration-400"
+            :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-gray-400'"
+            style="min-height:48px;"
+          >
+            <component :is="iconMap.Hash" class="w-8 h-8" :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-gray-400'" />
+          </span>
+          <span class="font-semibold break-all text-xs flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-gray-700 dark:text-white'"
+          >
+            {{ info.Hash }}
+          </span>
+        </div>
+        <div class="flex flex-col gap-1 px-2 py-4 items-center justify-center h-full">
+          <span class="flex items-center justify-center gap-1 transition-all group-hover:translate-y-0 translate-y-7 opacity-0 group-hover:opacity-100 duration-400"
+            :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-gray-400'"
+            style="min-height:48px;"
+          >
+            <component :is="iconMap.Version" class="w-8 h-8" :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-gray-400'" />
+          </span>
+          <span class="font-semibold break-all text-xs flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-gray-700 dark:text-white'"
+          >
+            {{ info.Version }}
+          </span>
+        </div>
+        <div class="flex flex-col gap-1 px-2 py-4 items-center justify-center h-full ">
+          <span class="flex items-center justify-center gap-1 transition-all group-hover:translate-y-0 translate-y-7 opacity-0 group-hover:opacity-100 duration-400"
+            :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-gray-400'"
+            style="min-height:48px;"
+          >
+            <component :is="iconMap.StartUpTime" class="w-8 h-8" :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-gray-400'" />
+          </span>
+          <span class="font-semibold break-all text-xs flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-gray-700 dark:text-white'"
+          >
+            {{ formatDate(info.StartUpTime) }}
+          </span>
+        </div>
+        <div class="col-span-3 mt-2 pt-2 flex flex-col gap-1 px-2">
+          <span class="font-semibold break-all text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-gray-700 dark:text-white'"
+          >
+            {{ info.Message }}
+          </span>
+        </div>
+      </div>
+    </transition>
+    <!-- Status icon in bottom right -->
+    <span
+      :class="[
+        'flex items-center justify-center w-full transition-all duration-200',
+        hovering ? 'opacity-0 translate-y-1' : 'opacity-100 -translate-y-4',
+        info.Status === 'Stopped' ? 'text-neutral-500' : 'text-neutral-200'
+      ]"
+    >
+      <CheckIcon v-if="info.Status === 'Healthy'" class="h-10 w-10" />
+      <ExclamationTriangleIcon v-else class="h-10 w-10" />
+    </span>
   </div>
+  </div>
+
 </template>
 
 <script setup>
 import { defineProps, ref } from "vue";
-import { Cog6ToothIcon, ServerStackIcon, DeviceTabletIcon, CurrencyEuroIcon, GlobeAltIcon, BuildingStorefrontIcon, ClockIcon } from '@heroicons/vue/24/outline';
+import {
+  TagIcon,
+  ClockIcon,
+  ServerIcon,
+  CheckIcon,
+  ExclamationTriangleIcon,
+} from '@heroicons/vue/24/outline'
 
 const iconMap = {
-  Service: ServerStackIcon,
-  Id: Cog6ToothIcon,
-  Status: Cog6ToothIcon,
-  Hash: DeviceTabletIcon,
-  Version: CurrencyEuroIcon,
+  Version: TagIcon,
   StartUpTime: ClockIcon,
-  Message: GlobeAltIcon,
+  Hash: ServerIcon
 };
 
 const props = defineProps({
@@ -80,14 +135,7 @@ const props = defineProps({
   },
 });
 
-const closed = ref(false);
-
-function closeCard() {
-  closed.value = true;
-}
-function openCard() {
-  closed.value = false;
-}
+const hovering = ref(false);
 
 function formatDate(date) {
   if (!date) return "";
@@ -95,3 +143,12 @@ function formatDate(date) {
   return d.toLocaleString();
 }
 </script>
+
+<style scoped>
+.bg-white {
+  background: #fff;
+}
+.shadow-md {
+  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.06);
+}
+</style>

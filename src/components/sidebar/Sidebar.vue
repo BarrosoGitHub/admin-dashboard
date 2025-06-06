@@ -5,7 +5,7 @@
   <!-- Sidebar -->
   <aside
     :class=" [
-      'fixed top-0 left-0 z-40 w-64 h-screen p-4 overflow-y-auto bg-sidebar-color',
+      'fixed top-0 left-0 z-40 w-64 h-screen p-4 overflow-y-auto bg-sidebar-color-gradient',
       'transition-transform duration-200 ease-in-out ',
       showSidebar ? 'translate-x-0 sidebar-shadow' : '-translate-x-full'
     ]"

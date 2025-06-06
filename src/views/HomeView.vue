@@ -166,7 +166,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="bg-website-color min-h-screen">
+  <div class="bg-website-color-gradient min-h-screen">
     <Sidebar
       :show="sidebarOpen"
       @show-configuration-modal="openConfigModal"
@@ -206,25 +206,26 @@ onMounted(() => {
           @update="handleUpdateUserInterfaceConfig"
         />
       </transition>
-      <div
-        v-if="activeModal === 'appInfo' && showAppInfoCard"
-        id="popup-modal"
-        tabindex="-1"
-        class="fixed top-0 right-0 left-0 z-50 flex justify-center items-center  h-full pointer-events-none"
-      >
-        <div class="relative p-2 pointer-events-auto">
-            <div class=" text-center">
-
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-7">
+      <transition name="fade-slide" mode="out-in">
+        <div
+          v-if="activeModal === 'appInfo' && showAppInfoCard"
+          id="popup-modal"
+          tabindex="-1"
+          class="fixed top-0 right-0 left-0 z-50 flex justify-center items-center h-full pointer-events-none"
+        >
+          <div class="relative p-2 pointer-events-auto">
+            <div class="text-center">
+              <div class="grid grid-cols-1 md:grid-cols-3 internal-grid-borders">
                 <AppInfoCard
                   v-for="(info, idx) in appInfoData"
                   :key="idx"
                   :info="info"
                 />
               </div>
+            </div>
           </div>
         </div>
-      </div>
+      </transition>
       <!-- <Footer /> -->
     </div>
   </div>
@@ -254,5 +255,34 @@ onMounted(() => {
 .fade-slide-leave-from {
   opacity: 1;
   transform: translateY(0);
+}
+
+.internal-grid-borders {
+  position: relative;
+}
+.internal-grid-borders > * {
+  position: relative;
+}
+@media (min-width: 768px) {
+  .internal-grid-borders > :not(:nth-child(3n))::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 2px;
+    height: 100%;
+    background: #292929; /* Tailwind gray-300 */
+    z-index: 10;
+  }
+  .internal-grid-borders > :nth-child(-n+3)::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 2px;
+    background: #292929;
+    z-index: 10;
+  }
 }
 </style>
