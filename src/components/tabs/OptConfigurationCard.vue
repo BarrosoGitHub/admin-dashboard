@@ -1,6 +1,7 @@
 <script setup>
 import { ref, defineProps, watch, computed, defineEmits } from "vue";
 import Input from "../inputs/Input.vue";
+import InputTransparent from "../inputs/InputTransparent.vue";
 import SearchBar from "../searchbar/SearchBar.vue";
 import enumOptions, {
   getEnumOptions as getEnumOptionsHelper,
@@ -129,8 +130,8 @@ function booleanFields(obj) {
 </script>
 
 <template>
-  <div v-if="props.show" class="py-10 px-30 ">
-    <div class="w-full  bg-white rounded-2xl shadow-inner bg-modal-color border border-color flex flex-col">
+  <div v-if="props.show" class="py-10 px-100 ">
+    <div class="w-full rounded-2xl shadow-inner bg-modal-color border border-color flex flex-col">
       <!-- Top line with label -->
       <div class="w-full flex items-center border-b border-color px-8 py-4 mb-2">
         <span class="text-xl font-semibold text-gray-900 dark:text-white tracking-wide">OPT Configuration</span>
@@ -152,11 +153,12 @@ function booleanFields(obj) {
           <li v-for="key in Object.keys(filteredData)" :key="key" class="flex">
             <button
               type="button"
-              class="flex items-center flex-1 text-left px-2 py-2 rounded-md my-1.5 mx-3 cursor-pointer"
-              :class="activeTab === key
-                ? 'text-white bg-neutral-700 font-semibold'
-                : 'text-gray-700 dark:text-gray-300'"
+              class="tab-animate flex items-center flex-1 text-left px-2 py-1.5 my-1.5 mx-3 cursor-pointer"
+              :class="[activeTab === key
+                ? 'active text-white font-semibold'
+                : 'text-neutral-700 dark:text-neutral-500']"
               @click="activeTab = key"
+              style="position:relative;"
             >
               <component
                 :is="iconMap[key] || Cog6ToothIcon"
@@ -167,6 +169,7 @@ function booleanFields(obj) {
                   .replace(/configuration/i, "")
                   .trim()
               }}
+              <span class="tab-border"></span>
             </button>
           </li>
         </ul>
@@ -184,54 +187,25 @@ function booleanFields(obj) {
             <template
               v-if="filteredData[activeTab] && typeof filteredData[activeTab] === 'object'"
             >
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-x-10 gap-y-2">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-2">
                 <!-- Non-boolean fields first -->
                 <template
                   v-for="(propValue, propKey) in nonBooleanFields(filteredData[activeTab])"
                   :key="propKey"
                 >
-                  <div>
-                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{
-                      formatLabel(propKey)
-                    }}</label>
-                    <!-- Enum dropdown -->
-                    <div class="grid gap-6 mb-6 shadow-sm rounded-md border input-border-color" v-if="getEnumOptions(activeTab, propKey)">
-                      <select
-                        class="bg-gray-50 text-gray-900 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pl-5 bg-input-color dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        v-model="localData[activeTab][propKey]"
-                      >
-                        <option
-                          v-if="getEnumOptions(activeTab, propKey).find(o => o.value === localData[activeTab][propKey])"
-                          :value="localData[activeTab][propKey]"
-                        >
-                          {{
-                            getEnumOptions(activeTab, propKey).find(o => o.value === localData[activeTab][propKey])?.label
-                          }}
-                        </option>
-                        <option disabled v-if="getEnumOptions(activeTab, propKey).length > 1">──────────</option>
-                        <option
-                          v-for="option in getEnumOptions(activeTab, propKey).filter(o => o.value !== localData[activeTab][propKey])"
-                          :key="option.value"
-                          :value="option.value"
-                        >
-                          {{ option.label }}
-                        </option>
-                      </select>
-                    </div>
-                    <!-- Default input -->
-                    <Input
-                      v-else
-                      :label="null"
-                      :placeholder="String(propValue)"
-                      v-model="localData[activeTab][propKey]"
-                      class="w-full"
-                    />
-                  </div>
+                  <InputTransparent
+                    :label="formatLabel(propKey)"
+                    :placeholder="String(propValue)"
+                    v-model="localData[activeTab][propKey]"
+                    :type="getEnumOptions(activeTab, propKey) ? 'select' : 'text'"
+                    :options="getEnumOptions(activeTab, propKey) || undefined"
+                    class="w-full m-1"
+                  />
                 </template>
                 <!-- Separator line before booleans, only if there are boolean fields -->
                 <template v-if="Object.keys(booleanFields(filteredData[activeTab])).length">
-                  <div class="col-span-full">
-                    <hr class="my-4 border border-color" />
+                  <div class="my-6 col-span-full">
+                    <hr class="my-4 border border-color hidden" />
                   </div>
                 </template>
                 <!-- Boolean fields at the end, with slider (no icon) -->
@@ -292,3 +266,25 @@ function booleanFields(obj) {
     </div>
   </div>
 </template>
+
+<style scoped>
+.tab-animate {
+  position: relative;
+  transition: color 0.2s;
+}
+.tab-animate .tab-border {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  background: #d1d5db; /* neutral-300 */
+  border-radius: 2px;
+  transform: scaleX(0);
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  pointer-events: none;
+}
+.tab-animate.active .tab-border {
+  transform: scaleX(1);
+}
+</style>

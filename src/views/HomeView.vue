@@ -99,15 +99,20 @@ function handleOptConfiguration(data) {
     setTimeout(() => {
       optConfiguration.value = data;
       activeModal.value = "opt";
-      showOPTConfiguration.value = true;
+      // Delay showing the modal to match the transition delay
+      setTimeout(() => {
+        showOPTConfiguration.value = true;
+      }, 100);
       showAppInfoCard.value = false;
     }, 0);
   } else {
     optConfiguration.value = data;
     activeModal.value = "opt";
-    showOPTConfiguration.value = true;
     showUserInterfaceConfig.value = false;
     showAppInfoCard.value = false;
+    setTimeout(() => {
+      showOPTConfiguration.value = true;
+    }, 100);
   }
 }
 
@@ -119,15 +124,21 @@ function handleUserInterfaceConfig(data) {
     setTimeout(() => {
       userInterfaceConfig.value = data;
       activeModal.value = "ui";
-      showUserInterfaceConfig.value = true;
+      // Delay showing the modal to match the transition delay
+      setTimeout(() => {
+        showUserInterfaceConfig.value = true;
+      }, 100);
+      
       showAppInfoCard.value = false;
-    }, 0);
+    }, 100);
   } else {
     userInterfaceConfig.value = data;
     activeModal.value = "ui";
-    showUserInterfaceConfig.value = true;
     showOPTConfiguration.value = false;
     showAppInfoCard.value = false;
+    setTimeout(() => {
+        showUserInterfaceConfig.value = true;
+      }, 100);
   }
 }
 
@@ -138,6 +149,8 @@ function handleUpdateConfiguration(data) {
     newOptConfiguration.value.config,
     "opt"
   );
+    showOPTConfiguration.value = true;
+
 }
 
 function handleUpdateUserInterfaceConfig(data) {
@@ -147,21 +160,9 @@ function handleUpdateUserInterfaceConfig(data) {
     newUserInterfaceConfig.value.config,
     "ui"
   );
-}
-
-function onOptConfigAfterLeave() {
-  if (pendingToShow.value?.type === "ui") {
     showUserInterfaceConfig.value = true;
-    userInterfaceConfig.value = pendingToShow.value.data;
-    pendingToShow.value = null;
-  }
-}
-function onUiConfigAfterLeave() {
-  if (pendingToShow.value?.type === "opt") {
-    showOPTConfiguration.value = true;
-    optConfiguration.value = pendingToShow.value.data;
-    pendingToShow.value = null;
-  }
+
+  
 }
 
 const stepperSteps = [
@@ -188,15 +189,29 @@ watch(showOPTConfigurationTemplate, (val) => {
 function handleDashboard(data) {
   appInfoData.value = Array.isArray(data) ? data : [data];
   activeModal.value = "appInfo";
-  showAppInfoCard.value = true;
   showOPTConfiguration.value = false;
   showUserInterfaceConfig.value = false;
+  showAppInfoCard.value = true;
+
 }
 
 function closeAppInfoCard() {
   showAppInfoCard.value = false;
   activeModal.value = null;
 }
+
+function resetAllModals() {
+  activeModal.value = null;
+  showOPTConfiguration.value = false;
+  showUserInterfaceConfig.value = false;
+  showAppInfoCard.value = false;
+  optConfiguration.value = null;
+  userInterfaceConfig.value = null;
+  appInfoData.value = {};
+}
+
+// Listen for logout event (dispatched from Avatar.vue)
+window.addEventListener('sidebar-close', resetAllModals);
 
 onMounted(() => {
   setTimeout(() => {
@@ -250,7 +265,7 @@ onMounted(() => {
         @submit="showOPTConfigurationTemplate = false"
       />
 
-      <transition name="fade-slide" @after-leave="onOptConfigAfterLeave">
+      <transition name="fade-slide">
         <ConfigurationCard
           v-if="activeModal === 'opt' && showOPTConfiguration"
           :show="showOPTConfiguration"
@@ -259,7 +274,7 @@ onMounted(() => {
         />
       </transition>
 
-      <transition name="fade-slide" @after-leave="onUiConfigAfterLeave">
+      <transition name="fade-slide">
         <UserInterfaceCard
           v-if="activeModal === 'ui' && showUserInterfaceConfig"
           :show="showUserInterfaceConfig"
@@ -267,13 +282,12 @@ onMounted(() => {
           @update="handleUpdateUserInterfaceConfig"
         />
       </transition>
-      <transition name="fade-slide" mode="out-in">
+      <transition name="fade-slide">
         <div
           v-if="activeModal === 'appInfo' && showAppInfoCard"
           id="popup-modal"
           tabindex="-1"
-          :class="['appinfo-modal-transition', { 'ml-64': sidebarOpen } ]"
-          style="position: absolute; top: 64px; left: 0; z-index: 50; max-width: calc(100vw - 16rem); pointer-events: none; overflow-x: auto;"
+          :class="['appinfo-modal-transition']"
         >
           <div class="relative p-4 pointer-events-auto w-fit max-w-9xl" style="margin-left: 0;">
             <div class="grid grid-cols-1 md:grid-cols-3 internal-grid-borders">
@@ -304,7 +318,7 @@ onMounted(() => {
 <style scoped>
 .fade-slide-enter-active,
 .fade-slide-leave-active {
-  transition: opacity 0.25s, transform 0.25s;
+  transition: opacity 0.1s, transform 0.1s;
 }
 .fade-slide-enter-from,
 .fade-slide-leave-to {
@@ -315,6 +329,9 @@ onMounted(() => {
 .fade-slide-leave-from {
   opacity: 1;
   transform: translateY(0);
+}
+.fade-slide-enter-active {
+  transition-delay: 0.1s;
 }
 
 .internal-grid-borders {

@@ -119,7 +119,7 @@ import { defineProps, ref } from "vue";
 import {
   TagIcon,
   ClockIcon,
-  ServerIcon,
+  CpuChipIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
 } from '@heroicons/vue/24/outline'
@@ -127,7 +127,7 @@ import {
 const iconMap = {
   Version: TagIcon,
   StartUpTime: ClockIcon,
-  Hash: ServerIcon
+  Hash: CpuChipIcon
 };
 
 const props = defineProps({
