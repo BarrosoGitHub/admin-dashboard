@@ -270,9 +270,11 @@ watch(
 // --- Use axios for HTTP POST ---
 async function submitForm() {
   try {
+    const token = localStorage.getItem('jwt');
     const response = await axios.post(
       "http://localhost:5087/configuration/opt/new",
-      clone(fields)
+      clone(fields),
+      token ? { headers: { Authorization: `Bearer ${token}` } } : {}
     );
     emit("submit", response.data);
   } catch (error) {

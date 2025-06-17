@@ -130,8 +130,8 @@ function booleanFields(obj) {
 </script>
 
 <template>
-  <div v-if="props.show" class="py-10 px-100 ">
-    <div class="w-full rounded-2xl shadow-inner bg-modal-color border border-color flex flex-col">
+  <div v-if="props.show" class="py-10 px-25 ">
+    <div class="w-full min-w-[320px] max-w-full md:w-[60vw] md:min-w-[600px] md:max-w-[70vw] rounded-2xl shadow-inner bg-modal-color border border-color flex flex-col">
       <!-- Top line with label -->
       <div class="w-full flex items-center border-b border-color px-8 py-4 mb-2">
         <span class="text-xl font-semibold text-gray-900 dark:text-white tracking-wide">OPT Configuration</span>
@@ -147,7 +147,7 @@ function booleanFields(obj) {
       <div class="flex flex-1 min-h-0">
         <!-- Tabs on the left -->
         <ul
-          class="flex flex-col w-65 min-w-44 text-sm font-medium text-left text-white-900 dark:text-white-900 py-2 px-5"
+          class="flex flex-col w-67 min-w-44 text-sm font-medium text-left text-white-900 dark:text-white-900 py-2 px-5"
           role="tablist"
         >
           <li v-for="key in Object.keys(filteredData)" :key="key" class="flex">
@@ -187,7 +187,7 @@ function booleanFields(obj) {
             <template
               v-if="filteredData[activeTab] && typeof filteredData[activeTab] === 'object'"
             >
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-2">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-x-15 gap-y-2">
                 <!-- Non-boolean fields first -->
                 <template
                   v-for="(propValue, propKey) in nonBooleanFields(filteredData[activeTab])"

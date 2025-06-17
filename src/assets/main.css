@@ -10,15 +10,15 @@
 }
 
 .bg-modal-color {
-  background: linear-gradient(135deg, #2f2f2f 0%, #363636 100%);
+  background: linear-gradient(135deg, #363636 0%, #363636 100%);
 }
 
   .bg-modal-color-gradient {
-    background: linear-gradient(135deg, #2f2f2f 0%, #2f2f2f 49%, #363636 49%, #363636 100%);
+    background: linear-gradient(135deg, #363636 0%, #363636 49%, #2f2f2f 49%, #2f2f2f 100%);
     transition: background 0.4s, background-position 0.4s, background-size 0.4s, background-color 0.4s;
   }
   .bg-modal-color-gradient:hover {
-    background: linear-gradient(135deg, #2f2f2f 0%, #2f2f2f 80%, #363636 80%, #363636 100%);
+    background: linear-gradient(135deg, #363636 0%, #363636 80%, #2f2f2f 80%, #2f2f2f 100%);
   }
 
 .bg-website-color {

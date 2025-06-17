@@ -48,11 +48,11 @@ function persistModalState() {
     userInterfaceConfig: userInterfaceConfig.value,
     appInfoData: appInfoData.value,
   };
-  localStorage.setItem('modalState', JSON.stringify(state));
+  localStorage.setItem("modalState", JSON.stringify(state));
 }
 
 function restoreModalState() {
-  const stateStr = localStorage.getItem('modalState');
+  const stateStr = localStorage.getItem("modalState");
   if (!stateStr) return;
   try {
     const state = JSON.parse(stateStr);
@@ -67,15 +67,19 @@ function restoreModalState() {
 }
 
 // Watchers to persist state
-watch([
-  activeModal,
-  showOPTConfiguration,
-  showUserInterfaceConfig,
-  showAppInfoCard,
-  optConfiguration,
-  userInterfaceConfig,
-  appInfoData
-], persistModalState, { deep: true });
+watch(
+  [
+    activeModal,
+    showOPTConfiguration,
+    showUserInterfaceConfig,
+    showAppInfoCard,
+    optConfiguration,
+    userInterfaceConfig,
+    appInfoData,
+  ],
+  persistModalState,
+  { deep: true }
+);
 
 function openConfigModal() {
   showConfigModal.value = true;
@@ -128,7 +132,7 @@ function handleUserInterfaceConfig(data) {
       setTimeout(() => {
         showUserInterfaceConfig.value = true;
       }, 100);
-      
+
       showAppInfoCard.value = false;
     }, 100);
   } else {
@@ -137,8 +141,8 @@ function handleUserInterfaceConfig(data) {
     showOPTConfiguration.value = false;
     showAppInfoCard.value = false;
     setTimeout(() => {
-        showUserInterfaceConfig.value = true;
-      }, 100);
+      showUserInterfaceConfig.value = true;
+    }, 100);
   }
 }
 
@@ -149,8 +153,7 @@ function handleUpdateConfiguration(data) {
     newOptConfiguration.value.config,
     "opt"
   );
-    showOPTConfiguration.value = true;
-
+  showOPTConfiguration.value = true;
 }
 
 function handleUpdateUserInterfaceConfig(data) {
@@ -160,9 +163,7 @@ function handleUpdateUserInterfaceConfig(data) {
     newUserInterfaceConfig.value.config,
     "ui"
   );
-    showUserInterfaceConfig.value = true;
-
-  
+  showUserInterfaceConfig.value = true;
 }
 
 const stepperSteps = [
@@ -192,7 +193,6 @@ function handleDashboard(data) {
   showOPTConfiguration.value = false;
   showUserInterfaceConfig.value = false;
   showAppInfoCard.value = true;
-
 }
 
 function closeAppInfoCard() {
@@ -211,7 +211,7 @@ function resetAllModals() {
 }
 
 // Listen for logout event (dispatched from Avatar.vue)
-window.addEventListener('sidebar-close', resetAllModals);
+window.addEventListener("sidebar-close", resetAllModals);
 
 onMounted(() => {
   setTimeout(() => {
@@ -222,15 +222,16 @@ onMounted(() => {
   restoreModalState();
 
   // Show dashboard if coming from login
-  if (localStorage.getItem('showDashboardOnHome') === 'true') {
-    localStorage.removeItem('showDashboardOnHome');
+  if (localStorage.getItem("showDashboardOnHome") === "true") {
+    localStorage.removeItem("showDashboardOnHome");
     // Fetch dashboard data (same as handleDashboardClick in Sidebar)
-    const token = localStorage.getItem('jwt');
-    import('axios').then(({ default: axios }) => {
-      axios.get('http://localhost:5087/info/services', {
-        headers: token ? { Authorization: `Bearer ${token}` } : {}
-      })
-        .then(response => {
+    const token = localStorage.getItem("jwt");
+    import("axios").then(({ default: axios }) => {
+      axios
+        .get("http://localhost:5087/info/services", {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        })
+        .then((response) => {
           handleDashboard(response.data);
         })
         .catch(() => {
@@ -242,7 +243,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="bg-website-color-gradient min-h-screen">
+  <div class="bg-website-color-gradient min-h-screen min-w-screen">
     <Sidebar
       :show="sidebarOpen"
       @show-configuration-modal="openConfigModal"
@@ -251,56 +252,99 @@ onMounted(() => {
       @user-interface-configuration="handleUserInterfaceConfig"
       @dashboard="handleDashboard"
     />
-    <div :class="{ 'ml-64': sidebarOpen }" class="transition-all duration-200">
-      <Navbar @sidebar-toggle="sidebarOpen = !sidebarOpen" />
-
-      <ConfigurationModal
-        :show="showConfigModal"
-        @close="showConfigModal = false"
-        @submitted="handleConfigSubmitted"
-      />
-      <ConfigurationTemplateModal
-        :show="showOPTConfigurationTemplate"
-        :data="templateData || {}"
-        @submit="showOPTConfigurationTemplate = false"
-      />
-
-      <transition name="fade-slide">
-        <ConfigurationCard
-          v-if="activeModal === 'opt' && showOPTConfiguration"
-          :show="showOPTConfiguration"
-          :data="optConfiguration || {}"
-          @update="handleUpdateConfiguration"
-        />
-      </transition>
-
-      <transition name="fade-slide">
-        <UserInterfaceCard
-          v-if="activeModal === 'ui' && showUserInterfaceConfig"
-          :show="showUserInterfaceConfig"
-          :data="userInterfaceConfig || {}"
-          @update="handleUpdateUserInterfaceConfig"
-        />
-      </transition>
-      <transition name="fade-slide">
-        <div
-          v-if="activeModal === 'appInfo' && showAppInfoCard"
-          id="popup-modal"
-          tabindex="-1"
-          :class="['appinfo-modal-transition']"
-        >
-          <div class="relative p-4 pointer-events-auto w-fit max-w-9xl" style="margin-left: 0;">
-            <div class="grid grid-cols-1 md:grid-cols-3 internal-grid-borders">
-              <AppInfoCard
-                v-for="(info, idx) in appInfoData"
-                :key="idx"
-                :info="info"
+    <div :class="['flex flex-col', sidebarOpen ? 'md:ml-64' : '']">
+      <!-- Main content and left cards -->
+      <div class="flex-1 md:flex-row">
+        <div class="flex-1">
+          <Navbar @sidebar-toggle="sidebarOpen = !sidebarOpen" />
+          <div class="flex flex-col md:flex-row md:space-x-4">
+            <div class="flex-1">
+              <ConfigurationModal
+                :show="showConfigModal"
+                @close="showConfigModal = false"
+                @submitted="handleConfigSubmitted"
               />
+              <ConfigurationTemplateModal
+                :show="showOPTConfigurationTemplate"
+                :data="templateData || {}"
+                @submit="showOPTConfigurationTemplate = false"
+              />
+              <transition name="">
+                <ConfigurationCard
+                  v-if="activeModal === 'opt' && showOPTConfiguration"
+                  :show="showOPTConfiguration"
+                  :data="optConfiguration || {}"
+                  @update="handleUpdateConfiguration"
+                />
+              </transition>
+              <transition name="">
+                <UserInterfaceCard
+                  v-if="activeModal === 'ui' && showUserInterfaceConfig"
+                  :show="showUserInterfaceConfig"
+                  :data="userInterfaceConfig || {}"
+                  @update="handleUpdateUserInterfaceConfig"
+                />
+              </transition>
             </div>
+            <div
+              v-if="appInfoData && appInfoData.length && activeModal !== 'appInfo'"
+              class="flex flex-col items-end pt-5 pr-4 mr-20 z-40 md:w-[380px] min-w-[220px] max-w-[420px]"
+              style="pointer-events: none"
+            >
+              <div style="pointer-events: auto; width: 100%">
+                <AppInfoCard
+                  v-for="(info, idx) in appInfoData"
+                  :key="idx"
+                  :info="info"
+                  :smallVersion="true"
+                />
+              </div>
+            </div>
+            <!-- AppInfoCards in original position when dashboard is open -->
+            <transition name="">
+              <div
+              
+                v-if="activeModal === 'appInfo' && showAppInfoCard"
+                id="popup-modal"
+                tabindex="-1"
+                :class="[
+                  'appinfo-modal-transition',
+                  'flex',
+                  'justify-center',
+                  'items-center',
+                  'w-full',
+                  'h-full',
+                  'flex flex-col', sidebarOpen ? 'md:ml-64' : ''
+                ]"
+                style="
+                  position: fixed;
+                  inset: 0;
+                  z-index: 50;
+                  background: rgba(24, 24, 24, 0.18);
+                  pointer-events: none;
+                "
+              >
+                <div
+                  class="relative p-2 md:p-4 pointer-events-auto w-full max-w-9xl flex justify-stretch items-center"
+                  style="margin-left: 0"
+                >
+                  <div
+                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-0 internal-grid-borders"
+                  >
+                    <AppInfoCard
+                      v-for="(info, idx) in appInfoData"
+                      :key="idx"
+                      :info="info"
+                      :smallVersion="false"
+                    />
+                  </div>
+                </div>
+              </div>
+            </transition>
           </div>
         </div>
-      </transition>
-      <!-- <Footer /> -->
+        <!-- AppInfoCards always visible, except when dashboard is open -->
+      </div>
     </div>
   </div>
 
@@ -316,22 +360,15 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.fade-slide-enter-active,
-.fade-slide-leave-active {
-  transition: opacity 0.1s, transform 0.1s;
-}
 .fade-slide-enter-from,
 .fade-slide-leave-to {
   opacity: 0;
-  transform: translateY(30px);
+  /* transform: translateY(30px); */
 }
 .fade-slide-enter-to,
 .fade-slide-leave-from {
   opacity: 1;
   transform: translateY(0);
-}
-.fade-slide-enter-active {
-  transition-delay: 0.1s;
 }
 
 .internal-grid-borders {
@@ -342,7 +379,7 @@ onMounted(() => {
 }
 @media (min-width: 768px) {
   .internal-grid-borders > :not(:nth-child(3n))::after {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     right: 0;
@@ -351,8 +388,8 @@ onMounted(() => {
     background: #292929; /* Tailwind gray-300 */
     z-index: 10;
   }
-  .internal-grid-borders > :nth-child(-n+3)::before {
-    content: '';
+  .internal-grid-borders > :nth-child(-n + 3)::before {
+    content: "";
     position: absolute;
     left: 0;
     bottom: 0;
@@ -360,6 +397,12 @@ onMounted(() => {
     height: 2px;
     background: #292929;
     z-index: 10;
+  }
+}
+@media (max-width: 767px) {
+  .internal-grid-borders > *::after,
+  .internal-grid-borders > *::before {
+    display: none !important;
   }
 }
 </style>

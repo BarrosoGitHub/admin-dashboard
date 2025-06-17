@@ -121,17 +121,23 @@
                   class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                   >Network segment</label
                 >
-                <!-- Network Segment input -->
-                <input
-                  v-model="form.networkSegment"
-                  type="text"
-                  name="networkSegment"
-                  id="networkSegment"
-                  class="text-gray-900 text-sm rounded-md border input-border-color block w-full p-2.5 bg-input-color dark:bg-neutral-500 dark:border-neutral-500 dark:text-white shadow-md"
-                  required
-                  pattern="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
-                  title="Please enter a valid IPv4 address (e.g., 192.168.1.1)"
-                />
+                <!-- Network Segment input with dynamic validation and checkmark -->
+                <div class="relative">
+                  <input
+                    v-model="form.networkSegment"
+                    type="text"
+                    name="networkSegment"
+                    id="networkSegment"
+                    class="text-gray-900 text-sm rounded-md border input-border-color block w-full p-2.5 bg-input-color dark:bg-neutral-500 dark:border-neutral-500 dark:text-white shadow-md pr-10"
+                    required
+                    @input="validateNetworkSegment"
+                    pattern="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
+                    title="Please enter a valid IPv4 address (e.g., 192.168.1.1)"
+                  />
+                  <svg v-if="isNetworkSegmentValid" class="absolute right-2 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
               </div>
               <div class="mt-10">
                 <button
@@ -150,7 +156,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, reactive, ref } from "vue";
+import { defineProps, defineEmits, reactive, ref, watch } from "vue";
 import axios from "axios";
 
 const props = defineProps({
@@ -166,11 +172,23 @@ const form = reactive({
   country: "",
 });
 
+const isNetworkSegmentValid = ref(false);
+
+function validateNetworkSegment() {
+  // Simple IPv4 validation
+  const value = form.networkSegment.trim();
+  isNetworkSegmentValid.value = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(value) && value.split('.').every(octet => Number(octet) >= 0 && Number(octet) <= 255);
+}
+
+watch(() => form.networkSegment, validateNetworkSegment);
+
 async function submitForm(e) {
   e.preventDefault();
   try {
+    const token = localStorage.getItem('jwt');
     const response = await axios.get("http://localhost:5087/configuration/opt/template", {
       params: { ...form },
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
     emit("submitted", response.data);
     emit("close");
