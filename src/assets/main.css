@@ -14,11 +14,11 @@
 }
 
   .bg-modal-color-gradient {
-    background: linear-gradient(135deg, #363636 0%, #363636 49%, #2f2f2f 49%, #2f2f2f 100%);
+    background: linear-gradient(135deg,  #363636 0%, #363636 60%, #333333 60%, #333333 100%);
     transition: background 0.4s, background-position 0.4s, background-size 0.4s, background-color 0.4s;
   }
   .bg-modal-color-gradient:hover {
-    background: linear-gradient(135deg, #363636 0%, #363636 80%, #2f2f2f 80%, #2f2f2f 100%);
+    background: linear-gradient(135deg, #363636 0%, #363636 80%, #333333 80%, #333333 100%);
   }
 
 .bg-website-color {

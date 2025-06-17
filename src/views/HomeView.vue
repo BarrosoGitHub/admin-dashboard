@@ -10,6 +10,7 @@ import ConfirmConfigurationChanges from "../components/Modals/ConfirmConfigurati
 import ConfigurationTemplateModal from "../components/Modals/ConfigurationTemplateModal.vue";
 import Footer from "../components/footer/Footer.vue";
 import AppInfoCard from "../components/tabs/AppInfoCard.vue";
+import NetworkConfigurationCard from "../components/tabs/NetworkConfigurationCard.vue";
 
 // State for OPT Configuration
 const showConfigModal = ref(false);
@@ -36,6 +37,10 @@ const templateData = ref({});
 // Animation control
 const pendingToShow = ref(null);
 const activeModal = ref(null); // 'opt', 'ui', 'appInfo', or null
+
+// State for Network Configuration
+const showNetworkConfiguration = ref(false);
+const networkConfiguration = ref({});
 
 // --- Persistence helpers ---
 function persistModalState() {
@@ -95,55 +100,28 @@ function showOPTConfigAddedToast() {
 }
 
 function handleOptConfiguration(data) {
-  if (activeModal.value === "ui") {
-    pendingToShow.value = null;
-    userInterfaceConfig.value = null;
-    showUserInterfaceConfig.value = false;
-    // Wait for next tick to ensure transition
-    setTimeout(() => {
-      optConfiguration.value = data;
-      activeModal.value = "opt";
-      // Delay showing the modal to match the transition delay
-      setTimeout(() => {
-        showOPTConfiguration.value = true;
-      }, 100);
-      showAppInfoCard.value = false;
-    }, 0);
-  } else {
-    optConfiguration.value = data;
-    activeModal.value = "opt";
-    showUserInterfaceConfig.value = false;
-    showAppInfoCard.value = false;
-    setTimeout(() => {
-      showOPTConfiguration.value = true;
-    }, 100);
-  }
+  optConfiguration.value = data;
+  activeModal.value = "opt";
+  showUserInterfaceConfig.value = false;
+  showAppInfoCard.value = false;
+  showOPTConfiguration.value = true;
 }
 
 function handleUserInterfaceConfig(data) {
-  if (activeModal.value === "opt") {
-    pendingToShow.value = null;
-    optConfiguration.value = null;
-    showOPTConfiguration.value = false;
-    setTimeout(() => {
-      userInterfaceConfig.value = data;
-      activeModal.value = "ui";
-      // Delay showing the modal to match the transition delay
-      setTimeout(() => {
-        showUserInterfaceConfig.value = true;
-      }, 100);
+  userInterfaceConfig.value = data;
+  activeModal.value = "ui";
+  showOPTConfiguration.value = false;
+  showAppInfoCard.value = false;
+  showUserInterfaceConfig.value = true;
+}
 
-      showAppInfoCard.value = false;
-    }, 100);
-  } else {
-    userInterfaceConfig.value = data;
-    activeModal.value = "ui";
-    showOPTConfiguration.value = false;
-    showAppInfoCard.value = false;
-    setTimeout(() => {
-      showUserInterfaceConfig.value = true;
-    }, 100);
-  }
+function handleNetworkConfiguration(data) {
+  networkConfiguration.value = data;
+  activeModal.value = "network";
+  showNetworkConfiguration.value = true;
+  showOPTConfiguration.value = false;
+  showUserInterfaceConfig.value = false;
+  showAppInfoCard.value = false;
 }
 
 function handleUpdateConfiguration(data) {
@@ -193,11 +171,6 @@ function handleDashboard(data) {
   showOPTConfiguration.value = false;
   showUserInterfaceConfig.value = false;
   showAppInfoCard.value = true;
-}
-
-function closeAppInfoCard() {
-  showAppInfoCard.value = false;
-  activeModal.value = null;
 }
 
 function resetAllModals() {
@@ -251,12 +224,16 @@ onMounted(() => {
       @opt-configuration="handleOptConfiguration"
       @user-interface-configuration="handleUserInterfaceConfig"
       @dashboard="handleDashboard"
+      @network-configuration="handleNetworkConfiguration"
     />
     <div :class="['flex flex-col', sidebarOpen ? 'md:ml-64' : '']">
       <!-- Main content and left cards -->
       <div class="flex-1 md:flex-row">
         <div class="flex-1">
           <Navbar @sidebar-toggle="sidebarOpen = !sidebarOpen" />
+          <div class="w-full flex items-start justify-start mt-2">
+            <slot name="below-navbar" />
+          </div>
           <div class="flex flex-col md:flex-row md:space-x-4">
             <div class="flex-1">
               <ConfigurationModal
@@ -285,13 +262,21 @@ onMounted(() => {
                   @update="handleUpdateUserInterfaceConfig"
                 />
               </transition>
+              <transition name="">
+                <NetworkConfigurationCard
+                  v-if="activeModal === 'network' && showNetworkConfiguration"
+                  :modelValue="networkConfiguration"
+                  @close="showNetworkConfiguration = false; activeModal = null;"
+                  @submit="showNetworkConfiguration = false; activeModal = null;"
+                />
+              </transition>
             </div>
             <div
               v-if="appInfoData && appInfoData.length && activeModal !== 'appInfo'"
-              class="flex flex-col items-end pt-5 pr-4 mr-20 z-40 md:w-[380px] min-w-[220px] max-w-[420px]"
+              class="flex flex-col items-end pt-5 pr-4 mr-20 z-40 "
               style="pointer-events: none"
             >
-              <div style="pointer-events: auto; width: 100%">
+              <div style="pointer-events: auto; ">
                 <AppInfoCard
                   v-for="(info, idx) in appInfoData"
                   :key="idx"
@@ -325,7 +310,7 @@ onMounted(() => {
                 "
               >
                 <div
-                  class="relative p-2 md:p-4 pointer-events-auto w-full max-w-9xl flex justify-stretch items-center"
+                  class="relative p-2 md:p-8 pointer-events-auto w-full max-w-9xl flex items-start justify-start"
                   style="margin-left: 0"
                 >
                   <div

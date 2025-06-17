@@ -8,9 +8,9 @@
           ? (hovering
               ? 'min-w-[350px] min-h-[120px] max-w-xs scale-100 z-50'
               : 'min-w-[350px] min-h-[60px] max-w-xs scale-100')
-          : 'min-w-[200px] min-h-[240px] max-w-lg'
+          : 'max-w-[320px] min-h-[240px] '
       ]"
-      :style="smallVersion ? (hovering ? 'height: 200px;' : 'height: 150px;') : ''"
+      :style="smallVersion ? (hovering ? 'height: 200px;' : 'height: 160px;') : ''"
       @mouseenter="hovering = true"
       @mouseleave="hovering = false"
     >

@@ -1,6 +1,6 @@
 <script setup>
 import { ref, defineProps, watch, computed, defineEmits } from "vue";
-import Input from "../inputs/Input.vue";
+import InputTransparent from "../inputs/InputTransparent.vue";
 import { DeviceTabletIcon } from '@heroicons/vue/24/outline'
 
 const props = defineProps({
@@ -113,18 +113,15 @@ function removeGradeColor(idx) {
             :key="activeTab + searchValue"
             class="rounded-xl md:px-20 flex-1 overflow-y-auto"
           >
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-x-10 gap-y-2">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-2">
               <!-- Non-boolean fields first, excluding GradeColors -->
               <template
                 v-for="(propValue, propKey) in nonBooleanFields(filteredData)"
                 :key="propKey"
               >
                 <div>
-                  <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{
-                    formatLabel(propKey)
-                  }}</label>
-                  <Input
-                    :label="null"
+                  <InputTransparent
+                    :label="formatLabel(propKey)"
                     :placeholder="String(propValue)"
                     v-model="localData[propKey]"
                     class="w-full"
