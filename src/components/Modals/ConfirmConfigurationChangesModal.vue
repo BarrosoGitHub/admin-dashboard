@@ -44,6 +44,7 @@
 <script setup>
 import { defineEmits, ref } from "vue";
 import axios from "axios";
+import { API_BASE_URL } from '@/apiConfig.js';
 
 const show = ref(false);
 const objectA = ref({});
@@ -97,9 +98,9 @@ function showDiff(obj1, obj2, type = 'opt') {
 }
 
 function confirm() {
-  let url = 'http://localhost:5087/configuration/opt';
+  let url = `${API_BASE_URL}/configuration/opt`;
   if (showDiff.type === 'ui') {
-    url = 'http://localhost:5087/configuration/ui';
+    url = `${API_BASE_URL}/configuration/ui`;
   }
   const token = localStorage.getItem('jwt');
   axios

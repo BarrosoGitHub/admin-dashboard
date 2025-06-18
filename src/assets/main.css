@@ -26,9 +26,29 @@
 }
 
   .bg-website-color-gradient {
-    background: linear-gradient(135deg, #212121 0%, #272727 100%);
+    background: linear-gradient(0deg, #242424 0%, #272727 100%);
   }
+.custom-shape-divider-bottom-1750243590 {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    overflow: hidden;
+    line-height: 0;
+    transform: rotate(180deg);
+}
 
+.custom-shape-divider-bottom-1750243590 svg {
+    position: relative;
+    display: block;
+    width: calc(124% + 1.3px);
+    height: 225px;
+    transform: rotateY(180deg);
+}
+
+.custom-shape-divider-bottom-1750243590 .shape-fill {
+    fill: #2c2c2c;
+}
 .bg-sidebar-color {
   background-color: #171717;
 }

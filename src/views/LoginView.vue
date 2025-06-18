@@ -63,6 +63,7 @@ import { onMounted, onBeforeUnmount, ref } from 'vue';
 import petrotecIcon from '@/assets/Petrotec-icon.png';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
+import { API_BASE_URL } from '@/apiConfig.js';
 
 const fadeIn = ref(false);
 const headerBgCanvas = ref(null);
@@ -295,7 +296,7 @@ onBeforeUnmount(() => {
 async function handleLogin() {
   error.value = '';
   try {
-    const response = await axios.post('http://localhost:5087/auth/login', {
+    const response = await axios.post(`${API_BASE_URL}/auth/login`, {
       username: username.value,
       password: password.value,
     });
@@ -305,7 +306,7 @@ async function handleLogin() {
     localStorage.setItem('jwt', token);
 
     const validateResp = await axios.get(
-      `http://localhost:5087/auth/validate?token=${encodeURIComponent(token)}`
+      `${API_BASE_URL}/auth/validate?token=${encodeURIComponent(token)}`
     );
 
     if (validateResp.status === 200) {

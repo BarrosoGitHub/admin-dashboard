@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted } from "vue";
+import { ref, watch, onMounted, onBeforeUnmount } from "vue";
 import Sidebar from "../components/sidebar/Sidebar.vue";
 import ConfigurationModal from "../components/Modals/ConfigurationModal.vue";
 import Navbar from "../components/navbar/Navbar.vue";
@@ -8,9 +8,16 @@ import UserInterfaceCard from "../components/tabs/UserInterfaceCard.vue";
 import ConfirmationToast from "../components/toasts/ConfirmationToast.vue";
 import ConfirmConfigurationChanges from "../components/Modals/ConfirmConfigurationChangesModal.vue";
 import ConfigurationTemplateModal from "../components/Modals/ConfigurationTemplateModal.vue";
-import Footer from "../components/footer/Footer.vue";
 import AppInfoCard from "../components/tabs/AppInfoCard.vue";
 import NetworkConfigurationCard from "../components/tabs/NetworkConfigurationCard.vue";
+import StatusElementCard from "../components/tabs/StatusElementCard.vue";
+import { API_BASE_URL, WS_BASE_URL } from '@/apiConfig.js';
+const diagnostics = ref({
+  cpuTemp: 54,
+  ramUsage: 62,
+  diskSpace: 78,
+});
+let ws = null;
 
 // State for OPT Configuration
 const showConfigModal = ref(false);
@@ -201,7 +208,7 @@ onMounted(() => {
     const token = localStorage.getItem("jwt");
     import("axios").then(({ default: axios }) => {
       axios
-        .get("http://localhost:5087/info/services", {
+        .get(`${API_BASE_URL}/info/services`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         })
         .then((response) => {
@@ -212,11 +219,59 @@ onMounted(() => {
         });
     });
   }
+
+  // WebSocket for live stats
+  ws = new WebSocket(`${WS_BASE_URL}/ws/stats`);
+  ws.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      // CPU Temp
+      diagnostics.value.cpuTemp = data.cpuTemperature ? Math.round(data.cpuTemperature) : 0;
+      // RAM Usage: percent = memoryLoadBytes / totalMemory * 100
+      if (data.ramUsage && data.ramUsage.totalMemory && data.ramUsage.memoryLoadBytes) {
+        diagnostics.value.ramUsage = Math.round((data.ramUsage.memoryLoadBytes / data.ramUsage.totalMemory) * 100);
+      } else {
+        diagnostics.value.ramUsage = 0;
+      }
+      // Disk Space: percent = 100 - (free/total*100) for C:\
+      if (Array.isArray(data.diskSpace) && data.diskSpace.length > 0) {
+        const cDrive = data.diskSpace.find(d => d.name === "C:\\");
+        if (cDrive && cDrive.total && cDrive.free) {
+          diagnostics.value.diskSpace = Math.round(100 - (cDrive.free / cDrive.total) * 100);
+        } else {
+          diagnostics.value.diskSpace = 0;
+        }
+      } else {
+        diagnostics.value.diskSpace = 0;
+      }
+    } catch (e) {
+      diagnostics.value.cpuTemp = 0;
+      diagnostics.value.ramUsage = 0;
+      diagnostics.value.diskSpace = 0;
+    }
+  };
+  ws.onerror = () => { /* Optionally handle error */ };
+  ws.onclose = () => { /* Optionally handle close */ };
+});
+
+onBeforeUnmount(() => {
+  if (ws) {
+    ws.close();
+    ws = null;
+  }
 });
 </script>
 
 <template>
+  <div class="custom-shape-divider-bottom-1750243590">
+    <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+        <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" class="shape-fill"></path>
+        <path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" class="shape-fill"></path>
+        <path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" class="shape-fill"></path>
+    </svg>
+</div>
   <div class="bg-website-color-gradient min-h-screen min-w-screen">
+  
     <Sidebar
       :show="sidebarOpen"
       @show-configuration-modal="openConfigModal"
@@ -226,15 +281,18 @@ onMounted(() => {
       @dashboard="handleDashboard"
       @network-configuration="handleNetworkConfiguration"
     />
+    
     <div :class="['flex flex-col', sidebarOpen ? 'md:ml-64' : '']">
       <!-- Main content and left cards -->
+
+
+
       <div class="flex-1 md:flex-row">
         <div class="flex-1">
           <Navbar @sidebar-toggle="sidebarOpen = !sidebarOpen" />
-          <div class="w-full flex items-start justify-start mt-2">
-            <slot name="below-navbar" />
-          </div>
+
           <div class="flex flex-col md:flex-row md:space-x-4">
+          
             <div class="flex-1">
               <ConfigurationModal
                 :show="showConfigModal"
@@ -266,17 +324,23 @@ onMounted(() => {
                 <NetworkConfigurationCard
                   v-if="activeModal === 'network' && showNetworkConfiguration"
                   :modelValue="networkConfiguration"
-                  @close="showNetworkConfiguration = false; activeModal = null;"
-                  @submit="showNetworkConfiguration = false; activeModal = null;"
+                  @close="
+                    showNetworkConfiguration = false;
+                    activeModal = null;
+                  "
+                  @submit="
+                    showNetworkConfiguration = false;
+                    activeModal = null;
+                  "
                 />
               </transition>
             </div>
             <div
               v-if="appInfoData && appInfoData.length && activeModal !== 'appInfo'"
-              class="flex flex-col items-end pt-5 pr-4 mr-20 z-40 "
+              class="flex flex-col items-end pt-5 pr-4 mr-20 z-40"
               style="pointer-events: none"
             >
-              <div style="pointer-events: auto; ">
+              <div style="pointer-events: auto">
                 <AppInfoCard
                   v-for="(info, idx) in appInfoData"
                   :key="idx"
@@ -288,23 +352,21 @@ onMounted(() => {
             <!-- AppInfoCards in original position when dashboard is open -->
             <transition name="">
               <div
-              
                 v-if="activeModal === 'appInfo' && showAppInfoCard"
                 id="popup-modal"
                 tabindex="-1"
                 :class="[
                   'appinfo-modal-transition',
                   'flex',
-                  'justify-center',
-                  'items-center',
+                  'py-20',
                   'w-full',
                   'h-full',
-                  'flex flex-col', sidebarOpen ? 'md:ml-64' : ''
+                  'flex flex-col',
+                  sidebarOpen ? 'md:ml-64' : '',
                 ]"
                 style="
                   position: fixed;
                   inset: 0;
-                  z-index: 50;
                   background: rgba(24, 24, 24, 0.18);
                   pointer-events: none;
                 "
@@ -322,6 +384,31 @@ onMounted(() => {
                       :info="info"
                       :smallVersion="false"
                     />
+                  </div>
+                  <div class="ml-4">
+                    <div class="ml-10">
+                      <StatusElementCard
+                        title="CPU Temp"
+                        :value="diagnostics.cpuTemp"
+                        :valueDisplay="diagnostics.cpuTemp + '°C'"
+                        :size="72"
+                        :stroke="10"
+                      />
+                      <StatusElementCard
+                        title="RAM Usage"
+                        :value="diagnostics.ramUsage"
+                        :valueDisplay="diagnostics.ramUsage + '%'"
+                        :size="72"
+                        :stroke="10"
+                      />
+                      <StatusElementCard
+                        title="Disk Space"
+                        :value="diagnostics.diskSpace"
+                        :valueDisplay="diagnostics.diskSpace + '%'"
+                        :size="72"
+                        :stroke="10"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

@@ -131,7 +131,7 @@ function booleanFields(obj) {
 
 <template>
   <div v-if="props.show" class="py-10 px-25 ">
-    <div class="w-full min-w-[320px] max-w-full md:w-[60vw] md:min-w-[600px] md:max-w-[70vw] rounded-2xl shadow-inner bg-modal-color border border-color flex flex-col">
+    <div class="w-full min-w-[320px] max-w-full md:w-[60vw] md:min-w-[600px] md:max-w-[70vw] rounded-2xl shadow-md bg-modal-color border border-color flex flex-col" style="z-index: 1050; position: relative;">
       <!-- Top line with label -->
       <div class="w-full flex items-center border-b border-color px-8 py-4 mb-2">
         <span class="text-xl font-semibold text-gray-900 dark:text-white tracking-wide">OPT Configuration</span>

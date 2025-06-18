@@ -1,5 +1,6 @@
 import {createRouter, createWebHistory} from 'vue-router';
 import axios from 'axios';
+import { API_BASE_URL } from '@/apiConfig.js';
 
 const routes = [
   {
@@ -30,7 +31,7 @@ async function isLoggedIn() {
   console.log('JWT from localStorage:', token); // Debug log
   if (!token) return false;
   try {
-    const resp = await axios.get(`http://localhost:5087/auth/validate?token=${encodeURIComponent(token)}`);
+    const resp = await axios.get(`${API_BASE_URL}/auth/validate?token=${encodeURIComponent(token)}`);
     return resp.data && resp.data.Valid === true;
   } catch {
     return false;

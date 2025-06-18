@@ -95,6 +95,7 @@
 <script setup>
 import { ref, watch, defineProps, defineEmits, onMounted, onBeforeUnmount } from 'vue';
 import axios from 'axios';
+import { API_BASE_URL } from '@/apiConfig.js';
 
 const props = defineProps({
   show: {
@@ -130,7 +131,7 @@ watch(showSidebar, (val) => {
 
 function fetchOptConfiguration() {
   const token = localStorage.getItem('jwt');
-  axios.get('http://localhost:5087/configuration/opt', {
+  axios.get(`${API_BASE_URL}/configuration/opt`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {}
   })
     .then(response => {
@@ -145,7 +146,7 @@ function fetchOptConfiguration() {
 
 function fetchUserInterfaceConfiguration() {
   const token = localStorage.getItem('jwt');
-  axios.get('http://localhost:5087/configuration/ui', {
+  axios.get(`${API_BASE_URL}/configuration/ui`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {}
   })
     .then(response => {
@@ -158,15 +159,13 @@ function fetchUserInterfaceConfiguration() {
 
 function fetchNetworkConfiguration() {
   const token = localStorage.getItem('jwt');
-  // Fetch the current network configuration from the backend
-  axios.get('http://localhost:5087/configuration/network', {
+  axios.get(`${API_BASE_URL}/configuration/network`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {}
   })
     .then(response => {
       emit('network-configuration', response.data);
     })
     .catch(error => {
-      // If not found or error, emit with default/empty data
       emit('network-configuration', {
         dhcpActive: false,
         ntpActive: false,
@@ -180,7 +179,7 @@ function fetchNetworkConfiguration() {
 
 function handleDashboardClick() {
   const token = localStorage.getItem('jwt');
-  axios.get('http://localhost:5087/info/services', {
+  axios.get(`${API_BASE_URL}/info/services`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {}
   })
     .then(response => {

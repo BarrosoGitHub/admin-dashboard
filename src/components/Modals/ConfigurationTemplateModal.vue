@@ -171,6 +171,7 @@ import enumOptions, {
 } from "../../enums/enumOptions.js";
 // Import axios
 import axios from "axios";
+import { API_BASE_URL } from '@/apiConfig.js';
 import {
   HomeIcon,
   CreditCardIcon,
@@ -272,7 +273,7 @@ async function submitForm() {
   try {
     const token = localStorage.getItem('jwt');
     const response = await axios.post(
-      "http://localhost:5087/configuration/opt/new",
+      `${API_BASE_URL}/configuration/opt/new`,
       clone(fields),
       token ? { headers: { Authorization: `Bearer ${token}` } } : {}
     );

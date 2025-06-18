@@ -158,6 +158,7 @@
 <script setup>
 import { defineProps, defineEmits, reactive, ref, watch } from "vue";
 import axios from "axios";
+import { API_BASE_URL } from '@/apiConfig.js';
 
 const props = defineProps({
   show: Boolean,
@@ -186,7 +187,7 @@ async function submitForm(e) {
   e.preventDefault();
   try {
     const token = localStorage.getItem('jwt');
-    const response = await axios.get("http://localhost:5087/configuration/opt/template", {
+    const response = await axios.get(`${API_BASE_URL}/configuration/opt/template`, {
       params: { ...form },
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
