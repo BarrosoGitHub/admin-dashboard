@@ -1,7 +1,6 @@
 <template>
 
 <div class="bg-white rounded ">
-
   <!-- Sidebar -->
   <aside
     :class=" [
@@ -9,6 +8,7 @@
       showSidebar ? 'translate-x-0 sidebar-shadow' : '-translate-x-full'
     ]"
     aria-label="Sidebar"
+    style="display: flex; flex-direction: column; height: 100vh;"
   >
     <!-- Petrotec Icon -->
     <div class="flex justify-center items-center mb-8">
@@ -22,7 +22,7 @@
     <hr class="border-gray-600 mb-2 border-color" />
     <div class="flex justify-between items-center " >
     </div>
-    <div class="py-4 overflow-y-auto ">
+    <div class="py-4 overflow-y-auto flex-1">
       <ul class="space-y-2 font-medium">
         <li>
           <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group" @click.prevent="handleDashboardClick">
@@ -87,6 +87,10 @@
         </li>
       </ul>
     </div>
+    <!-- Footer note for board type -->
+    <div class="text-xs text-gray-500 text-center select-none mt-4" style="margin-top: auto;">
+      Board type: <span class="font-semibold">{{ boardType }}</span>
+    </div>
   </aside>
 </div>
 
@@ -108,11 +112,13 @@ const emit = defineEmits([
   'sidebar-toggle',
   'opt-configuration',
   'user-interface-configuration',
-  'dashboard' // Add dashboard event
+  'dashboard',
+  'network-configuration' // Added this event
 ]);
 
 const showSidebar = ref(props.show);
 const configDropdownOpen = ref(false);
+const boardType = ref('');
 
 function toggleConfigDropdown() {
   configDropdownOpen.value = !configDropdownOpen.value;
@@ -193,6 +199,15 @@ function handleDashboardClick() {
 onMounted(() => {
   window.addEventListener('sidebar-close', () => {
     showSidebar.value = false;
+  });
+  // Fetch board type for footer with Authorization
+  const token = localStorage.getItem('jwt');
+  axios.get(`${API_BASE_URL}/info/services/boardtype`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {}
+  }).then(res => {
+    boardType.value = res.data?.boardType || res.data || 'Unknown';
+  }).catch(() => {
+    boardType.value = 'Unknown';
   });
 });
 onBeforeUnmount(() => {

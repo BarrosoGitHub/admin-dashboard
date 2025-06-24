@@ -79,7 +79,7 @@ const anchorPosX = 0.9; // Anchor at 90% of the screen width
 const anchorPosY = 0.5; // Anchor at 50% of the screen height
 
 // === Global Animation Settings ===
-const DOTS_PER_ROW = 40; // Lower = wider, higher = denser
+const DOTS_PER_ROW = 25; // Lower = wider, higher = denser
 const DOT_SIZE_MIN = 2;
 const DOT_SIZE_MAX = 4;
 const DOT_SPACING_FACTOR = 1; // 1 = normal, >1 = wider

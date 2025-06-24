@@ -16,6 +16,7 @@ const diagnostics = ref({
   cpuTemp: 54,
   ramUsage: 62,
   diskSpace: 78,
+  cpuTemps: [] // Add this to store all CPU-related temps
 });
 let ws = null;
 
@@ -123,7 +124,15 @@ function handleUserInterfaceConfig(data) {
 }
 
 function handleNetworkConfiguration(data) {
-  networkConfiguration.value = data;
+  // Map backend fields to frontend expected fields
+  networkConfiguration.value = {
+    ipv4: data.IPAddress || '',
+    netmask: data.SubnetMask || '',
+    gateway: data.DefaultGateway || '',
+    dhcpActive: !!data.IsDhcpEnabled,
+    ntpAddress: data.NtpAddress || '',
+    ntpActive: data.NtpActive ?? null // can be true, false, or null
+  };
   activeModal.value = "network";
   showNetworkConfiguration.value = true;
   showOPTConfiguration.value = false;
@@ -225,19 +234,45 @@ onMounted(() => {
   ws.onmessage = (event) => {
     try {
       const data = JSON.parse(event.data);
-      // CPU Temp
-      diagnostics.value.cpuTemp = data.cpuTemperature ? Math.round(data.cpuTemperature) : 0;
+      // CPU Temp: average cpu0 and cpu1 (zone names may vary)
+      let cpu0 = null, cpu1 = null;
+      let cpuTempsArr = [];
+      if (data.cpuTemperatures && typeof data.cpuTemperatures === 'object') {
+        for (const [key, value] of Object.entries(data.cpuTemperatures)) {
+          if (key.startsWith('cpu0')) cpu0 = value;
+          if (key.startsWith('cpu1')) cpu1 = value;
+        }
+        let cpuAverage = 0;
+        if (cpu0 !== null && cpu1 !== null) {
+          cpuAverage = (cpu0 + cpu1) / 2;
+        } else if (cpu0 !== null) {
+          cpuAverage = cpu0;
+        } else if (cpu1 !== null) {
+          cpuAverage = cpu1;
+        }
+        diagnostics.value.cpuTemp = Math.round(cpuAverage);
+        // Collect all other temps as secondary values
+        cpuTempsArr = Object.entries(data.cpuTemperatures)
+          .map(([key, value]) => `${key}: ${value}°C`);
+        diagnostics.value.cpuTemps = cpuTempsArr;
+      } else {
+        diagnostics.value.cpuTemp = 0;
+        diagnostics.value.cpuTemps = [];
+      }
       // RAM Usage: percent = memoryLoadBytes / totalMemory * 100
-      if (data.ramUsage && data.ramUsage.totalMemory && data.ramUsage.memoryLoadBytes) {
-        diagnostics.value.ramUsage = Math.round((data.ramUsage.memoryLoadBytes / data.ramUsage.totalMemory) * 100);
+      if (data.ramUsage && data.ramUsage.total && data.ramUsage.load) {
+        diagnostics.value.ramUsage = Math.round((data.ramUsage.load/ data.ramUsage.total) * 100);
+        diagnostics.value.ramUsages = Object.entries(data.ramUsage)
+          .map(([key, value]) => `${key}: ${value}`);
       } else {
         diagnostics.value.ramUsage = 0;
       }
-      // Disk Space: percent = 100 - (free/total*100) for C:\
+      // Disk Space: percentUsed for root mount ('/')
       if (Array.isArray(data.diskSpace) && data.diskSpace.length > 0) {
-        const cDrive = data.diskSpace.find(d => d.name === "C:\\");
-        if (cDrive && cDrive.total && cDrive.free) {
-          diagnostics.value.diskSpace = Math.round(100 - (cDrive.free / cDrive.total) * 100);
+        // Try to find the root mount ('/') or fallback to the first
+        const root = data.diskSpace.find(d => d.mount === "/") || data.diskSpace[0];
+        if (root && typeof root.percentUsed === 'number') {
+          diagnostics.value.diskSpace = Math.round(root.percentUsed);
         } else {
           diagnostics.value.diskSpace = 0;
         }
@@ -390,21 +425,25 @@ onBeforeUnmount(() => {
                       <StatusElementCard
                         title="CPU Temp"
                         :value="diagnostics.cpuTemp"
-                        :valueDisplay="diagnostics.cpuTemp + '°C'"
+                        :mainValue="diagnostics.cpuTemp + '°C'"
+                        :secondaryValues="diagnostics.cpuTemps"
                         :size="72"
                         :stroke="10"
+                        type="cpu"
                       />
                       <StatusElementCard
                         title="RAM Usage"
                         :value="diagnostics.ramUsage"
-                        :valueDisplay="diagnostics.ramUsage + '%'"
+                        :mainValue="diagnostics.ramUsage + '%'"
+                        :secondaryValues="diagnostics.ramUsages"
                         :size="72"
                         :stroke="10"
                       />
                       <StatusElementCard
                         title="Disk Space"
                         :value="diagnostics.diskSpace"
-                        :valueDisplay="diagnostics.diskSpace + '%'"
+                        :mainValue="diagnostics.diskSpace + '%'"
+                        :secondaryValues="diagnostics.diskSpaces"
                         :size="72"
                         :stroke="10"
                       />

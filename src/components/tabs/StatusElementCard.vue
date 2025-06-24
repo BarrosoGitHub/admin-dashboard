@@ -1,11 +1,20 @@
 <template>
-  <div class="status-element-card p-4 my-5 rounded-2xl shadow-inner bg-modal-color border border-color flex items-center justify-between shadow-md">
+  <div class="status-element-card p-4 my-5 rounded-2xl shadow-inner bg-modal-color border border-color  justify-between shadow-md"
+  
+  :class="[
+        hovering ? 'shadow-lg' : 'shadow-sm',hovering
+              ? 'min-w-[350px] min-h-[60px] z-50'
+              : 'min-w-[350px] min-h-[60px] flex flex-row '
+      ]"
+      :style="hovering ? 'height: 200px;' : 'height: 160px;'"
+      @mouseenter="hovering = true"
+      @mouseleave="hovering = false">
     <div class="flex items-center pr-50">
       <component :is="iconComponent" class="w-7 h-7 text-white opacity-80 mr-3" />
       <span class="text-lg text-white font-semibold">{{ title }}</span>
     </div>
-    <div class="ml-4 flex items-center">
-      <svg :width="size" :height="size" :viewBox="`0 0 ${size} ${size}`" class="progress-circle">
+    <div class="ml-8 flex items-center py-8">
+      <svg v-if="!hovering" :width="size" :height="size" :viewBox="`0 0 ${size} ${size}`" class="progress-circle">
         <circle
           :cx="size/2"
           :cy="size/2"
@@ -34,14 +43,32 @@
           fill="white"
           font-size="18"
           font-family="monospace"
-        >{{ valueDisplay }}</text>
+        >
+          {{ props.mainValue }}
+        </text>
       </svg>
+      <div v-else class="flex flex-row">
+        <template v-if="Array.isArray(props.secondaryValues)">
+          <div v-for="(val, idx) in props.secondaryValues" :key="idx" class="flex flex-col items-center h-full justify-between mx-3 px-2">
+            <VerticalProgressBar
+              :value="(typeof val === 'string' && val.includes(':')) ? val.split(':')[1].trim() : val"
+              :type="props.type"
+              :label="(typeof val === 'string' && val.includes(':')) ? val.split(':')[0].trim() : ''"
+              :animate="hovering"
+            />
+          </div>
+        </template>
+        <template v-else>
+          <span class="text-white text-sm font-mono whitespace-pre-line flex justify-center w-full">{{ props.secondaryValues }}</span>
+        </template>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
+import VerticalProgressBar from './VerticalProgressBar.vue';
 import {
   TagIcon,
   ClockIcon,
@@ -78,8 +105,21 @@ const props = defineProps({
   stroke: {
     type: Number,
     default: 8
+  },
+  mainValue: {
+    type: [String, Number],
+    default: ''
+  },
+  secondaryValues: {
+    type: [Array, String],
+    default: ''
+  },
+  type: {
+    type: String,
+    default: 'other'
   }
 });
+const hovering = ref(false);
 const radius = computed(() => (props.size - props.stroke) / 2);
 const circumference = computed(() => 2 * Math.PI * radius.value);
 const progressOffset = computed(() => {
@@ -113,5 +153,20 @@ const iconComponent = computed(() => {
 }
 .progress-circle circle[stroke]:not([stroke="#475569"]) {
   transition: stroke-dashoffset 1.5s cubic-bezier(0.4,0,0.2,1), stroke 1.5s cubic-bezier(0.4,0,0.2,1);
+}
+.vertical-bar-container {
+  height: 100px;
+  width: 1.25rem;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(255,255,255,0.05);
+  border-radius: 0.25rem 0.25rem 0 0;
+}
+.vertical-bar {
+  width: 100%;
+  min-height: 4px;
+  border-radius: 0.25rem 0.25rem 0 0;
+  background: #2563eb;
+  transition: height 0.7s cubic-bezier(0.4,0,0.2,1);
 }
 </style>
