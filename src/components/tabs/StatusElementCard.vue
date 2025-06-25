@@ -1,19 +1,18 @@
 <template>
-  <div class="status-element-card p-4 my-5 rounded-2xl shadow-inner bg-modal-color border border-color  justify-between shadow-md"
-  
+  <div class="status-element-card h-[160px] py-4  my-5 rounded-2xl shadow-inner bg-modal-color border border-color justify-between shadow-md "
   :class="[
-        hovering ? 'shadow-lg' : 'shadow-sm',hovering
-              ? 'min-w-[350px] min-h-[60px] z-50'
-              : 'min-w-[350px] min-h-[60px] flex flex-row '
+        hovering ? 'shadow-lg' : 'shadow-sm', 
+        hovering
+              ? 'px-4 max-w-[375px]  z-50'
+              : 'px-6 flex flex-row w-[375px]'
       ]"
-      :style="hovering ? 'height: 200px;' : 'height: 160px;'"
-      @mouseenter="hovering = true"
+      @mouseenter="onMouseEnter"
       @mouseleave="hovering = false">
-    <div class="flex items-center pr-50">
-      <component :is="iconComponent" class="w-7 h-7 text-white opacity-80 mr-3" />
+    <div class="flex items-center ">
+      <component :is="iconComponent" class="w- h-7 text-white opacity-80 mr-3" />
       <span class="text-lg text-white font-semibold">{{ title }}</span>
     </div>
-    <div class="ml-8 flex items-center py-8">
+    <div class="flex items-center py-2">
       <svg v-if="!hovering" :width="size" :height="size" :viewBox="`0 0 ${size} ${size}`" class="progress-circle">
         <circle
           :cx="size/2"
@@ -47,14 +46,15 @@
           {{ props.mainValue }}
         </text>
       </svg>
-      <div v-else class="flex flex-row">
+      <div v-else class="my-2 grid grid-cols-2 gap-x-6 gap-y-2">
         <template v-if="Array.isArray(props.secondaryValues)">
-          <div v-for="(val, idx) in props.secondaryValues" :key="idx" class="flex flex-col items-center h-full justify-between mx-3 px-2">
-            <VerticalProgressBar
-              :value="(typeof val === 'string' && val.includes(':')) ? val.split(':')[1].trim() : val"
+          <div v-for="(val, idx) in props.secondaryValues" :key="idx" class="">
+            <HorizontalProgressBar
+              :value="val.split(':')[1].trim()"
               :type="props.type"
               :label="(typeof val === 'string' && val.includes(':')) ? val.split(':')[0].trim() : ''"
               :animate="hovering"
+              :maxValue="props.maxValue"
             />
           </div>
         </template>
@@ -68,7 +68,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import VerticalProgressBar from './VerticalProgressBar.vue';
+import HorizontalProgressBar from './HorizontalProgressBar.vue';
 import {
   TagIcon,
   ClockIcon,
@@ -117,7 +117,11 @@ const props = defineProps({
   type: {
     type: String,
     default: 'other'
-  }
+  },
+  maxValue: {
+    type: [String, Number],
+    default: 100
+  },
 });
 const hovering = ref(false);
 const radius = computed(() => (props.size - props.stroke) / 2);
@@ -145,6 +149,12 @@ const iconComponent = computed(() => {
   if (key.includes('warn')) return ExclamationTriangleIcon;
   return TagIcon;
 });
+
+function onMouseEnter() {
+  if (props.secondaryValues && Array.isArray(props.secondaryValues) && props.secondaryValues.length > 0) {
+    hovering.value = true;
+  }
+}
 </script>
 
 <style scoped>

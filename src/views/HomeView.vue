@@ -263,7 +263,7 @@ onMounted(() => {
       if (data.ramUsage && data.ramUsage.total && data.ramUsage.load) {
         diagnostics.value.ramUsage = Math.round((data.ramUsage.load/ data.ramUsage.total) * 100);
         diagnostics.value.ramUsages = Object.entries(data.ramUsage)
-          .map(([key, value]) => `${key}: ${value}`);
+          .map(([key, value]) => `${key}: ${value} Mb`);
       } else {
         diagnostics.value.ramUsage = 0;
       }
@@ -421,11 +421,12 @@ onBeforeUnmount(() => {
                     />
                   </div>
                   <div class="ml-4">
-                    <div class="ml-10">
+                    <div class="ml-10 relative overflow-visible">
                       <StatusElementCard
                         title="CPU Temp"
                         :value="diagnostics.cpuTemp"
-                        :mainValue="diagnostics.cpuTemp + '°C'"
+                        :mainValue="diagnostics.cpuTemp + 'C'"
+                        :maxValue="100"
                         :secondaryValues="diagnostics.cpuTemps"
                         :size="72"
                         :stroke="10"
@@ -435,17 +436,19 @@ onBeforeUnmount(() => {
                         title="RAM Usage"
                         :value="diagnostics.ramUsage"
                         :mainValue="diagnostics.ramUsage + '%'"
-                        :secondaryValues="diagnostics.ramUsages"
+                        :maxValue="Number((diagnostics.ramUsages.find(e => e.toLowerCase().startsWith('total')) || '').split(':')[1]?.replace('Mb','').trim())"
+                        :secondaryValues="diagnostics.ramUsages && diagnostics.ramUsages"
                         :size="72"
                         :stroke="10"
+                        type="ram"
                       />
                       <StatusElementCard
                         title="Disk Space"
                         :value="diagnostics.diskSpace"
                         :mainValue="diagnostics.diskSpace + '%'"
-                        :secondaryValues="diagnostics.diskSpaces"
                         :size="72"
                         :stroke="10"
+                        type="disk"
                       />
                     </div>
                   </div>
