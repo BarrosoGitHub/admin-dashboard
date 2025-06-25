@@ -12,34 +12,45 @@ import AppInfoCard from "../components/tabs/AppInfoCard.vue";
 import NetworkConfigurationCard from "../components/tabs/NetworkConfigurationCard.vue";
 import StatusElementCard from "../components/tabs/StatusElementCard.vue";
 import { API_BASE_URL, WS_BASE_URL } from '@/apiConfig.js';
-
 const diagnostics = ref({
   cpuTemp: 54,
   ramUsage: 62,
   diskSpace: 78,
-  cpuTemps: []
+  cpuTemps: [] // Add this to store all CPU-related temps
 });
 let ws = null;
 
+// State for OPT Configuration
 const showConfigModal = ref(false);
 const sidebarOpen = ref(false);
 const optConfiguration = ref(null);
 const newOptConfiguration = ref(null);
 const showOPTConfiguration = ref(false);
+
+// State for User Interface Configuration
 const userInterfaceConfig = ref(null);
 const newUserInterfaceConfig = ref(null);
 const showUserInterfaceConfig = ref(false);
+
+// State for App Info Card
 const showAppInfoCard = ref(false);
 const appInfoData = ref({});
+
 const showOPTConfigurationTemplate = ref(false);
 const toastRef = ref(null);
 const diffModalRef = ref(null);
 const uiDiffModalRef = ref(null);
 const templateData = ref({});
-const activeModal = ref(null);
+
+// Animation control
+const pendingToShow = ref(null);
+const activeModal = ref(null); // 'opt', 'ui', 'appInfo', or null
+
+// State for Network Configuration
 const showNetworkConfiguration = ref(false);
 const networkConfiguration = ref({});
 
+// --- Persistence helpers ---
 function persistModalState() {
   const state = {
     activeModal: activeModal.value,
@@ -68,29 +79,59 @@ function restoreModalState() {
   } catch {}
 }
 
-watch([
-  activeModal,
-  showOPTConfiguration,
-  showUserInterfaceConfig,
-  showAppInfoCard,
-  optConfiguration,
-  userInterfaceConfig,
-  appInfoData,
-], persistModalState, { deep: true });
+// Watchers to persist state
+watch(
+  [
+    activeModal,
+    showOPTConfiguration,
+    showUserInterfaceConfig,
+    showAppInfoCard,
+    optConfiguration,
+    userInterfaceConfig,
+    appInfoData,
+  ],
+  persistModalState,
+  { deep: true }
+);
 
-function openConfigModal() { showConfigModal.value = true; }
-function handleConfigSubmitted(responseData) { templateData.value = responseData; showOPTConfigurationTemplate.value = true; }
-function showOPTConfigAddedToast() { toastRef.value?.showConfirmationToast("Configuration successfully added!", true); }
-function handleOptConfiguration(data) { optConfiguration.value = data; activeModal.value = "opt"; showUserInterfaceConfig.value = false; showAppInfoCard.value = false; showOPTConfiguration.value = true; }
-function handleUserInterfaceConfig(data) { userInterfaceConfig.value = data; activeModal.value = "ui"; showOPTConfiguration.value = false; showAppInfoCard.value = false; showUserInterfaceConfig.value = true; }
+function openConfigModal() {
+  showConfigModal.value = true;
+}
+
+function handleConfigSubmitted(responseData) {
+  templateData.value = responseData;
+  showOPTConfigurationTemplate.value = true;
+}
+
+function showOPTConfigAddedToast() {
+  toastRef.value?.showConfirmationToast("Configuration successfully added!", true);
+}
+
+function handleOptConfiguration(data) {
+  optConfiguration.value = data;
+  activeModal.value = "opt";
+  showUserInterfaceConfig.value = false;
+  showAppInfoCard.value = false;
+  showOPTConfiguration.value = true;
+}
+
+function handleUserInterfaceConfig(data) {
+  userInterfaceConfig.value = data;
+  activeModal.value = "ui";
+  showOPTConfiguration.value = false;
+  showAppInfoCard.value = false;
+  showUserInterfaceConfig.value = true;
+}
+
 function handleNetworkConfiguration(data) {
+  // Map backend fields to frontend expected fields
   networkConfiguration.value = {
     ipv4: data.IPAddress || '',
     netmask: data.SubnetMask || '',
     gateway: data.DefaultGateway || '',
     dhcpActive: !!data.IsDhcpEnabled,
     ntpAddress: data.NtpAddress || '',
-    ntpActive: data.NtpActive ?? null
+    ntpActive: data.NtpActive ?? null // can be true, false, or null
   };
   activeModal.value = "network";
   showNetworkConfiguration.value = true;
@@ -98,16 +139,48 @@ function handleNetworkConfiguration(data) {
   showUserInterfaceConfig.value = false;
   showAppInfoCard.value = false;
 }
+
 function handleUpdateConfiguration(data) {
   newOptConfiguration.value = data;
-  diffModalRef.value?.showDiff(optConfiguration.value, newOptConfiguration.value.config, "opt");
+  diffModalRef.value?.showDiff(
+    optConfiguration.value,
+    newOptConfiguration.value.config,
+    "opt"
+  );
   showOPTConfiguration.value = true;
 }
+
 function handleUpdateUserInterfaceConfig(data) {
   newUserInterfaceConfig.value = data;
-  uiDiffModalRef.value?.showDiff(userInterfaceConfig.value, newUserInterfaceConfig.value.config, "ui");
+  uiDiffModalRef.value?.showDiff(
+    userInterfaceConfig.value,
+    newUserInterfaceConfig.value.config,
+    "ui"
+  );
   showUserInterfaceConfig.value = true;
 }
+
+const stepperSteps = [
+  {
+    label: "Add Configuration",
+    completed: true,
+    description: "Fill in the configuration details to get started.",
+  },
+  {
+    label: "Template Details",
+    completed: false,
+    description: "Review and complete the template details before saving.",
+  },
+];
+const currentStep = ref(0);
+
+watch(showConfigModal, (val) => {
+  if (val) currentStep.value = 0;
+});
+watch(showOPTConfigurationTemplate, (val) => {
+  if (val) currentStep.value = 1;
+});
+
 function handleDashboard(data) {
   appInfoData.value = Array.isArray(data) ? data : [data];
   activeModal.value = "appInfo";
@@ -115,6 +188,7 @@ function handleDashboard(data) {
   showUserInterfaceConfig.value = false;
   showAppInfoCard.value = true;
 }
+
 function resetAllModals() {
   activeModal.value = null;
   showOPTConfiguration.value = false;
@@ -124,24 +198,43 @@ function resetAllModals() {
   userInterfaceConfig.value = null;
   appInfoData.value = {};
 }
+
+// Listen for logout event (dispatched from Avatar.vue)
 window.addEventListener("sidebar-close", resetAllModals);
 
 onMounted(() => {
-  setTimeout(() => { sidebarOpen.value = true; }, 150);
+  setTimeout(() => {
+    sidebarOpen.value = true;
+  }, 150); // Adjust delay as needed for effect
+
+  // Restore modal state on refresh
   restoreModalState();
+
+  // Show dashboard if coming from login
   if (localStorage.getItem("showDashboardOnHome") === "true") {
     localStorage.removeItem("showDashboardOnHome");
+    // Fetch dashboard data (same as handleDashboardClick in Sidebar)
     const token = localStorage.getItem("jwt");
     import("axios").then(({ default: axios }) => {
-      axios.get(`${API_BASE_URL}/info/services`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
-        .then((response) => { handleDashboard(response.data); })
-        .catch(() => { handleDashboard([]); });
+      axios
+        .get(`${API_BASE_URL}/info/services`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        })
+        .then((response) => {
+          handleDashboard(response.data);
+        })
+        .catch(() => {
+          handleDashboard([]);
+        });
     });
   }
+
+  // WebSocket for live stats
   ws = new WebSocket(`${WS_BASE_URL}/ws/stats`);
   ws.onmessage = (event) => {
     try {
       const data = JSON.parse(event.data);
+      // CPU Temp: average cpu0 and cpu1 (zone names may vary)
       let cpu0 = null, cpu1 = null;
       let cpuTempsArr = [];
       if (data.cpuTemperatures && typeof data.cpuTemperatures === 'object') {
@@ -158,6 +251,7 @@ onMounted(() => {
           cpuAverage = cpu1;
         }
         diagnostics.value.cpuTemp = Math.round(cpuAverage);
+        // Collect all other temps as secondary values
         cpuTempsArr = Object.entries(data.cpuTemperatures)
           .map(([key, value]) => `${key}: ${value}°C`);
         diagnostics.value.cpuTemps = cpuTempsArr;
@@ -165,6 +259,7 @@ onMounted(() => {
         diagnostics.value.cpuTemp = 0;
         diagnostics.value.cpuTemps = [];
       }
+      // RAM Usage: percent = memoryLoadBytes / totalMemory * 100
       if (data.ramUsage && data.ramUsage.total && data.ramUsage.load) {
         diagnostics.value.ramUsage = Math.round((data.ramUsage.load/ data.ramUsage.total) * 100);
         diagnostics.value.ramUsages = Object.entries(data.ramUsage)
@@ -172,7 +267,9 @@ onMounted(() => {
       } else {
         diagnostics.value.ramUsage = 0;
       }
+      // Disk Space: percentUsed for root mount ('/')
       if (Array.isArray(data.diskSpace) && data.diskSpace.length > 0) {
+        // Try to find the root mount ('/') or fallback to the first
         const root = data.diskSpace.find(d => d.mount === "/") || data.diskSpace[0];
         if (root && typeof root.percentUsed === 'number') {
           diagnostics.value.diskSpace = Math.round(root.percentUsed);
@@ -188,10 +285,16 @@ onMounted(() => {
       diagnostics.value.diskSpace = 0;
     }
   };
-  ws.onerror = () => {};
-  ws.onclose = () => {};
+  ws.onerror = () => { /* Optionally handle error */ };
+  ws.onclose = () => { /* Optionally handle close */ };
 });
-onBeforeUnmount(() => { if (ws) { ws.close(); ws = null; } });
+
+onBeforeUnmount(() => {
+  if (ws) {
+    ws.close();
+    ws = null;
+  }
+});
 </script>
 
 <template>
@@ -203,6 +306,7 @@ onBeforeUnmount(() => { if (ws) { ws.close(); ws = null; } });
     </svg>
 </div>
   <div class="bg-website-color-gradient min-h-screen min-w-screen">
+  
     <Sidebar
       :show="sidebarOpen"
       @show-configuration-modal="openConfigModal"
@@ -212,11 +316,18 @@ onBeforeUnmount(() => { if (ws) { ws.close(); ws = null; } });
       @dashboard="handleDashboard"
       @network-configuration="handleNetworkConfiguration"
     />
+    
     <div :class="['flex flex-col', sidebarOpen ? 'md:ml-64' : '']">
+      <!-- Main content and left cards -->
+
+
+
       <div class="flex-1 md:flex-row">
         <div class="flex-1">
           <Navbar @sidebar-toggle="sidebarOpen = !sidebarOpen" />
+
           <div class="flex flex-col md:flex-row md:space-x-4">
+          
             <div class="flex-1">
               <ConfigurationModal
                 :show="showConfigModal"
@@ -248,8 +359,14 @@ onBeforeUnmount(() => { if (ws) { ws.close(); ws = null; } });
                 <NetworkConfigurationCard
                   v-if="activeModal === 'network' && showNetworkConfiguration"
                   :modelValue="networkConfiguration"
-                  @close="showNetworkConfiguration = false; activeModal = null;"
-                  @submit="showNetworkConfiguration = false; activeModal = null;"
+                  @close="
+                    showNetworkConfiguration = false;
+                    activeModal = null;
+                  "
+                  @submit="
+                    showNetworkConfiguration = false;
+                    activeModal = null;
+                  "
                 />
               </transition>
             </div>
@@ -267,12 +384,13 @@ onBeforeUnmount(() => { if (ws) { ws.close(); ws = null; } });
                 />
               </div>
             </div>
+            <!-- AppInfoCards in original position when dashboard is open -->
             <transition name="">
               <div
                 v-if="activeModal === 'appInfo' && showAppInfoCard"
                 id="popup-modal"
                 tabindex="-1"
-                :class=" [
+                :class="[
                   'appinfo-modal-transition',
                   'flex',
                   'py-20',
@@ -339,24 +457,34 @@ onBeforeUnmount(() => { if (ws) { ws.close(); ws = null; } });
             </transition>
           </div>
         </div>
+        <!-- AppInfoCards always visible, except when dashboard is open -->
       </div>
     </div>
   </div>
+
   <ConfirmationToast ref="toastRef" />
-  <ConfirmConfigurationChanges ref="diffModalRef" @on-updated-data="handleOptConfiguration" />
-  <ConfirmConfigurationChanges ref="uiDiffModalRef" @on-updated-data="handleUserInterfaceConfig" />
+  <ConfirmConfigurationChanges
+    ref="diffModalRef"
+    @on-updated-data="handleOptConfiguration"
+  />
+  <ConfirmConfigurationChanges
+    ref="uiDiffModalRef"
+    @on-updated-data="handleUserInterfaceConfig"
+  />
 </template>
 
 <style scoped>
 .fade-slide-enter-from,
 .fade-slide-leave-to {
   opacity: 0;
+  /* transform: translateY(30px); */
 }
 .fade-slide-enter-to,
 .fade-slide-leave-from {
   opacity: 1;
   transform: translateY(0);
 }
+
 .internal-grid-borders {
   position: relative;
 }
@@ -371,7 +499,7 @@ onBeforeUnmount(() => { if (ws) { ws.close(); ws = null; } });
     right: 0;
     width: 2px;
     height: 100%;
-    background: #292929;
+    background: #292929; /* Tailwind gray-300 */
     z-index: 10;
   }
   .internal-grid-borders > :nth-child(-n + 3)::before {
