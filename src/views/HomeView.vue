@@ -436,7 +436,7 @@ onBeforeUnmount(() => {
                         title="RAM Usage"
                         :value="diagnostics.ramUsage"
                         :mainValue="diagnostics.ramUsage + '%'"
-                        :maxValue="Number((diagnostics.ramUsages.find(e => e.toLowerCase().startsWith('total')) || '').split(':')[1]?.replace('Mb','').trim())"
+                        :maxValue="Array.isArray(diagnostics.ramUsages) ? Number((diagnostics.ramUsages.find(e => e.toLowerCase().startsWith('total')) || '').split(':')[1]?.replace('Mb','').trim()) : 100"
                         :secondaryValues="diagnostics.ramUsages && diagnostics.ramUsages"
                         :size="72"
                         :stroke="10"

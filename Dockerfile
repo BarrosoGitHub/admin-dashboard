@@ -1,4 +1,5 @@
-FROM node:20-alpine AS build
+# Use official Node.js image for ARM64 as the build environment
+FROM --platform=linux/arm64 node:20-alpine AS build
 
 WORKDIR /app
 COPY package*.json ./
@@ -9,7 +10,8 @@ COPY . .
 
 RUN npm run build
 
-FROM nginx:alpine
+# Use ARM64 Nginx image to serve the built app
+FROM --platform=linux/arm64 nginx:alpine
 
 COPY --from=build /app/dist /usr/share/nginx/html
 
