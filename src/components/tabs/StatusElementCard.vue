@@ -46,7 +46,7 @@
           {{ props.mainValue }}
         </text>
       </svg>
-      <div v-else class="my-2 grid grid-cols-2 gap-x-6 gap-y-2">
+      <div v-else class="my-2 grid grid-cols-2 mr-4 gap-x-2 gap-y-2">
         <template v-if="Array.isArray(props.secondaryValues)">
           <div v-for="(val, idx) in props.secondaryValues" :key="idx" class="">
             <HorizontalProgressBar

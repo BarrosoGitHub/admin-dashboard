@@ -104,7 +104,6 @@
           </div>
         </div>
       </transition>
-      <!-- Status icon in bottom right -->
       <span
         :class="[
           'flex items-center justify-end w-full transition-all duration-200',
