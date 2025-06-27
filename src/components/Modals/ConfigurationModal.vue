@@ -39,100 +39,62 @@
           <div class="p-4 md:p-5">
             <form class="space-y-4" @submit="submitForm">
               <div>
-                <label
-                  for="stationId"
-                  class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                  >StationId</label
-                >
-                <!-- StationId input -->
-                <input
+                <InputTransparent
                   v-model="form.stationId"
-                  type="text"
-                  name="stationId"
+                  label="Station Id"
                   id="stationId"
-                  class="text-gray-900 text-sm rounded-md border input-border-color block w-full p-2.5 bg-modal-color bg-input-color dark:border-neutral-500 dark:text-white shadow-md"
                   required
+                  placeholder="Enter StationId"
                 />
               </div>
               <div>
-                <label
-                  for="workstationId"
-                  class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                  >WorkstationId</label
-                >
-                <!-- WorkstationId input -->
-                <input
+                <InputTransparent
                   v-model="form.workstationId"
-                  type="text"
+                  label="Workstation Id"
                   name="workstationId"
                   id="workstationId"
-                  class="text-gray-900 text-sm rounded-md border input-border-color block w-full p-2.5 bg-input-color dark:bg-neutral-500 dark:border-neutral-500 dark:text-white shadow-md"
                   required
+                  placeholder="Enter WorkstationId"
                 />
               </div>
-
               <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                  <label
-                    for="company"
-                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                    >Company</label
-                  >
-                  <!-- Company select -->
-                  <select
+                  <InputTransparent
                     v-model="form.company"
+                    :label="'Company'"
+                    :placeholder="form.company || 'Select company'"
+                    :type="'select'"
+                    :options="['Generic', 'Galp', 'Prio', 'Intermarche', 'Bongas'].map(opt => ({ label: opt, value: opt }))"
+                    class="w-full"
                     name="company"
                     id="company"
-                    class="text-gray-900 text-sm rounded-md border input-border-color block w-full p-2.5 bg-input-color dark:bg-neutral-500 dark:border-neutral-500 dark:text-white shadow-md"
                     required
-                  >
-                    <option value="">Select company</option>
-                    <option value="Generic">Generic</option>
-                    <option value="Galp">Galp</option>
-                    <option value="Prio">Prio</option>
-                    <option value="Intermarche">Intermarche</option>
-                    <option value="Bongas">Bongas</option>
-                  </select>
+                  />
                 </div>
                 <div>
-                  <label
-                    for="country"
-                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                    >Country</label
-                  >
-                  <!-- Country select -->
-                  <select
+                  <InputTransparent
                     v-model="form.country"
+                    :label="'Country'"
+                    :placeholder="form.country || 'Select country'"
+                    :type="'select'"
+                    :options="['PT', 'ES', 'CA'].map(opt => ({ label: opt, value: opt }))"
+                    class="w-full"
                     name="country"
                     id="country"
-                    class="text-gray-900 text-sm rounded-md border input-border-color block w-full p-2.5 bg-input-color dark:bg-neutral-500 dark:border-neutral-500 dark:text-white shadow-md"
                     required
-                  >
-                    <option value="">Select country</option>
-                    <option value="PT">PT</option>
-                    <option value="ES">ES</option>
-                    <option value="CA">CA</option>
-                  </select>
+                  />
                 </div>
               </div>
               <div>
-                <label
-                  for="networkSegment"
-                  class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                  >Network segment</label
-                >
-                <!-- Network Segment input with dynamic validation and checkmark -->
                 <div class="relative">
-                  <input
+                  <InputTransparent
                     v-model="form.networkSegment"
-                    type="text"
+                    label="Network Segment"
                     name="networkSegment"
                     id="networkSegment"
-                    class="text-gray-900 text-sm rounded-md border input-border-color block w-full p-2.5 bg-input-color dark:bg-neutral-500 dark:border-neutral-500 dark:text-white shadow-md pr-10"
                     required
+                    placeholder="Enter Network Segment"
                     @input="validateNetworkSegment"
-                    pattern="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
-                    title="Please enter a valid IPv4 address (e.g., 192.168.1.1)"
                   />
                   <svg v-if="isNetworkSegmentValid" class="absolute right-2 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
@@ -159,6 +121,7 @@
 import { defineProps, defineEmits, reactive, ref, watch } from "vue";
 import axios from "axios";
 import { API_BASE_URL } from '@/apiConfig.js';
+import InputTransparent from '../inputs/InputTransparent.vue';
 
 const props = defineProps({
   show: Boolean,

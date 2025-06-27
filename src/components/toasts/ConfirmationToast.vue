@@ -1,8 +1,8 @@
 <template>
-  <div v-if="show">
+  <div>
     <div
       id="toast-success"
-      class="fixed left-1/2 bottom-8 transform -translate-x-1/2 flex items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white rounded-lg shadow-sm dark:text-gray-400 dark:bg-gray-800 z-50"
+      class="fixed left-1/2 bottom-8 transform -translate-x-1/2 flex items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white rounded-full shadow-sm dark:text-gray-400 dark:bg-gray-800 z-50"
       role="alert"
     >
       <div

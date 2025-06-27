@@ -1,5 +1,5 @@
 <template>
-  <div class="status-element-card h-[160px] py-4  my-5 rounded-2xl shadow-inner bg-modal-color border border-color justify-between shadow-md "
+  <div class="status-element-card h-[160px] py-4  my-5 rounded-2xl shadow-inner bg-modal-color border border-color justify-between shadow-md transition-all duration-300"
   :class="[
         hovering ? 'shadow-lg' : 'shadow-sm', 
         hovering
@@ -13,7 +13,7 @@
       <span class="text-lg text-white font-semibold">{{ title }}</span>
     </div>
     <div class="flex items-center py-2">
-      <svg v-if="!hovering" :width="size" :height="size" :viewBox="`0 0 ${size} ${size}`" class="progress-circle">
+      <svg v-if="!hovering" :width="size" :height="size" :viewBox="`0 0 ${size} ${size}`" class="progress-circle mr-2">
         <circle
           :cx="size/2"
           :cy="size/2"
@@ -159,7 +159,7 @@ function onMouseEnter() {
 
 <style scoped>
 .progress-circle {
-  display: block;
+  margin-right: 0.75rem;
 }
 .progress-circle circle[stroke]:not([stroke="#475569"]) {
   transition: stroke-dashoffset 1.5s cubic-bezier(0.4,0,0.2,1), stroke 1.5s cubic-bezier(0.4,0,0.2,1);
@@ -178,5 +178,8 @@ function onMouseEnter() {
   border-radius: 0.25rem 0.25rem 0 0;
   background: #2563eb;
   transition: height 0.7s cubic-bezier(0.4,0,0.2,1);
+}
+.status-element-card {
+  transition: box-shadow 0.3s cubic-bezier(0.4,0,0.2,1), padding 0.3s cubic-bezier(0.4,0,0.2,1), max-width 0.3s cubic-bezier(0.4,0,0.2,1), width 0.3s cubic-bezier(0.4,0,0.2,1);
 }
 </style>

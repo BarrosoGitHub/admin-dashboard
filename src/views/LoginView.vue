@@ -37,12 +37,15 @@
               required
             />
           </div>
-          <button
-            type="submit"
-            class="mt-10 w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-          >
-            Authenticate
-          </button>
+          <div class="flex justify-center">
+            <ButtonConfirmation
+              :label="'Authenticate'"
+              :isLoading="loginLoading"
+              :showTick="loginShowTick"
+              :disabled="!username || !password || loginLoading"
+              @confirm="handleLogin"
+            />
+          </div>
         </form>
         
       </div>
@@ -64,6 +67,7 @@ import petrotecIcon from '@/assets/Petrotec-icon.png';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 import { API_BASE_URL } from '@/apiConfig.js';
+import ButtonConfirmation from '@/components/Modals/ButtonConfirmation.vue';
 
 const fadeIn = ref(false);
 const headerBgCanvas = ref(null);
@@ -74,6 +78,8 @@ const error = ref('');
 const router = useRouter();
 const modalVisible = ref(false);
 const modalFadingOut = ref(false);
+const loginLoading = ref(false);
+const loginShowTick = ref(false);
 
 const anchorPosX = 0.9; // Anchor at 90% of the screen width
 const anchorPosY = 0.5; // Anchor at 50% of the screen height
@@ -295,6 +301,8 @@ onBeforeUnmount(() => {
 // --- JWT login logic ---
 async function handleLogin() {
   error.value = '';
+  loginLoading.value = true;
+  loginShowTick.value = false;
   try {
     const response = await axios.post(`${API_BASE_URL}/auth/login`, {
       username: username.value,
@@ -313,30 +321,38 @@ async function handleLogin() {
       // Set flag to show dashboard after login
       localStorage.setItem('showDashboardOnHome', 'true');
       console.log('Login successful!');
-      modalFadingOut.value = true;
-      // Animate the background anchor moving off-screen to the right for fade-out effect
-      const startX = target.x;
-      const endX = window.innerWidth * 2;
-      const duration = 350; // match modal fade duration
-      const startTime = performance.now();
-      function animateAnchor(now) {
-        const t = Math.min(1, (now - startTime) / duration);
-        target.x = startX + (endX - startX) * t;
-        if (t < 1) {
-          requestAnimationFrame(animateAnchor);
-        }
-      }
-      requestAnimationFrame(animateAnchor);
+      loginLoading.value = false;
+      loginShowTick.value = true;
       setTimeout(() => {
-        router.push('/home');
-      }, 350); // match fade duration
+        modalFadingOut.value = true;
+        // Animate the background anchor moving off-screen to the right for fade-out effect
+        const startX = target.x;
+        const endX = window.innerWidth * 2;
+        const duration = 350; // match modal fade duration
+        const startTime = performance.now();
+        function animateAnchor(now) {
+          const t = Math.min(1, (now - startTime) / duration);
+          target.x = startX + (endX - startX) * t;
+          if (t < 1) {
+            requestAnimationFrame(animateAnchor);
+          }
+        }
+        requestAnimationFrame(animateAnchor);
+        setTimeout(() => {
+          router.push('/home');
+        }, 350); // match fade duration
+      }, 900); // Wait for tick animation
     } else {
       error.value = 'Token validation failed.';
       localStorage.removeItem('jwt');
+      loginLoading.value = false;
+      loginShowTick.value = false;
     }
   } catch (err) {
     error.value = err.response?.data?.message || 'Login failed';
     localStorage.removeItem('jwt');
+    loginLoading.value = false;
+    loginShowTick.value = false;
   }
 }
 </script>

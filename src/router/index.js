@@ -28,7 +28,6 @@ const router = createRouter({
 
 async function isLoggedIn() {
   const token = localStorage.getItem('jwt');
-  console.log('JWT from localStorage:', token); // Debug log
   if (!token) return false;
   try {
     const resp = await axios.get(`${API_BASE_URL}/auth/validate?token=${encodeURIComponent(token)}`);

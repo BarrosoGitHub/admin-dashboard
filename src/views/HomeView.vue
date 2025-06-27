@@ -450,6 +450,10 @@ onBeforeUnmount(() => {
                         :stroke="10"
                         type="disk"
                       />
+
+                      <ConfirmationToast
+                        :show="true"
+                      />
                     </div>
                   </div>
                 </div>
@@ -457,7 +461,6 @@ onBeforeUnmount(() => {
             </transition>
           </div>
         </div>
-        <!-- AppInfoCards always visible, except when dashboard is open -->
       </div>
     </div>
   </div>

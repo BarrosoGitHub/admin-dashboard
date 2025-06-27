@@ -1,12 +1,19 @@
 @import "tailwindcss";
 
-/* In your global CSS */
+:root {
+  --tick-stroke-color: #ebebeb; /* Custom green for tick, override as needed */
+}
+
 .custom-blur {
   backdrop-filter: blur(0px);
 }
 
 .sidebar-shadow {
   box-shadow: 8px 0 10px -4px rgba(0,0,0,0.15);
+}
+
+.tick-button-color {
+  background: #00944a;
 }
 
 .bg-modal-color {
