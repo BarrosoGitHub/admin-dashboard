@@ -13,7 +13,7 @@
           <div class="text-4xl font-bold text-neutral-100 whitespace-nowrap">Enter your credentials</div>
           <div class="text-md text-neutral-300 whitespace-nowrap mt-3">username : password</div>
         </div>
-        <form class="space-y-10" @submit.prevent="handleLogin">
+        <form class="space-y-10" @submit.prevent="handleLogin" @keydown.enter="handleLogin">
           <div v-if="error" class="text-red-500 text-sm">{{ error }}</div>
           <div>
             <input
@@ -24,6 +24,7 @@
               class="text-gray-900 text-sm block w-full p-2.5 pl-5 bg-transparent border-0 border-b-2 border-gray-400 focus:border-blue-500 outline-none shadow-none rounded-none transition-colors duration-200 dark:placeholder-gray-400 dark:text-white autofill:shadow-none autofill:bg-transparent autofill:border-b-2 autofill:border-gray-400"
               placeholder="Username"
               required
+              @keydown.enter="handleLogin"
             />
           </div>
           <div>
@@ -35,6 +36,7 @@
               placeholder="••••••••"
               class="text-gray-900 text-sm block w-full p-2.5 pl-5 bg-transparent border-0 border-b-2 border-gray-400 focus:border-blue-500 outline-none shadow-none rounded-none transition-colors duration-200 dark:placeholder-gray-400 dark:text-white autofill:shadow-none autofill:bg-transparent autofill:border-b-2 autofill:border-gray-400"
               required
+              @keydown.enter="handleLogin"
             />
           </div>
           <div class="flex justify-center">

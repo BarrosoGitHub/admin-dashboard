@@ -8,6 +8,7 @@ import UserInterfaceCard from "../components/tabs/UserInterfaceCard.vue";
 import ConfirmationToast from "../components/toasts/ConfirmationToast.vue";
 import ConfirmConfigurationChanges from "../components/Modals/ConfirmConfigurationChangesModal.vue";
 import ConfigurationTemplateModal from "../components/Modals/ConfigurationTemplateModal.vue";
+import PasswordChangeModal from "../components/Modals/PasswordChangeModal.vue";
 import AppInfoCard from "../components/tabs/AppInfoCard.vue";
 import NetworkConfigurationCard from "../components/tabs/NetworkConfigurationCard.vue";
 import StatusElementCard from "../components/tabs/StatusElementCard.vue";
@@ -49,6 +50,9 @@ const activeModal = ref(null); // 'opt', 'ui', 'appInfo', or null
 // State for Network Configuration
 const showNetworkConfiguration = ref(false);
 const networkConfiguration = ref({});
+
+// State for Password Change Modal
+const showPasswordChangeModal = ref(false);
 
 // --- Persistence helpers ---
 function persistModalState() {
@@ -194,9 +198,19 @@ function resetAllModals() {
   showOPTConfiguration.value = false;
   showUserInterfaceConfig.value = false;
   showAppInfoCard.value = false;
+  showPasswordChangeModal.value = false;
   optConfiguration.value = null;
   userInterfaceConfig.value = null;
   appInfoData.value = {};
+}
+
+function handlePasswordChange() {
+  showPasswordChangeModal.value = true;
+}
+
+function handlePasswordChangeSuccess() {
+  // Optional: Show a toast notification or perform other actions
+  console.log('Password changed successfully');
 }
 
 // Listen for logout event (dispatched from Avatar.vue)
@@ -315,16 +329,15 @@ onBeforeUnmount(() => {
       @user-interface-configuration="handleUserInterfaceConfig"
       @dashboard="handleDashboard"
       @network-configuration="handleNetworkConfiguration"
+      @password-change="handlePasswordChange"
     />
     
     <div :class="['flex flex-col', sidebarOpen ? 'md:ml-64' : '']">
       <!-- Main content and left cards -->
 
-
-
       <div class="flex-1 md:flex-row">
         <div class="flex-1">
-          <Navbar @sidebar-toggle="sidebarOpen = !sidebarOpen" />
+          <Navbar @sidebar-toggle="sidebarOpen = !sidebarOpen" @password-change="handlePasswordChange" />
 
           <div class="flex flex-col md:flex-row md:space-x-4">
           
@@ -338,6 +351,11 @@ onBeforeUnmount(() => {
                 :show="showOPTConfigurationTemplate"
                 :data="templateData || {}"
                 @submit="showOPTConfigurationTemplate = false"
+              />
+              <PasswordChangeModal
+                :show="showPasswordChangeModal"
+                @close="showPasswordChangeModal = false"
+                @success="handlePasswordChangeSuccess"
               />
               <transition name="">
                 <ConfigurationCard
@@ -451,9 +469,7 @@ onBeforeUnmount(() => {
                         type="disk"
                       />
 
-                      <ConfirmationToast
-                        :show="true"
-                      />
+      
                     </div>
                   </div>
                 </div>
@@ -465,7 +481,6 @@ onBeforeUnmount(() => {
     </div>
   </div>
 
-  <ConfirmationToast ref="toastRef" />
   <ConfirmConfigurationChanges
     ref="diffModalRef"
     @on-updated-data="handleOptConfiguration"

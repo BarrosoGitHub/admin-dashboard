@@ -34,6 +34,14 @@
       <li>
         <a
           href="#"
+          @click.prevent="handleChangePassword"
+          class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+          >Change Password</a
+        >
+      </li>
+      <li>
+        <a
+          href="#"
           class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
           >Settings</a
         >
@@ -54,11 +62,18 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 
+const emit = defineEmits(['password-change']);
+
 const showDropdown = ref(false);
 const router = useRouter();
 
 function toggleDropdown() {
   showDropdown.value = !showDropdown.value;
+}
+
+function handleChangePassword() {
+  showDropdown.value = false; // Close dropdown
+  emit('password-change');
 }
 
 async function handleSignOut() {

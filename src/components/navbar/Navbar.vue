@@ -1,5 +1,11 @@
 <script setup>
   import Avatar from '../Avatar.vue';
+  
+  const emit = defineEmits(['sidebar-toggle', 'password-change']);
+  
+  function handlePasswordChange() {
+    emit('password-change');
+  }
 </script>
 
 <template>
@@ -37,7 +43,7 @@
         </button>
         <div class="flex-1"></div>
         <div class="flex justify-end ">
-          <Avatar />
+          <Avatar @password-change="handlePasswordChange" />
         </div>
       </div>
 
