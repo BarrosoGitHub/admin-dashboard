@@ -45,6 +45,24 @@
                 class="w-full"
               />
             </div>
+            <!-- Primary DNS -->
+            <div>
+              <InputTransparent
+                label="Primary DNS"
+                placeholder="e.g. 8.8.8.8"
+                v-model="form.primaryDns"
+                class="w-full"
+              />
+            </div>
+            <!-- Secondary DNS -->
+            <div>
+              <InputTransparent
+                label="Secondary DNS"
+                placeholder="e.g. 8.8.4.4"
+                v-model="form.secondaryDns"
+                class="w-full"
+              />
+            </div>
             <!-- DHCP Active -->
             <div class="flex items-center space-x-3 mt-2">
               <label class="block text-sm font-medium text-gray-900 dark:text-white flex-1 mb-0">DHCP active?</label>
@@ -104,6 +122,8 @@
 
 <script setup>
 import { reactive } from 'vue';
+import axios from 'axios';
+import { API_BASE_URL } from '@/apiConfig.js';
 import InputTransparent from '../inputs/InputTransparent.vue';
 const props = defineProps({
   modelValue: {
@@ -118,10 +138,39 @@ const form = reactive({
   ipv4: props.modelValue.ipv4 || '',
   netmask: props.modelValue.netmask || '',
   gateway: props.modelValue.gateway || '',
-  ntpAddress: props.modelValue.ntpAddress || ''
+  ntpAddress: props.modelValue.ntpAddress || '',
+  primaryDns: props.modelValue.primaryDns || '',
+  secondaryDns: props.modelValue.secondaryDns || ''
 });
+
 function submit() {
-  emit('submit', { ...form });
+  const token = localStorage.getItem('jwt');
+  
+  const requestData = {
+    IPAddress: form.ipv4,
+    SubnetMask: form.netmask,
+    DefaultGateway: form.gateway,
+    NtpAddress: form.ntpAddress,
+    NtpActive: form.ntpActive,
+    IsDhcpEnabled: form.dhcpActive,
+    PrimaryDns: form.primaryDns,
+    SecondaryDns: form.secondaryDns
+  };
+  
+  // Call the API to save network configuration
+  axios.put(`${API_BASE_URL}/configuration/network`, requestData, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {}
+  })
+    .then(response => {
+      console.log('Network configuration saved successfully:', response.data);
+      emit('submit', { ...form });
+    })
+    .catch(error => {
+      console.error('Failed to save network configuration:', error);
+      // You might want to show an error toast or message here
+      // For now, still emit the submit event
+      emit('submit', { ...form });
+    });
 }
 </script>
 

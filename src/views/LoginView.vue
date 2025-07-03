@@ -15,7 +15,10 @@
         </div>
         <form class="space-y-10" @submit.prevent="handleLogin" @keydown.enter="handleLogin">
           <div v-if="error" class="text-red-500 text-sm">{{ error }}</div>
-          <div>
+          <div 
+            class="input-field-container"
+            :class="{ 'input-slide-down': loginShowTick }"
+          >
             <input
               type="text"
               name="username"
@@ -27,7 +30,10 @@
               @keydown.enter="handleLogin"
             />
           </div>
-          <div>
+          <div 
+            class="input-field-container"
+            :class="{ 'input-slide-down': loginShowTick }"
+          >
             <input
               type="password"
               name="password"
@@ -39,7 +45,10 @@
               @keydown.enter="handleLogin"
             />
           </div>
-          <div class="flex justify-center">
+          <div 
+            class="flex justify-center button-container"
+            :class="{ 'button-slide-up': loginShowTick }"
+          >
             <ButtonConfirmation
               :label="'Authenticate'"
               :isLoading="loginLoading"
@@ -423,5 +432,22 @@ input:-webkit-autofill:active {
   transform: translateY(32px) !important;
   pointer-events: none;
   transition: opacity 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+
+.input-field-container {
+  transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+
+.input-slide-down {
+  transform: translateY(60px);
+  opacity: 0;
+}
+
+.button-container {
+  transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+
+.button-slide-up {
+  transform: translateY(-120px);
 }
 </style>
