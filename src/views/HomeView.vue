@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted, onBeforeUnmount } from "vue";
+import { ref, watch, onMounted, onBeforeUnmount, computed } from "vue";
 import Sidebar from "../components/sidebar/Sidebar.vue";
 import ConfigurationModal from "../components/Modals/ConfigurationModal.vue";
 import Navbar from "../components/navbar/Navbar.vue";
@@ -14,45 +14,64 @@ import NetworkConfigurationCard from "../components/tabs/NetworkConfigurationCar
 import StatusElementCard from "../components/tabs/StatusElementCard.vue";
 import { API_BASE_URL, WS_BASE_URL } from '@/apiConfig.js';
 const diagnostics = ref({
-  cpuTemp: 54,
-  ramUsage: 62,
-  diskSpace: 78,
-  cpuTemps: [] // Add this to store all CPU-related temps
+  cpuTemp: 0,
+  ramUsage: 0,
+  diskSpace: 0,
+  cpuTemps: [],
+  ramUsages: []
 });
+
+// Computed properties for better performance
+const hasAppInfoData = computed(() => appInfoData.value && appInfoData.value.length);
+const sidebarClasses = computed(() => ['flex flex-col', sidebarOpen.value ? 'md:ml-64' : '']);
+const maxRamValue = computed(() => {
+  if (!Array.isArray(diagnostics.value.ramUsages)) return 100;
+  const totalEntry = diagnostics.value.ramUsages.find(e => e.toLowerCase().startsWith('total'));
+  if (!totalEntry) return 100;
+  return Number(totalEntry.split(':')[1]?.replace('Mb','').trim()) || 100;
+});
+
 let ws = null;
 
-// State for OPT Configuration
+// --- Modal state management ---
+const activeModal = ref(null);
+const showOPTConfiguration = ref(false);
+const showUserInterfaceConfig = ref(false);
+const showAppInfoCard = ref(false);
+const showNetworkConfiguration = ref(false);
 const showConfigModal = ref(false);
-const sidebarOpen = ref(false);
+const showOPTConfigurationTemplate = ref(false);
+const showPasswordChangeModal = ref(false);
+
+// --- Data refs ---
 const optConfiguration = ref(null);
 const newOptConfiguration = ref(null);
-const showOPTConfiguration = ref(false);
-
-// State for User Interface Configuration
 const userInterfaceConfig = ref(null);
 const newUserInterfaceConfig = ref(null);
-const showUserInterfaceConfig = ref(false);
-
-// State for App Info Card
-const showAppInfoCard = ref(false);
 const appInfoData = ref({});
+const networkConfiguration = ref({});
+const templateData = ref({});
 
-const showOPTConfigurationTemplate = ref(false);
+// --- Component refs ---
+const sidebarOpen = ref(false);
 const toastRef = ref(null);
 const diffModalRef = ref(null);
 const uiDiffModalRef = ref(null);
-const templateData = ref({});
 
-// Animation control
-const pendingToShow = ref(null);
-const activeModal = ref(null); // 'opt', 'ui', 'appInfo', or null
-
-// State for Network Configuration
-const showNetworkConfiguration = ref(false);
-const networkConfiguration = ref({});
-
-// State for Password Change Modal
-const showPasswordChangeModal = ref(false);
+// --- Stepper configuration ---
+const stepperSteps = [
+  {
+    label: "Add Configuration",
+    completed: true,
+    description: "Fill in the configuration details to get started.",
+  },
+  {
+    label: "Template Details",
+    completed: false,
+    description: "Review and complete the template details before saving.",
+  },
+];
+const currentStep = ref(0);
 
 // --- Persistence helpers ---
 function persistModalState() {
@@ -164,20 +183,6 @@ function handleUpdateUserInterfaceConfig(data) {
   showUserInterfaceConfig.value = true;
 }
 
-const stepperSteps = [
-  {
-    label: "Add Configuration",
-    completed: true,
-    description: "Fill in the configuration details to get started.",
-  },
-  {
-    label: "Template Details",
-    completed: false,
-    description: "Review and complete the template details before saving.",
-  },
-];
-const currentStep = ref(0);
-
 watch(showConfigModal, (val) => {
   if (val) currentStep.value = 0;
 });
@@ -198,6 +203,7 @@ function resetAllModals() {
   showOPTConfiguration.value = false;
   showUserInterfaceConfig.value = false;
   showAppInfoCard.value = false;
+  showNetworkConfiguration.value = false;
   showPasswordChangeModal.value = false;
   optConfiguration.value = null;
   userInterfaceConfig.value = null;
@@ -209,12 +215,10 @@ function handlePasswordChange() {
 }
 
 function handlePasswordChangeSuccess() {
-  // Optional: Show a toast notification or perform other actions
-  console.log('Password changed successfully');
+  toastRef.value?.showConfirmationToast("Password changed successfully!", true);
 }
 
 function handleNetworkResponse(response) {
-  // Show toast notification based on response
   toastRef.value?.showConfirmationToast(response.message, response.success);
 }
 
@@ -248,65 +252,76 @@ onMounted(() => {
     });
   }
 
-  // WebSocket for live stats
+  initializeWebSocket();
+});
+
+// --- WebSocket management ---
+function initializeWebSocket() {
   ws = new WebSocket(`${WS_BASE_URL}/ws/stats`);
   ws.onmessage = (event) => {
     try {
       const data = JSON.parse(event.data);
-      // CPU Temp: average cpu0 and cpu1 (zone names may vary)
-      let cpu0 = null, cpu1 = null;
-      let cpuTempsArr = [];
-      if (data.cpuTemperatures && typeof data.cpuTemperatures === 'object') {
-        for (const [key, value] of Object.entries(data.cpuTemperatures)) {
-          if (key.startsWith('cpu0')) cpu0 = value;
-          if (key.startsWith('cpu1')) cpu1 = value;
-        }
-        let cpuAverage = 0;
-        if (cpu0 !== null && cpu1 !== null) {
-          cpuAverage = (cpu0 + cpu1) / 2;
-        } else if (cpu0 !== null) {
-          cpuAverage = cpu0;
-        } else if (cpu1 !== null) {
-          cpuAverage = cpu1;
-        }
-        diagnostics.value.cpuTemp = Math.round(cpuAverage);
-        // Collect all other temps as secondary values
-        cpuTempsArr = Object.entries(data.cpuTemperatures)
-          .map(([key, value]) => `${key}: ${value}°C`);
-        diagnostics.value.cpuTemps = cpuTempsArr;
-      } else {
-        diagnostics.value.cpuTemp = 0;
-        diagnostics.value.cpuTemps = [];
-      }
-      // RAM Usage: percent = memoryLoadBytes / totalMemory * 100
-      if (data.ramUsage && data.ramUsage.total && data.ramUsage.load) {
-        diagnostics.value.ramUsage = Math.round((data.ramUsage.load/ data.ramUsage.total) * 100);
-        diagnostics.value.ramUsages = Object.entries(data.ramUsage)
-          .map(([key, value]) => `${key}: ${value} Mb`);
-      } else {
-        diagnostics.value.ramUsage = 0;
-      }
-      // Disk Space: percentUsed for root mount ('/')
-      if (Array.isArray(data.diskSpace) && data.diskSpace.length > 0) {
-        // Try to find the root mount ('/') or fallback to the first
-        const root = data.diskSpace.find(d => d.mount === "/") || data.diskSpace[0];
-        if (root && typeof root.percentUsed === 'number') {
-          diagnostics.value.diskSpace = Math.round(root.percentUsed);
-        } else {
-          diagnostics.value.diskSpace = 0;
-        }
-      } else {
-        diagnostics.value.diskSpace = 0;
-      }
+      updateDiagnostics(data);
     } catch (e) {
-      diagnostics.value.cpuTemp = 0;
-      diagnostics.value.ramUsage = 0;
-      diagnostics.value.diskSpace = 0;
+      // Reset diagnostics on error
+      diagnostics.value = {
+        cpuTemp: 0,
+        ramUsage: 0,
+        diskSpace: 0,
+        cpuTemps: [],
+        ramUsages: []
+      };
     }
   };
-  ws.onerror = () => { /* Optionally handle error */ };
-  ws.onclose = () => { /* Optionally handle close */ };
-});
+  ws.onerror = () => { /* Handle error if needed */ };
+  ws.onclose = () => { /* Handle close if needed */ };
+}
+
+function updateDiagnostics(data) {
+  // CPU Temperature processing
+  if (data.cpuTemperatures && typeof data.cpuTemperatures === 'object') {
+    let cpu0 = null, cpu1 = null;
+    
+    for (const [key, value] of Object.entries(data.cpuTemperatures)) {
+      if (key.startsWith('cpu0')) cpu0 = value;
+      if (key.startsWith('cpu1')) cpu1 = value;
+    }
+    
+    let cpuAverage = 0;
+    if (cpu0 !== null && cpu1 !== null) {
+      cpuAverage = (cpu0 + cpu1) / 2;
+    } else if (cpu0 !== null) {
+      cpuAverage = cpu0;
+    } else if (cpu1 !== null) {
+      cpuAverage = cpu1;
+    }
+    
+    diagnostics.value.cpuTemp = Math.round(cpuAverage);
+    diagnostics.value.cpuTemps = Object.entries(data.cpuTemperatures)
+      .map(([key, value]) => `${key}: ${value}°C`);
+  } else {
+    diagnostics.value.cpuTemp = 0;
+    diagnostics.value.cpuTemps = [];
+  }
+  
+  // RAM Usage processing
+  if (data.ramUsage?.total && data.ramUsage?.load) {
+    diagnostics.value.ramUsage = Math.round((data.ramUsage.load / data.ramUsage.total) * 100);
+    diagnostics.value.ramUsages = Object.entries(data.ramUsage)
+      .map(([key, value]) => `${key}: ${value} Mb`);
+  } else {
+    diagnostics.value.ramUsage = 0;
+    diagnostics.value.ramUsages = [];
+  }
+  
+  // Disk Space processing
+  if (Array.isArray(data.diskSpace) && data.diskSpace.length > 0) {
+    const root = data.diskSpace.find(d => d.mount === "/") || data.diskSpace[0];
+    diagnostics.value.diskSpace = root?.percentUsed ? Math.round(root.percentUsed) : 0;
+  } else {
+    diagnostics.value.diskSpace = 0;
+  }
+}
 
 onBeforeUnmount(() => {
   if (ws) {
@@ -337,7 +352,7 @@ onBeforeUnmount(() => {
       @password-change="handlePasswordChange"
     />
     
-    <div :class="['flex flex-col', sidebarOpen ? 'md:ml-64' : '']">
+    <div :class="sidebarClasses">
       <!-- Main content and left cards -->
 
       <div class="flex-1 md:flex-row">
@@ -387,7 +402,7 @@ onBeforeUnmount(() => {
               </transition>
             </div>
             <div
-              v-if="appInfoData && appInfoData.length && activeModal !== 'appInfo'"
+              v-if="hasAppInfoData && activeModal !== 'appInfo'"
               class="flex flex-col items-end pt-5 pr-4 mr-20 z-40"
               style="pointer-events: none"
             >
@@ -452,8 +467,8 @@ onBeforeUnmount(() => {
                         title="RAM Usage"
                         :value="diagnostics.ramUsage"
                         :mainValue="diagnostics.ramUsage + '%'"
-                        :maxValue="Array.isArray(diagnostics.ramUsages) ? Number((diagnostics.ramUsages.find(e => e.toLowerCase().startsWith('total')) || '').split(':')[1]?.replace('Mb','').trim()) : 100"
-                        :secondaryValues="diagnostics.ramUsages && diagnostics.ramUsages"
+                        :maxValue="maxRamValue"
+                        :secondaryValues="diagnostics.ramUsages"
                         :size="72"
                         :stroke="10"
                         type="ram"
@@ -494,7 +509,6 @@ onBeforeUnmount(() => {
 .fade-slide-enter-from,
 .fade-slide-leave-to {
   opacity: 0;
-  /* transform: translateY(30px); */
 }
 .fade-slide-enter-to,
 .fade-slide-leave-from {

@@ -13,7 +13,7 @@ function getWsBaseUrl() {
   const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   // localhost for dev mode - direct backend connection
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return `${wsProtocol}//172.16.55.151:8080`;
+    return `${wsProtocol}//172.16.55.149:8080`;
   }
   // Production mode - use nginx reverse proxy (no port, /api prefix for WebSocket)
   return `${wsProtocol}//${hostname}/api`;
