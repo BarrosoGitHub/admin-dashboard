@@ -39,6 +39,7 @@
       </div>
     </div>
   </transition>
+  <ConfirmationToast ref="confirmationToast" />
 </template>
 
 <script setup>
@@ -46,6 +47,7 @@ import { defineEmits, ref } from "vue";
 import axios from "axios";
 import { API_BASE_URL } from '@/apiConfig.js';
 import ButtonConfirmation from './ButtonConfirmation.vue';
+import ConfirmationToast from '../toasts/ConfirmationToast.vue';
 
 const show = ref(false);
 const objectA = ref({});
@@ -57,6 +59,7 @@ const props = defineProps({});
 const changes = ref({});
 const isLoading = ref(false);
 const showTick = ref(false);
+const confirmationToast = ref(null);
 
 function computeDiff(obj1, obj2) {
   const diffs = {};
@@ -66,7 +69,6 @@ function computeDiff(obj1, obj2) {
     const val1 = obj1[key];
     const val2 = obj2[key];
 
-    // If both are objects, compare their keys shallowly
     if (isPlainObject(val1) && isPlainObject(val2)) {
       const subkeys = new Set([...Object.keys(val1), ...Object.keys(val2)]);
       for (const subkey of subkeys) {
@@ -103,13 +105,16 @@ function showDiff(obj1, obj2, type = 'opt') {
 }
 
 async function confirm() {
+  isLoading.value = true;
+  showTick.value = false;
+
+  const token = localStorage.getItem('jwt');
+
   let url = `${API_BASE_URL}/configuration/opt`;
   if (showDiff.type === 'ui') {
     url = `${API_BASE_URL}/configuration/ui`;
   }
-  const token = localStorage.getItem('jwt');
-  isLoading.value = true;
-  showTick.value = false;
+
   try {
     const response = await axios.put(url, objectB.value, {
       headers: {
@@ -120,6 +125,10 @@ async function confirm() {
     showTick.value = true;
     isLoading.value = false;
     emit("onUpdatedData", response.data);
+    
+    // Show success toast
+    confirmationToast.value?.showConfirmationToast("Configuration updated successfully!", true);
+    
     setTimeout(() => {
       show.value = false;
       showTick.value = false;
@@ -128,6 +137,10 @@ async function confirm() {
   } catch (error) {
     isLoading.value = false;
     showTick.value = false;
+    
+    // Show error toast
+    confirmationToast.value?.showConfirmationToast("Failed to update configuration", false);
+    
     console.error("Error updating configuration:", error);
     if (error.response && error.response.status === 404) {
       console.error("Configuration not found");

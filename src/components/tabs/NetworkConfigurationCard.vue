@@ -103,35 +103,36 @@
         </div>
       </div>
       <div class="flex flex-col md:flex-row items-center justify-end gap-4 mt-8 mb-4 px-8">
-        <button
-          @click="$emit('close')"
-          class="p-4 text-white bg-gray-600 focus:outline-none hover:bg-gray-700 focus:ring-4 focus:ring-gray-200 font-medium rounded-full text-sm px-10 py-2.5 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-800 dark:hover:border-gray-600 dark:focus:ring-gray-800"
-        >
-          Cancel
-        </button>
-        <button
-          @click="submit"
-          class="p-4 text-white bg-blue-600 focus:outline-none hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 font-medium rounded-full text-sm px-10 py-2.5 dark:bg-blue-700 dark:text-white dark:border-blue-600 dark:hover:bg-blue-800 dark:hover:border-blue-600 dark:focus:ring-blue-800"
-        >
-          Save
-        </button>
+        <ButtonConfirmation
+          :label="'Update'"
+          :isLoading="isLoading"
+          :showTick="showTick"
+          @confirm="submit"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { reactive } from 'vue';
+import { reactive, ref } from 'vue';
 import axios from 'axios';
 import { API_BASE_URL } from '@/apiConfig.js';
 import InputTransparent from '../inputs/InputTransparent.vue';
+import ButtonConfirmation from '../Modals/ButtonConfirmation.vue';
+
 const props = defineProps({
   modelValue: {
     type: Object,
     default: () => ({})
   }
 });
-const emit = defineEmits(['update:modelValue', 'close', 'submit']);
+
+const emit = defineEmits(['update:modelValue', 'close', 'submit', 'response']);
+
+const isLoading = ref(false);
+const showTick = ref(false);
+
 const form = reactive({
   dhcpActive: props.modelValue.dhcpActive ?? false,
   ntpActive: props.modelValue.ntpActive ?? false,
@@ -144,6 +145,9 @@ const form = reactive({
 });
 
 function submit() {
+  isLoading.value = true;
+  showTick.value = false;
+  
   const token = localStorage.getItem('jwt');
   
   const requestData = {
@@ -163,10 +167,38 @@ function submit() {
   })
     .then(response => {
       console.log('Network configuration saved successfully:', response.data);
+      
+      // Check if the response indicates success
+      if (response.data.success) {
+        isLoading.value = false;
+        showTick.value = true;
+        
+        // Emit response event for toast
+        emit('response', { success: true, message: response.data.message || 'Network configuration updated successfully!' });
+        
+        // Reset button state after 2 seconds
+        setTimeout(() => {
+          showTick.value = false;
+        }, 2000);
+      } else {
+        isLoading.value = false;
+        showTick.value = false;
+        console.error('Server responded with unsuccessful status');
+        
+        // Emit response event for toast
+        emit('response', { success: false, message: 'Failed to update network configuration' });
+      }
+      
       emit('submit', { ...form });
     })
     .catch(error => {
       console.error('Failed to save network configuration:', error);
+      isLoading.value = false;
+      showTick.value = false;
+      
+      // Emit response event for toast
+      emit('response', { success: false, message: error.response?.data?.message || 'Failed to update network configuration' });
+      
       // You might want to show an error toast or message here
       // For now, still emit the submit event
       emit('submit', { ...form });

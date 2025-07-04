@@ -448,6 +448,6 @@ input:-webkit-autofill:active {
 }
 
 .button-slide-up {
-  transform: translateY(-120px);
+  transform: translateY(-100px);
 }
 </style>

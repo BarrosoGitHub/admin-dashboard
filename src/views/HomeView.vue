@@ -213,6 +213,11 @@ function handlePasswordChangeSuccess() {
   console.log('Password changed successfully');
 }
 
+function handleNetworkResponse(response) {
+  // Show toast notification based on response
+  toastRef.value?.showConfirmationToast(response.message, response.success);
+}
+
 // Listen for logout event (dispatched from Avatar.vue)
 window.addEventListener("sidebar-close", resetAllModals);
 
@@ -377,14 +382,7 @@ onBeforeUnmount(() => {
                 <NetworkConfigurationCard
                   v-if="activeModal === 'network' && showNetworkConfiguration"
                   :modelValue="networkConfiguration"
-                  @close="
-                    showNetworkConfiguration = false;
-                    activeModal = null;
-                  "
-                  @submit="
-                    showNetworkConfiguration = false;
-                    activeModal = null;
-                  "
+                  @response="handleNetworkResponse"
                 />
               </transition>
             </div>
@@ -489,6 +487,7 @@ onBeforeUnmount(() => {
     ref="uiDiffModalRef"
     @on-updated-data="handleUserInterfaceConfig"
   />
+  <ConfirmationToast ref="toastRef" />
 </template>
 
 <style scoped>

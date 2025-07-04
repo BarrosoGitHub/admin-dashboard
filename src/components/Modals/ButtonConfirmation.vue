@@ -1,7 +1,7 @@
 <template>
   <button
     type="button"
-    :disabled="disabled || isLoading"
+    :disabled="disabled || isLoading || showTick"
     :class="[
       'text-white font-medium rounded-3xl text-sm py-2.5 me-2 mb-2 focus:ring-4 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center h-[44px] transition-all duration-500',
       showTick 

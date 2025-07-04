@@ -1,10 +1,12 @@
 <template>
   <div>
-    <div
-      id="toast-success"
-      class="fixed left-1/2 bottom-8 transform -translate-x-1/2 flex items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white rounded-full shadow-sm dark:text-gray-400 dark:bg-gray-800 z-50"
-      role="alert"
-    >
+    <transition name="toast-slide">
+      <div
+        v-if="show"
+        id="toast-success"
+        class="fixed bottom-8 flex items-center w-full max-w-sm p-4 mb-4 text-gray-500 bg-white rounded-full shadow-sm dark:text-gray-400 dark:bg-neutral-700 z-50"
+        role="alert"
+      >
       <div
         class="inline-flex items-center justify-center shrink-0 w-8 h-8 rounded-lg"
         :class="
@@ -42,8 +44,8 @@
       <div class="ms-3 text-sm font-normal">{{ content }}</div>
       <button
         type="button"
-        class="ms-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700"
-        @click="visible = false"
+        class="ms-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-neutral-600 dark:hover:bg-neutral-600"
+        @click="show = false"
         aria-label="Close"
       >
         <span class="sr-only">Close</span>
@@ -64,6 +66,7 @@
         </svg>
       </button>
     </div>
+    </transition>
   </div>
 </template>
 
@@ -89,3 +92,42 @@ defineExpose({
   showConfirmationToast
 });
 </script>
+
+<style scoped>
+/* Toast slide-up animation */
+.toast-slide-enter-active {
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.toast-slide-leave-active {
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.toast-slide-enter-from {
+  opacity: 0;
+  transform: translateX(-50%) translateY(100px) scale(0.8);
+}
+
+.toast-slide-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-20px) scale(0.9);
+}
+
+.toast-slide-enter-to,
+.toast-slide-leave-from {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+/* Ensure proper centering - this overrides the transition transforms when not animating */
+#toast-success:not(.toast-slide-enter-active):not(.toast-slide-leave-active) {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* During transitions, let Vue handle the transforms */
+#toast-success.toast-slide-enter-active,
+#toast-success.toast-slide-leave-active {
+  left: 50%;
+}
+</style>
