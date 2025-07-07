@@ -12,7 +12,7 @@
       >
         <svg
           :class="['text-gray-500 dark:text-gray-400',
-          isFocused ? 'w-3 h-3' : 'w-7 h-3']"
+          isFocused ? 'w-3 h-3' : 'w-9 h-3']"
           aria-hidden="true"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -32,7 +32,7 @@
         id="default-search"
         :class="[
           'block transition-all duration-300 min-w-0 outline-none ring-0 focus:ring-0 focus:outline-none boolean-selector-inactive ml-auto',
-          isFocused ? 'w-60 h-10.5 p-2 ps-8 text-sm text-left' : 'w-10.5 h-10.5  text-sm cursor-pointer'
+          isFocused ? 'w-60 h-12 p-2 ps-8 text-sm text-left' : 'w-12 h-12  text-sm cursor-pointer'
         ]"
         class="text-sm text-gray-900 rounded-full bg-modal-color border border-color dark:placeholder-gray-400 dark:text-white border-0"
         :placeholder="isFocused ? placeholder : ''"

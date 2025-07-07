@@ -64,8 +64,9 @@
         <div class="pl-10 text-2xl font-semibold text-color">
           OPT name [PH]
         </div>
-        <div class="flex-1 flex justify-center items-center">
-          <div v-if="showSearch" class="max-w-md w-full">
+        <div class="flex-1"></div>
+        <div class="flex justify-end items-center gap-8">
+          <div v-if="showSearch">
             <SearchBar
               :modelValue="searchValue"
               @update:modelValue="handleSearchUpdate"
@@ -73,8 +74,6 @@
               :placeholder="`Search in ${activeCard}...`"
             />
           </div>
-        </div>
-        <div class="flex justify-end">
           <Avatar @password-change="handlePasswordChange" />
         </div>
       </div>
