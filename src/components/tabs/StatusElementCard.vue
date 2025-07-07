@@ -60,7 +60,7 @@
           </div>
         </template>
         <template v-else>
-          <span class="text-color text-sm font-mono whitespace-pre-line flex justify-center w-full">{{ props.secondaryValues }}</span>
+          <span class="text-color text-sm font-mono flex justify-center w-full">{{ props.secondaryValues }}</span>
         </template>
       </div>
     </div>

@@ -1,11 +1,11 @@
 <template>
-  <div class="text-xs font-medium text-blue-100 tr flex flex-row justify-between">
+  <div class="text-xs font-medium text-color tr flex flex-row justify-between">
     <div class="px-2 capitalize ">
       {{ label.charAt(0).toUpperCase() + label.slice(1) }}:
     </div>
-    <div class="w-30 bg-gray-200 rounded-full dark:bg-gray-700 relative overflow-visible">
+    <div class="w-30 rounded-full relative overflow-visible">
       <div
-        class="bg-blue-600 text-center p-0.5 leading-none rounded-full whitespace-nowrap absolute left-0 top-0 h-full flex items-center transition-all duration-300"
+        class="bg-neutral-400 dark:bg-neutral-600 text-center p-0.5 leading-none rounded-full whitespace-nowrap absolute left-0 top-0 h-full flex items-center transition-all duration-300"
         :style="`width: ${animatedWidth}%;`"
       >
         <span class="pl-2 pr-2">

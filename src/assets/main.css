@@ -35,6 +35,7 @@
   --icon-color: #bec4d1;
   --sidebar-shadow: 8px 0 10px -4px rgba(114, 114, 114, 0.15);
   --input-border-color: #d8d8d8;
+  --chart-color: #2e2e2e;
 }
 
 .dark {
@@ -50,7 +51,7 @@
   --icon-color: #EEEEEE;
   --sidebar-shadow: 8px 0 10px -4px rgba(0, 0, 0, 0.15);
   --input-border-color: #4e4e4e;
-
+  --chart-color: #eeeeee;
 }
 
 .bg-modal-color {
@@ -100,6 +101,10 @@
 
 .input-border-color {
   border-color: var(--input-border-color);
+}
+
+.chart-color {
+  color: var(--chart-color);
 }
 
 
