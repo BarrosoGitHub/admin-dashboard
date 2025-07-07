@@ -10,13 +10,16 @@ const props = defineProps({
     required: true,
     default: () => ({}),
   },
+  searchValue: {
+    type: String,
+    default: '',
+  },
 });
 
 const emit = defineEmits(["update"]);
 
 const activeTab = ref("General");
 const localData = ref(JSON.parse(JSON.stringify(props.data)));
-const searchValue = ref("");
 
 watch(
   () => props.data,
@@ -26,11 +29,15 @@ watch(
 );
 
 const filteredData = computed(() => {
-  if (!searchValue.value.trim()) return localData.value;
+  if (!props.searchValue.trim()) return localData.value;
   const result = {};
-  const search = searchValue.value.toLowerCase();
+  const search = props.searchValue.toLowerCase();
   for (const [key, value] of Object.entries(localData.value)) {
-    if (key === "GradeColors") continue;
+    if (key === "GradeColors") {
+      // Always include GradeColors in filtered data
+      result[key] = value;
+      continue;
+    }
     if (key.toLowerCase().includes(search) || String(value).toLowerCase().includes(search)) {
       result[key] = value;
     }
@@ -83,11 +90,11 @@ function removeGradeColor(idx) {
 </script>
 
 <template>
-  <div v-if="props.show" class="py-10 px-25 ">
-    <div class="w-full min-w-[320px] max-w-full md:w-[60vw] md:min-w-[600px] md:max-w-[70vw] rounded-2xl shadow-inner bg-modal-color border border-color flex flex-col">
+  <div v-if="props.show" class="py-10 px-8 ">
+    <div class="w-full min-w-[320px] max-w-full md:w-[60vw] md:min-w-[600px] md:max-w-[70vw] rounded-2xl border border-color flex flex-col bg-modal-color shadow-xs dark:shadow-lg">
       <!-- Top line with label -->
       <div class="w-full flex items-center border-b border-color px-8 py-4 mb-2">
-        <span class="text-xl font-semibold text-gray-900 dark:text-white tracking-wide">User Interface</span>
+        <span class="text-xl font-semibold text-color tracking-wide">User Interface</span>
       </div>
       <div class="flex flex-1 min-h-0">
         <!-- Tabs on the left (only one tab for this object) -->
@@ -98,7 +105,7 @@ function removeGradeColor(idx) {
           <li class="flex">
             <button
               type="button"
-              class="flex items-center flex-1 text-left px-2 py-2 rounded-md my-1.5 mx-3 cursor-pointer text-white bg-neutral-700 font-semibold"
+              class="flex items-center flex-1 text-left px-2 py-2 rounded-md my-1.5 mx-3 cursor-pointer text-color  font-semibold"
               disabled
             >
               <DeviceTabletIcon class="w-5 h-5 mr-2" />
@@ -110,7 +117,7 @@ function removeGradeColor(idx) {
         <div class="flex-1 min-h-0 flex flex-col">
           <div
             v-if="true"
-            :key="activeTab + searchValue"
+            :key="activeTab + props.searchValue"
             class="rounded-xl md:px-20 flex-1 overflow-y-auto"
           >
             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-2">

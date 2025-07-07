@@ -2,7 +2,6 @@
 import { ref, defineProps, watch, computed, defineEmits } from "vue";
 import Input from "../inputs/Input.vue";
 import InputTransparent from "../inputs/InputTransparent.vue";
-import SearchBar from "../searchbar/SearchBar.vue";
 import enumOptions, {
   getEnumOptions as getEnumOptionsHelper,
 } from "../../enums/enumOptions.js";
@@ -34,11 +33,14 @@ const props = defineProps({
     required: true,
     default: () => ({}),
   },
+  searchValue: {
+    type: String,
+    default: '',
+  },
 });
 
 const activeTab = ref(Object.keys(props.data)[0] || "");
 const localData = ref(JSON.parse(JSON.stringify(props.data)));
-const searchValue = ref("");
 
 const emit = defineEmits(["update"]);
 
@@ -54,9 +56,9 @@ watch(
 );
 
 const filteredData = computed(() => {
-  if (!searchValue.value.trim()) return localData.value;
+  if (!props.searchValue.trim()) return localData.value;
   const result = {};
-  const search = searchValue.value.toLowerCase();
+  const search = props.searchValue.toLowerCase();
   for (const [section, fields] of Object.entries(localData.value)) {
     if (section.toLowerCase().includes(search)) {
       result[section] = fields;
@@ -130,24 +132,17 @@ function booleanFields(obj) {
 </script>
 
 <template>
-  <div v-if="props.show" class="py-10 px-25 ">
-    <div class="w-full min-w-[320px] max-w-full md:w-[60vw] md:min-w-[600px] md:max-w-[70vw] rounded-2xl shadow-md bg-modal-color border border-color flex flex-col" style="z-index: 10; position: relative;">
+  <div v-if="props.show" class="py-10 px-8 ">
+    <div class="w-full min-w-[320px] max-w-full md:w-[60vw] md:min-w-[950px] md:max-w-[70vw] rounded-2xl shadow-md bg-modal-color border border-color flex flex-col" style="z-index: 10; position: relative;">
       <!-- Top line with label -->
       <div class="w-full flex items-center border-b border-color px-8 py-4 mb-2">
         <span class="text-xl font-semibold text-gray-900 dark:text-white tracking-wide">OPT Configuration</span>
-        <div class="justify-end flex-1 flex items-start">
-          <SearchBar
-            v-model="searchValue"
-            label="Search"
-            placeholder="Type to search..."
-          />
-        </div>
       </div>
       
       <div class="flex flex-1 min-h-0">
         <!-- Tabs on the left -->
         <ul
-          class="flex flex-col w-67 min-w-44 text-sm font-medium text-left text-white-900 dark:text-white-900 py-2 px-5"
+          class="flex flex-col w-63 text-sm font-medium text-left text-white-900 dark:text-white-900 py-2 px-4"
           role="tablist"
         >
           <li v-for="key in Object.keys(filteredData)" :key="key" class="flex">
@@ -155,8 +150,8 @@ function booleanFields(obj) {
               type="button"
               class="tab-animate flex items-center flex-1 text-left px-2 py-1.5 my-1.5 mx-3 cursor-pointer"
               :class="[activeTab === key
-                ? 'active text-white font-semibold'
-                : 'text-neutral-700 dark:text-neutral-500']"
+                ? 'active text-color font-semibold'
+                : 'text-color-secondary']"
               @click="activeTab = key"
               style="position:relative;"
             >
@@ -177,8 +172,8 @@ function booleanFields(obj) {
         <div class="flex-1 min-h-0 table flex-col">
           <div
             v-if="activeTab && filteredData[activeTab]"
-            :key="activeTab + searchValue"
-            class="rounded-xl md:px-20 flex-1 overflow-y-auto"
+            :key="activeTab + props.searchValue"
+            class="rounded-xl md:pr-15 md:pl-5 flex-1 overflow-y-auto"
           >
             <h2
               class="mb-5 text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white"
@@ -278,7 +273,7 @@ function booleanFields(obj) {
   bottom: 0;
   width: 100%;
   height: 2px;
-  background: #d1d5db; /* neutral-300 */
+  background: var(--input-border-color-selected); /* use the selector color */
   border-radius: 2px;
   transform: scaleX(0);
   transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);

@@ -3,7 +3,7 @@
     <template v-if="type === 'select' && options">
       <select
         :id="inputId"
-        class="peer text-neutral-400 text-sm block w-full p-2.5 pr-2 pl-28 bg-transparent border-0 border-b-2 border-neutral-600 focus:border-blue-500 outline-none shadow-none rounded-none transition-colors duration-200 dark:placeholder-gray-400 text-right"
+        class="peer text-color-secondary text-sm block w-full p-2.5 pr-2 pl-28 bg-transparent border-b input-border-color outline-none shadow-none rounded-none transition-colors duration-200 dark:placeholder-gray-400 text-right"
         :value="modelValue"
         @change="emit('update:modelValue', $event.target.value)"
         required
@@ -12,7 +12,7 @@
           {{ option.label }}
         </option>
       </select>
-      <span class="absolute left-0 bottom-2 text-neutral-100 text-sm pointer-events-none select-none px-2">
+      <span class="absolute left-0 bottom-2 text-color text-sm pointer-events-none select-none px-2">
         {{ label }}
       </span>
     </template>
@@ -20,13 +20,13 @@
       <input
         :type="type"
         :id="inputId"
-        class="peer text-neutral-400 text-sm block w-full p-2.5 pr-2 pl-28 bg-transparent border-0 border-b-2 border-neutral-600 focus:border-blue-500 outline-none shadow-none rounded-none transition-colors duration-200 dark:placeholder-gray-400 text-right"
+        class="peer text-color-secondary text-sm block w-full p-2.5 pr-2 pl-28 bg-transparent border-b input-border-color outline-none shadow-none rounded-none transition-colors duration-200 dark:placeholder-gray-400 text-right"
         :placeholder="placeholder"
         :value="modelValue"
         @input="emit('update:modelValue', $event.target.value)"
         required
       />
-      <span class="absolute left-0 bottom-3 text-neutral-100 text-sm pointer-events-none select-none px-2">
+      <span class="absolute left-0 bottom-3 text-color text-sm pointer-events-none select-none px-2">
         {{ label }}
       </span>
     </template>
@@ -73,5 +73,11 @@ input::placeholder {
 }
 select:invalid {
   color: gray;
+}
+input.input-border-color:focus, select.input-border-color:focus {
+  border-color: var(--input-border-color-selected) !important;
+}
+input:focus, select:focus {
+  color: var(--text-color) !important;
 }
 </style>

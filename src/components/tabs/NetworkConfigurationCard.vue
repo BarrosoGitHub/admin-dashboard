@@ -1,9 +1,9 @@
 <template>
-  <div v-if="true" class="py-10 px-25">
-    <div class="w-full min-w-[320px] max-w-full md:w-[60vw] md:min-w-[600px] md:max-w-[70vw] rounded-2xl shadow-inner bg-modal-color border border-color flex flex-col">
+  <div v-if="true" class="py-10 px-8">
+    <div class="w-full min-w-[320px] max-w-full md:w-[60vw] md:min-w-[600px] md:max-w-[70vw] rounded-2xl border border-color flex flex-col bg-modal-color shadow-xs dark:shadow-lg">
       <!-- Top line with label -->
       <div class="w-full flex items-center border-b border-color px-8 py-4 mb-2">
-        <span class="text-xl font-semibold text-gray-900 dark:text-white tracking-wide">Network Configuration</span>
+        <span class="text-xl font-semibold text-color tracking-wide">Network Configuration</span>
         <div class="flex-1 flex items-start justify-end"></div>
       </div>
       <div class="flex flex-1 min-h-0">

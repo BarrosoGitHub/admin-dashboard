@@ -83,57 +83,39 @@
               <div v-if="error" class="text-red-500 text-sm text-center">{{ error }}</div>
               <div v-if="success" class="text-green-500 text-sm text-center">{{ success }}</div>
               
-              <div class="relative w-full">
-                <input
-                  type="password"
-                  id="currentPassword"
-                  v-model="form.currentPassword"
-                  class="peer text-neutral-400 text-sm block w-full p-2.5 pr-2 pl-32 bg-transparent border-0 border-b-2 border-neutral-600 focus:border-blue-500 outline-none shadow-none rounded-none transition-colors duration-200 dark:placeholder-gray-400 text-right"
-                  placeholder="••••••••"
-                  required
-                />
-                <span class="absolute left-0 bottom-3 text-neutral-100 text-sm pointer-events-none select-none px-2">
-                  Current Password
-                </span>
-              </div>
+              <InputTransparent
+                type="password"
+                id="currentPassword"
+                v-model="form.currentPassword"
+                label="Current Password"
+                placeholder="••••••••"
+                required
+              />
 
-              <div class="relative w-full">
-                <input
-                  type="password"
-                  id="newPassword"
-                  v-model="form.newPassword"
-                  class="peer text-neutral-400 text-sm block w-full p-2.5 pr-2 pl-28 bg-transparent border-0 border-b-2 border-neutral-600 focus:border-blue-500 outline-none shadow-none rounded-none transition-colors duration-200 dark:placeholder-gray-400 text-right"
-                  placeholder="••••••••"
-                  required
-                />
-                <span class="absolute left-0 bottom-3 text-neutral-100 text-sm pointer-events-none select-none px-2">
-                  New Password
-                </span>
-              </div>
+              <InputTransparent
+                type="password"
+                id="newPassword"
+                v-model="form.newPassword"
+                label="New Password"
+                placeholder="••••••••"
+                required
+              />
 
-              <div class="relative w-full">
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  v-model="form.confirmPassword"
-                  class="peer text-neutral-400 text-sm block w-full p-2.5 pr-2 pl-32 bg-transparent border-0 border-b-2 border-neutral-600 focus:border-blue-500 outline-none shadow-none rounded-none transition-colors duration-200 dark:placeholder-gray-400 text-right"
-                  placeholder="••••••••"
-                  required
-                />
-                <span class="absolute left-0 bottom-3 text-neutral-100 text-sm pointer-events-none select-none px-2">
-                  Confirm Password
-                </span>
-              </div>
+              <InputTransparent
+                type="password"
+                id="confirmPassword"
+                v-model="form.confirmPassword"
+                label="Confirm Password"
+                placeholder="••••••••"
+                required
+              />
 
               <!-- Password Strength Indicator - Always Visible -->
               <div class="mt-2">
-                
-                
                 <!-- Password Tips Panel -->
                 <div v-if="showPasswordTips && form.newPassword" class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 bg-gray-800 text-white text-xs rounded-lg p-3 border border-gray-600 z-50 shadow-lg">
                   <!-- Balloon arrow pointing down -->
                   <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
-                  
                   <div class="flex items-center justify-between mb-2">
                     <h4 class="text-sm font-medium text-gray-200">Tips to strengthen your password:</h4>
                     <button 
@@ -178,6 +160,7 @@ import { ref, computed, watch } from 'vue';
 import axios from 'axios';
 import { API_BASE_URL } from '@/apiConfig.js';
 import ButtonConfirmation from '@/components/Modals/ButtonConfirmation.vue';
+import InputTransparent from '@/components/inputs/InputTransparent.vue';
 
 const props = defineProps({
   show: {

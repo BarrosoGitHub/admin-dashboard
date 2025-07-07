@@ -1,5 +1,5 @@
 <template>
-  <div class="status-element-card h-[160px] py-4  my-5 rounded-2xl shadow-inner bg-modal-color border border-color justify-between shadow-md transition-all duration-300"
+  <div class="status-element-card h-[160px] py-5 my-4 rounded-2xl shadow-inner bg-modal-color border border-color justify-between shadow-md transition-all duration-300"
   :class="[
         hovering ? 'shadow-lg' : 'shadow-sm', 
         hovering
@@ -9,8 +9,8 @@
       @mouseenter="onMouseEnter"
       @mouseleave="hovering = false">
     <div class="flex items-center ">
-      <component :is="iconComponent" class="w- h-7 text-white opacity-80 mr-3" />
-      <span class="text-lg text-white font-semibold">{{ title }}</span>
+      <component :is="iconComponent" class="w- h-7 text-color opacity-80 mr-3" />
+      <span class="text-lg text-color font-semibold">{{ title }}</span>
     </div>
     <div class="flex items-center py-2">
       <svg v-if="!hovering" :width="size" :height="size" :viewBox="`0 0 ${size} ${size}`" class="progress-circle mr-2">
@@ -39,9 +39,10 @@
           :x="size/2"
           :y="size/2 + 7"
           text-anchor="middle"
-          fill="white"
+          fill="currentColor"
           font-size="18"
           font-family="monospace"
+          class="text-color-secondary"
         >
           {{ props.mainValue }}
         </text>
@@ -59,7 +60,7 @@
           </div>
         </template>
         <template v-else>
-          <span class="text-white text-sm font-mono whitespace-pre-line flex justify-center w-full">{{ props.secondaryValues }}</span>
+          <span class="text-color text-sm font-mono whitespace-pre-line flex justify-center w-full">{{ props.secondaryValues }}</span>
         </template>
       </div>
     </div>
@@ -73,10 +74,8 @@ import {
   TagIcon,
   ClockIcon,
   CpuChipIcon,
-  ArchiveBoxIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
-  Bars3BottomLeftIcon,
   ServerStackIcon,
   ComputerDesktopIcon,
 } from '@heroicons/vue/24/outline';

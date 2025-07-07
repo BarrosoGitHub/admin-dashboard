@@ -22,7 +22,22 @@ const diagnostics = ref({
 });
 
 // Computed properties for better performance
-const hasAppInfoData = computed(() => appInfoData.value && appInfoData.value.length);
+const hasAppInfoData = computed(() => Array.isArray(appInfoData.value) && appInfoData.value.length > 0);
+const hasFilteredAppInfoData = computed(() => filteredAppInfoData.value && filteredAppInfoData.value.length);
+const filteredAppInfoData = computed(() => {
+  if (!Array.isArray(appInfoData.value) || !searchValue.value.trim() || activeModal.value !== 'appInfo') {
+    return Array.isArray(appInfoData.value) ? appInfoData.value : [];
+  }
+  
+  const search = searchValue.value.toLowerCase();
+  return appInfoData.value.filter(info => 
+    info?.Id?.toLowerCase().includes(search) ||
+    info?.Status?.toLowerCase().includes(search) ||
+    info?.Hash?.toLowerCase().includes(search) ||
+    info?.Version?.toLowerCase().includes(search) ||
+    info?.StartUpTime?.toLowerCase().includes(search)
+  );
+});
 const sidebarClasses = computed(() => ['flex flex-col', sidebarOpen.value ? 'md:ml-64' : '']);
 const maxRamValue = computed(() => {
   if (!Array.isArray(diagnostics.value.ramUsages)) return 100;
@@ -48,7 +63,7 @@ const optConfiguration = ref(null);
 const newOptConfiguration = ref(null);
 const userInterfaceConfig = ref(null);
 const newUserInterfaceConfig = ref(null);
-const appInfoData = ref({});
+const appInfoData = ref([]);
 const networkConfiguration = ref({});
 const templateData = ref({});
 
@@ -57,6 +72,34 @@ const sidebarOpen = ref(false);
 const toastRef = ref(null);
 const diffModalRef = ref(null);
 const uiDiffModalRef = ref(null);
+
+// --- Search functionality ---
+const searchValue = ref("");
+const activeCardName = computed(() => {
+  switch (activeModal.value) {
+    case 'opt': return 'OPT Configuration';
+    case 'ui': return 'User Interface';
+    case 'network': return 'Network Configuration';
+    case 'appInfo': return 'App Information';
+    default: return '';
+  }
+});
+
+const showSearchForActiveCard = computed(() => {
+  // Only show search for cards that have searchable content
+  return activeModal.value === 'opt' || activeModal.value === 'ui' || activeModal.value === 'appInfo';
+});
+
+function handleSearchUpdate(value) {
+  searchValue.value = value;
+}
+
+// Clear search when modal changes
+watch(activeModal, (newModal, oldModal) => {
+  if (newModal !== oldModal) {
+    searchValue.value = "";
+  }
+});
 
 // --- Stepper configuration ---
 const stepperSteps = [
@@ -207,7 +250,7 @@ function resetAllModals() {
   showPasswordChangeModal.value = false;
   optConfiguration.value = null;
   userInterfaceConfig.value = null;
-  appInfoData.value = {};
+  appInfoData.value = [];
 }
 
 function handlePasswordChange() {
@@ -357,7 +400,14 @@ onBeforeUnmount(() => {
 
       <div class="flex-1 md:flex-row">
         <div class="flex-1">
-          <Navbar @sidebar-toggle="sidebarOpen = !sidebarOpen" @password-change="handlePasswordChange" />
+          <Navbar 
+            @sidebar-toggle="sidebarOpen = !sidebarOpen" 
+            @password-change="handlePasswordChange"
+            @search-update="handleSearchUpdate"
+            :searchValue="searchValue"
+            :showSearch="showSearchForActiveCard"
+            :activeCard="activeCardName"
+          />
 
           <div class="flex flex-col md:flex-row md:space-x-4">
           
@@ -382,6 +432,7 @@ onBeforeUnmount(() => {
                   v-if="activeModal === 'opt' && showOPTConfiguration"
                   :show="showOPTConfiguration"
                   :data="optConfiguration || {}"
+                  :searchValue="searchValue"
                   @update="handleUpdateConfiguration"
                 />
               </transition>
@@ -390,6 +441,7 @@ onBeforeUnmount(() => {
                   v-if="activeModal === 'ui' && showUserInterfaceConfig"
                   :show="showUserInterfaceConfig"
                   :data="userInterfaceConfig || {}"
+                  :searchValue="searchValue"
                   @update="handleUpdateUserInterfaceConfig"
                 />
               </transition>
@@ -408,7 +460,7 @@ onBeforeUnmount(() => {
             >
               <div style="pointer-events: auto">
                 <AppInfoCard
-                  v-for="(info, idx) in appInfoData"
+                  v-for="(info, idx) in filteredAppInfoData"
                   :key="idx"
                   :info="info"
                   :smallVersion="true"
@@ -433,19 +485,18 @@ onBeforeUnmount(() => {
                 style="
                   position: fixed;
                   inset: 0;
-                  background: rgba(24, 24, 24, 0.18);
                   pointer-events: none;
                 "
               >
                 <div
-                  class="relative p-2 md:p-8 pointer-events-auto w-full max-w-9xl flex items-start justify-start"
+                  class="px-4 py-8 pointer-events-auto flex items-start justify-start"
                   style="margin-left: 0"
                 >
                   <div
                     class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-0 internal-grid-borders"
                   >
                     <AppInfoCard
-                      v-for="(info, idx) in appInfoData"
+                      v-for="(info, idx) in filteredAppInfoData"
                       :key="idx"
                       :info="info"
                       :smallVersion="false"
@@ -530,7 +581,7 @@ onBeforeUnmount(() => {
     right: 0;
     width: 2px;
     height: 100%;
-    background: #292929; /* Tailwind gray-300 */
+    background-color: var(--grid-border-color);
     z-index: 10;
   }
   .internal-grid-borders > :nth-child(-n + 3)::before {
@@ -540,7 +591,7 @@ onBeforeUnmount(() => {
     bottom: 0;
     width: 100%;
     height: 2px;
-    background: #292929;
+    background-color: var(--grid-border-color);
     z-index: 10;
   }
 }
@@ -549,5 +600,16 @@ onBeforeUnmount(() => {
   .internal-grid-borders > *::before {
     display: none !important;
   }
+}
+
+.shape-fill {
+  fill: #e5e7eb;
+  transition: fill 0.1s;
+}
+:root .shape-fill {
+  fill: #e5e7eb;
+}
+.dark .shape-fill {
+  fill: #303030;
 }
 </style>

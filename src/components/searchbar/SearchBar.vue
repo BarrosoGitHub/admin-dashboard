@@ -1,14 +1,18 @@
 <template>
-  <form class="max-w-xs mx-0" @submit="onSubmit">
+  <form class="max-w-xs mx-0 flex justify-end" @submit="onSubmit">
     <label
       for="default-search"
       class="mb-0 text-sm font-medium text-gray-900 sr-only dark:text-white "
       >{{ label }}</label
     >
-    <div class="relative inline justify-start ">
-      <div class="absolute inset-y-4 start-3.5 flex items-center ps-0 pointer-events-none ">
+    <div class="relative inline justify-start flex">
+      <div 
+        class="absolute inset-y-4 flex items-center ps-0 pointer-events-none transition-all duration-300"
+        :class="isFocused ? 'start-3.5' : 'start-1.5'"
+      >
         <svg
-          class="w-3 h-3 text-gray-500 dark:text-gray-400"
+          :class="['text-gray-500 dark:text-gray-400',
+          isFocused ? 'w-3 h-3' : 'w-7 h-3']"
           aria-hidden="true"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -27,10 +31,10 @@
         type="search"
         id="default-search"
         :class="[
-          'block transition-all duration-300 min-w-0 text-left outline-none ring-0 focus:ring-0 focus:outline-none boolean-selector-inactive',
-          isFocused ? 'w-40 h-10.5 p-2 ps-8 text-sm' : 'w-8 h-10.5 p-2 ps-8 text-sm cursor-pointer'
+          'block transition-all duration-300 min-w-0 outline-none ring-0 focus:ring-0 focus:outline-none boolean-selector-inactive ml-auto',
+          isFocused ? 'w-60 h-10.5 p-2 ps-8 text-sm text-left' : 'w-10.5 h-10.5  text-sm cursor-pointer'
         ]"
-        class="text-sm text-gray-900 rounded-2xl bg-gray-50 dark:bg-gray-100 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white border-0"
+        class="text-sm text-gray-900 rounded-full bg-modal-color border border-color dark:placeholder-gray-400 dark:text-white border-0"
         :placeholder="isFocused ? placeholder : ''"
         :value="modelValue"
         @input="onInput"
@@ -65,5 +69,10 @@ const isFocused = ref(false);
 
 function onInput(event) {
   emit("update:modelValue", event.target.value);
+}
+
+function onSubmit(event) {
+  event.preventDefault();
+  emit("submit", props.modelValue);
 }
 </script>

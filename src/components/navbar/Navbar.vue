@@ -1,10 +1,30 @@
 <script setup>
   import Avatar from '../Avatar.vue';
+  import SearchBar from '../searchbar/SearchBar.vue';
   
-  const emit = defineEmits(['sidebar-toggle', 'password-change']);
+  const props = defineProps({
+    searchValue: {
+      type: String,
+      default: ''
+    },
+    showSearch: {
+      type: Boolean,
+      default: false
+    },
+    activeCard: {
+      type: String,
+      default: ''
+    }
+  });
+  
+  const emit = defineEmits(['sidebar-toggle', 'password-change', 'search-update']);
   
   function handlePasswordChange() {
     emit('password-change');
+  }
+  
+  function handleSearchUpdate(value) {
+    emit('search-update', value);
   }
 </script>
 
@@ -15,11 +35,11 @@
     <nav class="border-white-200  ">
             
 
-      <div class="flex items-center justify-start p-3 z-50">
+      <div class="flex items-center justify-start py-5 p-8 z-50">
         <button
           type="button"
           @click="$emit('sidebar-toggle')"
-          class="inline-flex items-center justify-center p-0.5 w-10 h-10 text-sm text-gray-500 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-100"
+          class="inline-flex items-center justify-center p-0.5 w-12 h-12 text-sm icon-color rounded-full bg-modal-color"
           aria-controls="navbar-hamburger"
           aria-expanded="false"
           style="z-index: 1002; position: relative;"
@@ -41,8 +61,20 @@
             />
           </svg>
         </button>
-        <div class="flex-1"></div>
-        <div class="flex justify-end ">
+        <div class="pl-10 text-2xl font-semibold text-color">
+          OPT name [PH]
+        </div>
+        <div class="flex-1 flex justify-center items-center">
+          <div v-if="showSearch" class="max-w-md w-full">
+            <SearchBar
+              :modelValue="searchValue"
+              @update:modelValue="handleSearchUpdate"
+              :label="`Search ${activeCard}`"
+              :placeholder="`Search in ${activeCard}...`"
+            />
+          </div>
+        </div>
+        <div class="flex justify-end">
           <Avatar @password-change="handlePasswordChange" />
         </div>
       </div>

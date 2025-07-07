@@ -1,11 +1,11 @@
 <template>
-  <div class="bg-website-color min-h-screen w-full flex items-center justify-center relative">
+  <div class="min-h-screen w-full flex items-center justify-center relative">
     <canvas ref="headerBgCanvas" class="absolute inset-0 w-full h-full z-0"></canvas>
     <div
       class="absolute inset-0 flex items-center justify-center z-20"
     >
       <div
-        class="w-full max-w-lg p-4 rounded-lg sm:p-6 md:p-8 modal-fadein"
+        class="w-full max-w-lg p-4 rounded-lg sm:p-6 md:p-8 modal-fadein "
         :class="{ 'modal-fadein-active': modalVisible, 'modal-fadeout': modalFadingOut }"
       >
         <!-- Login instructions -->
@@ -381,10 +381,6 @@ body {
   padding: 0;
   background-color: #f9fafb;
   color: #111827;
-}
-
-.bg-website-color {
-  background-color: #f3f4f6;
 }
 
 .bg-modal-color {
