@@ -427,30 +427,29 @@ onBeforeUnmount(() => {
                 @close="showPasswordChangeModal = false"
                 @success="handlePasswordChangeSuccess"
               />
-              <transition name="">
-                <ConfigurationCard
-                  v-if="activeModal === 'opt' && showOPTConfiguration"
-                  :show="showOPTConfiguration"
-                  :data="optConfiguration || {}"
-                  :searchValue="searchValue"
-                  @update="handleUpdateConfiguration"
-                />
-              </transition>
-              <transition name="">
-                <UserInterfaceCard
-                  v-if="activeModal === 'ui' && showUserInterfaceConfig"
-                  :show="showUserInterfaceConfig"
-                  :data="userInterfaceConfig || {}"
-                  :searchValue="searchValue"
-                  @update="handleUpdateUserInterfaceConfig"
-                />
-              </transition>
-              <transition name="">
-                <NetworkConfigurationCard
-                  v-if="activeModal === 'network' && showNetworkConfiguration"
-                  :modelValue="networkConfiguration"
-                  @response="handleNetworkResponse"
-                />
+              <transition :key="activeModal" mode="out-in">
+                <template v-if="activeModal === 'opt' && showOPTConfiguration">
+                  <ConfigurationCard
+                    :show="showOPTConfiguration"
+                    :data="optConfiguration || {}"
+                    :searchValue="searchValue"
+                    @update="handleUpdateConfiguration"
+                  />
+                </template>
+                <template v-else-if="activeModal === 'ui' && showUserInterfaceConfig">
+                  <UserInterfaceCard
+                    :show="showUserInterfaceConfig"
+                    :data="userInterfaceConfig || {}"
+                    :searchValue="searchValue"
+                    @update="handleUpdateUserInterfaceConfig"
+                  />
+                </template>
+                <template v-else-if="activeModal === 'network' && showNetworkConfiguration">
+                  <NetworkConfigurationCard
+                    :modelValue="networkConfiguration"
+                    @response="handleNetworkResponse"
+                  />
+                </template>
               </transition>
             </div>
             <div
