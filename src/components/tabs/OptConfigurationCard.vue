@@ -88,8 +88,19 @@ watch(filteredData, (newFiltered) => {
 });
 
 function updateConfiguration() {
+  const config = { ...localData.value };
+  // Handle array fields properly by creating deep copies
+  for (const [sectionKey, sectionData] of Object.entries(config)) {
+    if (typeof sectionData === 'object' && sectionData !== null) {
+      for (const [key, value] of Object.entries(sectionData)) {
+        if (Array.isArray(value)) {
+          config[sectionKey][key] = value.map(item => ({ ...item }));
+        }
+      }
+    }
+  }
   emit("update", {
-    config: localData.value,
+    config,
   });
 }
 
@@ -124,10 +135,32 @@ const iconMap = {
 }
 
 function nonBooleanFields(obj) {
-  return Object.fromEntries(Object.entries(obj).filter(([k, v]) => typeof v !== 'boolean'));
+  return Object.fromEntries(Object.entries(obj).filter(([k, v]) => typeof v !== 'boolean' && !Array.isArray(v)));
 }
 function booleanFields(obj) {
   return Object.fromEntries(Object.entries(obj).filter(([k, v]) => typeof v === 'boolean'));
+}
+function arrayFields(obj) {
+  return Object.fromEntries(Object.entries(obj).filter(([k, v]) => Array.isArray(v)));
+}
+
+function addArrayItem(tabKey, arrayKey) {
+  if (!Array.isArray(localData.value[tabKey][arrayKey])) {
+    localData.value[tabKey][arrayKey] = [];
+  }
+  
+  let nextNumber = localData.value[tabKey][arrayKey].length + 1;
+  let newKey = `New${nextNumber}`;
+  while (localData.value[tabKey][arrayKey].some(item => Object.keys(item)[0] === newKey)) {
+    newKey = `New${++nextNumber}`;
+  }
+  localData.value[tabKey][arrayKey].push({ [newKey]: '' });
+}
+
+function removeArrayItem(tabKey, arrayKey, idx) {
+  if (Array.isArray(localData.value[tabKey][arrayKey])) {
+    localData.value[tabKey][arrayKey].splice(idx, 1);
+  }
 }
 </script>
 
@@ -230,6 +263,51 @@ function booleanFields(obj) {
                         style="border: 0px solid var(--toggle-border);"
                       ></div>
                     </label>
+                  </div>
+                </template>
+                <!-- Separator line before Array fields, only if there are array fields -->
+                <template v-if="Object.keys(arrayFields(filteredData[activeTab])).length">
+                  <div class="col-span-full">
+                    <hr class="my-4 border border-color" />
+                  </div>
+                </template>
+                <!-- Array fields (like GradeColors) -->
+                <template
+                  v-for="(arrayValue, arrayKey) in arrayFields(filteredData[activeTab])"
+                  :key="arrayKey"
+                >
+                  <div class="col-span-full">
+                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ formatLabel(arrayKey) }}</label>
+                    <div class="grid grid-cols-1 gap-y-2">
+                      <div
+                        v-for="(item, idx) in localData[activeTab][arrayKey]"
+                        :key="idx"
+                        class="flex items-center gap-2 mb-2"
+                      >
+                        <span class="text-xs text-gray-500">{{ formatLabel(arrayKey).slice(0, -1) }} {{ Object.keys(item)[0] }}</span>
+                        <Input
+                          :label="null"
+                          :placeholder="Object.values(item)[0]"
+                          v-model="localData[activeTab][arrayKey][idx][Object.keys(item)[0]]"
+                          class="w-full"
+                        />
+                        <button
+                          type="button"
+                          class="ml-2 px-2 py-1 rounded bg-red-500 text-white text-xs hover:bg-red-600"
+                          @click="removeArrayItem(activeTab, arrayKey, idx)"
+                          :title="`Remove this ${formatLabel(arrayKey).slice(0, -1).toLowerCase()}`"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        class="mt-2 px-3 py-1 rounded bg-green-600 text-white text-xs hover:bg-green-700 w-fit"
+                        @click="addArrayItem(activeTab, arrayKey)"
+                      >
+                        + Add {{ formatLabel(arrayKey).slice(0, -1) }}
+                      </button>
+                    </div>
                   </div>
                 </template>
               </div>
