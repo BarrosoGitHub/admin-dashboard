@@ -88,19 +88,8 @@ watch(filteredData, (newFiltered) => {
 });
 
 function updateConfiguration() {
-  const config = { ...localData.value };
-  // Handle array fields properly by creating deep copies
-  for (const [sectionKey, sectionData] of Object.entries(config)) {
-    if (typeof sectionData === 'object' && sectionData !== null) {
-      for (const [key, value] of Object.entries(sectionData)) {
-        if (Array.isArray(value)) {
-          config[sectionKey][key] = value.map(item => ({ ...item }));
-        }
-      }
-    }
-  }
   emit("update", {
-    config,
+    config: localData.value,
   });
 }
 
@@ -135,38 +124,31 @@ const iconMap = {
 }
 
 function nonBooleanFields(obj) {
-  return Object.fromEntries(Object.entries(obj).filter(([k, v]) => typeof v !== 'boolean' && !Array.isArray(v)));
+  return Object.fromEntries(Object.entries(obj).filter(([k, v]) => typeof v !== 'boolean' && !isAssignedPumpsArrayFdc(k, v)));
 }
 function booleanFields(obj) {
   return Object.fromEntries(Object.entries(obj).filter(([k, v]) => typeof v === 'boolean'));
 }
-function arrayFields(obj) {
-  return Object.fromEntries(Object.entries(obj).filter(([k, v]) => Array.isArray(v)));
+function isAssignedPumpsArrayFdc(key, value) {
+  // Only for FdcConfiguration > AssignedPumps
+  return key === 'AssignedPumps' && Array.isArray(value) && value.every(v => typeof v === 'number');
 }
-
-function addArrayItem(tabKey, arrayKey) {
-  if (!Array.isArray(localData.value[tabKey][arrayKey])) {
-    localData.value[tabKey][arrayKey] = [];
+function addAssignedPumpFdc() {
+  const arr = localData.value.FdcConfiguration.AssignedPumps;
+  let next = 1;
+  if (arr.length > 0) {
+    next = Math.max(...arr) + 1;
   }
-  
-  let nextNumber = localData.value[tabKey][arrayKey].length + 1;
-  let newKey = `New${nextNumber}`;
-  while (localData.value[tabKey][arrayKey].some(item => Object.keys(item)[0] === newKey)) {
-    newKey = `New${++nextNumber}`;
-  }
-  localData.value[tabKey][arrayKey].push({ [newKey]: '' });
+  arr.push(next);
 }
-
-function removeArrayItem(tabKey, arrayKey, idx) {
-  if (Array.isArray(localData.value[tabKey][arrayKey])) {
-    localData.value[tabKey][arrayKey].splice(idx, 1);
-  }
+function removeAssignedPumpFdc(idx) {
+  localData.value.FdcConfiguration.AssignedPumps.splice(idx, 1);
 }
 </script>
 
 <template>
-  <div v-if="props.show" class="py-10 px-8 ">
-    <div class="w-full min-w-[320px] max-w-full md:w-[60vw] md:min-w-[950px] md:max-w-[70vw] rounded-2xl shadow-md bg-modal-color border border-color flex flex-col" style="z-index: 10; position: relative;">
+  <div v-if="props.show" class="py-9 px-8 ">
+    <div class="w-full min-w-[320px] max-w-full  md:min-w-[950px] md:max-w-[70vw] rounded-2xl shadow-md bg-modal-color border border-color flex flex-col" style="z-index: 10; position: relative;">
       <!-- Top line with label -->
       <div class="w-full flex items-center border-b border-color px-8 py-4 mb-2">
         <span class="text-xl font-semibold text-gray-900 dark:text-white tracking-wide">OPT Configuration</span>
@@ -230,6 +212,7 @@ function removeArrayItem(tabKey, arrayKey, idx) {
                     class="w-full m-1"
                   />
                 </template>
+                
                 <!-- Separator line before booleans, only if there are boolean fields -->
                 <template v-if="Object.keys(booleanFields(filteredData[activeTab])).length">
                   <div class="my-6 col-span-full">
@@ -241,7 +224,7 @@ function removeArrayItem(tabKey, arrayKey, idx) {
                   v-for="(propValue, propKey) in booleanFields(filteredData[activeTab])"
                   :key="propKey"
                 >
-                  <div class="flex items-center space-x-3">
+                  <div class="flex items-center space-x-3 mx-3 ">
                     <label :for="`${activeTab}-${propKey}`" class="block text-sm font-medium text-gray-900 dark:text-white flex-1 mb-0">{{
                       formatLabel(propKey)
                     }}</label>
@@ -265,64 +248,32 @@ function removeArrayItem(tabKey, arrayKey, idx) {
                     </label>
                   </div>
                 </template>
-                <!-- Separator line before Array fields, only if there are array fields -->
-                <template v-if="Object.keys(arrayFields(filteredData[activeTab])).length">
+              </div>
+            </template>
+
+            <!-- Separator line before AssignedPumps, only if in FdcConfiguration -->
+                <template v-if="activeTab === 'FdcConfiguration' && localData.FdcConfiguration && Array.isArray(localData.FdcConfiguration.AssignedPumps)">
                   <div class="col-span-full">
-                    <hr class="my-4 border border-color" />
+                    <hr class="my-8 mx-2 border border-color" />
                   </div>
-                </template>
-                <!-- Array fields (like GradeColors) -->
-                <template
-                  v-for="(arrayValue, arrayKey) in arrayFields(filteredData[activeTab])"
-                  :key="arrayKey"
-                >
-                  <div class="col-span-full">
-                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ formatLabel(arrayKey) }}</label>
-                    <div class="grid grid-cols-1 gap-y-2">
-                      <div
-                        v-for="(item, idx) in localData[activeTab][arrayKey]"
-                        :key="idx"
-                        class="flex items-center gap-2 mb-2"
-                      >
-                        <span class="text-xs text-gray-500">{{ formatLabel(arrayKey).slice(0, -1) }} {{ Object.keys(item)[0] }}</span>
-                        <Input
-                          :label="null"
-                          :placeholder="Object.values(item)[0]"
-                          v-model="localData[activeTab][arrayKey][idx][Object.keys(item)[0]]"
-                          class="w-full"
-                        />
-                        <button
-                          type="button"
-                          class="ml-2 px-2 py-1 rounded bg-red-500 text-white text-xs hover:bg-red-600"
-                          @click="removeArrayItem(activeTab, arrayKey, idx)"
-                          :title="`Remove this ${formatLabel(arrayKey).slice(0, -1).toLowerCase()}`"
-                        >
-                          Remove
-                        </button>
+                  <div class="col-span-full mx-3">
+                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Assigned Pumps</label>
+                    <div class="flex flex-col gap-2">
+                      <div v-for="(pump, idx) in localData.FdcConfiguration.AssignedPumps" :key="idx" class="flex items-center gap-2">
+                        <input type="number" min="0" step="1" class="w-24 px-2 py-1 rounded border border-color" v-model.number="localData.FdcConfiguration.AssignedPumps[idx]" />
+                        <button type="button" class="ml-2 px-2 py-1 rounded bg-red-500 text-white text-xs hover:bg-red-600" @click="removeAssignedPumpFdc(idx)">Remove</button>
                       </div>
-                      <button
-                        type="button"
-                        class="mt-2 px-3 py-1 rounded bg-green-600 text-white text-xs hover:bg-green-700 w-fit"
-                        @click="addArrayItem(activeTab, arrayKey)"
-                      >
-                        + Add {{ formatLabel(arrayKey).slice(0, -1) }}
-                      </button>
+                      <button type="button" class="mt-2 px-3 py-1 rounded bg-green-600 text-white text-xs hover:bg-green-700 w-fit" @click="addAssignedPumpFdc">+ Add Pump</button>
                     </div>
                   </div>
                 </template>
-              </div>
-            </template>
             <div
               v-else-if="filteredData[activeTab] === null"
               class="text-gray-500 dark:text-gray-400"
             >
               No data
             </div>
-            <pre
-              v-else
-              class="text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-900 rounded p-2 overflow-x-auto"
-              >{{ filteredData[activeTab] }}</pre
-            >
+            
           </div>
         </div>
       </div>
