@@ -30,28 +30,39 @@ async function isLoggedIn() {
   const token = localStorage.getItem('jwt');
   if (!token) return false;
   try {
-    const resp = await axios.get(`${API_BASE_URL}/auth/validate?token=${encodeURIComponent(token)}`);
+    const resp = await axios.get(`${API_BASE_URL}/auth/validate?token=${encodeURIComponent(token)}`, {
+      timeout: 5000 // 5 second timeout
+    });
     return resp.data && resp.data.Valid === true;
-  } catch {
+  } catch (error) {
+    console.warn('Authentication validation failed:', error.message);
+    // Clear invalid token if the request failed
+    localStorage.removeItem('jwt');
     return false;
   }
 }
 
 router.beforeEach(async (to, from, next) => {
-  if (to.meta.requiresAuth) {
-    if (await isLoggedIn()) {
-      next();
+  try {
+    if (to.meta.requiresAuth) {
+      if (await isLoggedIn()) {
+        next();
+      } else {
+        next({ name: 'Login' });
+      }
+    } else if (to.meta.guest) {
+      if (await isLoggedIn()) {
+        next({ name: 'Home' });
+      } else {
+        next();
+      }
     } else {
-      next({ name: 'Login' });
-    }
-  } else if (to.meta.guest) {
-    if (await isLoggedIn()) {
-      next({ name: 'Home' });
-    } else {
       next();
     }
-  } else {
-    next();
+  } catch (error) {
+    console.error('Router navigation error:', error);
+    // If there's an error in the navigation guard, redirect to login
+    next({ name: 'Login' });
   }
 });
 

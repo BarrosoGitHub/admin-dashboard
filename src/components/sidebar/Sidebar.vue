@@ -54,16 +54,25 @@
           </button>
           <ul
             id="dropdown-config"
-            class="py-2 space-y-2 transition-all duration-300 overflow-hidden"
+            class="py-2 space-y-2 transition-all duration-300 overflow"
             :class="configDropdownOpen ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'"
           >
-            <li>
+            <li v-if="optConfigAvailable">
               <a
                 href="#"
                 class="flex items-center w-full p-2 text-color transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:hover:bg-gray-700"
                 @click.prevent="fetchOptConfiguration"
               >
                 OPT Configuration
+              </a>
+            </li>
+            <li v-if="epsConfigAvailable">
+              <a
+                href="#"
+                class="flex items-center w-full p-2 text-color transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:hover:bg-gray-700"
+                @click.prevent="fetchEpsConfiguration"
+              >
+                EPS Configuration
               </a>
             </li>
             <li>
@@ -110,11 +119,14 @@ const props = defineProps({
 });
 const emit = defineEmits([
   'show-configuration-modal',
+  'show-eps-configuration-modal',
   'sidebar-toggle',
   'opt-configuration',
+  'eps-configuration',
   'user-interface-configuration',
   'dashboard',
-  'network-configuration' // Added this event
+  'network-configuration',
+  'password-change'
 ]);
 
 const showSidebar = ref(props.show);
@@ -138,7 +150,7 @@ watch(showSidebar, (val) => {
 
 function fetchOptConfiguration() {
   const token = localStorage.getItem('jwt');
-  axios.get(`${API_BASE_URL}/configuration/opt`, {
+  axios.get(`${API_BASE_URL}/configuration`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {}
   })
     .then(response => {
@@ -146,7 +158,22 @@ function fetchOptConfiguration() {
     })
     .catch(error => {
       if (error.response && error.response.status === 404) {
-        emit('show-configuration-modal');
+        emit('show-opt-configuration-modal');
+      }
+    });
+}
+
+function fetchEpsConfiguration() {
+  const token = localStorage.getItem('jwt');
+  axios.get(`${API_BASE_URL}/eps-configuration`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {}
+  })
+    .then(response => {
+      emit('eps-configuration', response.data);
+    })
+    .catch(error => {
+      if (error.response && error.response.status === 404) {
+        emit('show-eps-configuration-modal');
       }
     });
 }
@@ -197,7 +224,45 @@ function handleDashboardClick() {
     });
 }
 
+const optConfigAvailable = ref(false);
+
+function checkOptConfigAvailable() {
+  const token = localStorage.getItem('jwt');
+  axios.get(`${API_BASE_URL}/opt-configuration/is-available`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {}
+  })
+    .then(response => {
+      // If API returns true or 200, show the menu item
+      optConfigAvailable.value = response.data === true || response.data?.available === true;
+    })
+    .catch(error => {
+      // Hide if 404 or any error
+      optConfigAvailable.value = false;
+    });
+}
+
+const epsConfigAvailable = ref(false);
+
+function checkEpsConfigAvailable() {
+  const token = localStorage.getItem('jwt');
+  axios.get(`${API_BASE_URL}/eps-configuration/is-available`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {}
+  })
+    .then(response => {
+      // If API returns true or 200, show the menu item
+      epsConfigAvailable.value = response.data === true || response.data?.available === true;
+    })
+    .catch(error => {
+      // Hide if 404 or any error
+      epsConfigAvailable.value = false;
+    });
+}
+
+
 onMounted(() => {
+  checkOptConfigAvailable();
+  checkEpsConfigAvailable();
+
   window.addEventListener('sidebar-close', () => {
     showSidebar.value = false;
   });

@@ -1,17 +1,20 @@
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount, computed } from "vue";
 import Sidebar from "../components/sidebar/Sidebar.vue";
-import ConfigurationModal from "../components/Modals/ConfigurationModal.vue";
+import ConfigurationModal from "../components/Modals/OptConfigurationModal.vue";
 import Navbar from "../components/navbar/Navbar.vue";
 import ConfigurationCard from "../components/tabs/OptConfigurationCard.vue";
 import UserInterfaceCard from "../components/tabs/UserInterfaceCard.vue";
 import ConfirmationToast from "../components/toasts/ConfirmationToast.vue";
 import ConfirmConfigurationChanges from "../components/Modals/ConfirmConfigurationChangesModal.vue";
-import ConfigurationTemplateModal from "../components/Modals/ConfigurationTemplateModal.vue";
+import OptConfigurationTemplateModal from "../components/Modals/OptConfigurationTemplateModal.vue";
+import EpsConfigurationTemplateModal from "../components/Modals/EpsConfigurationTemplateModal.vue";
 import PasswordChangeModal from "../components/Modals/PasswordChangeModal.vue";
 import AppInfoCard from "../components/tabs/AppInfoCard.vue";
 import NetworkConfigurationCard from "../components/tabs/NetworkConfigurationCard.vue";
 import StatusElementCard from "../components/tabs/StatusElementCard.vue";
+import EpsConfigurationModal from "@/components/Modals/EpsConfigurationModal.vue";
+import EpsConfigurationCard from "../components/tabs/EpsConfigurationCard.vue";
 import { API_BASE_URL, WS_BASE_URL } from '@/apiConfig.js';
 const diagnostics = ref({
   cpuTemp: 0,
@@ -55,8 +58,11 @@ const showUserInterfaceConfig = ref(false);
 const showAppInfoCard = ref(false);
 const showNetworkConfiguration = ref(false);
 const showConfigModal = ref(false);
+const showEpsConfigModal = ref(false);
 const showOPTConfigurationTemplate = ref(false);
+const showEPSConfigurationTemplate = ref(false);
 const showPasswordChangeModal = ref(false);
+const showEpsConfiguration = ref(false);
 
 // --- Data refs ---
 const optConfiguration = ref(null);
@@ -66,6 +72,9 @@ const newUserInterfaceConfig = ref(null);
 const appInfoData = ref([]);
 const networkConfiguration = ref({});
 const templateData = ref({});
+const epsTemplateData = ref({});
+const epsConfiguration = ref(null);
+
 
 // --- Component refs ---
 const sidebarOpen = ref(false);
@@ -164,9 +173,18 @@ function openConfigModal() {
   showConfigModal.value = true;
 }
 
+function openEpsConfigModal() {
+  showEpsConfigModal.value = true;
+}
+
 function handleConfigSubmitted(responseData) {
   templateData.value = responseData;
   showOPTConfigurationTemplate.value = true;
+}
+
+function handleEpsConfigSubmitted(responseData) {
+  epsTemplateData.value = responseData;
+  showEPSConfigurationTemplate.value = true;
 }
 
 function showOPTConfigAddedToast() {
@@ -224,6 +242,21 @@ function handleUpdateUserInterfaceConfig(data) {
     "ui"
   );
   showUserInterfaceConfig.value = true;
+}
+
+function handleEpsConfiguration(data) {
+  epsConfiguration.value = data;
+  activeModal.value = "eps";
+  showEpsConfiguration.value = true;
+  showUserInterfaceConfig.value = false;
+  showAppInfoCard.value = false;
+  showOPTConfiguration.value = false;
+}
+
+function handleUpdateEpsConfiguration(data) {
+  // You can add diff logic here if needed, similar to OPT
+  epsConfiguration.value = data.config;
+  showEpsConfiguration.value = true;
 }
 
 watch(showConfigModal, (val) => {
@@ -386,9 +419,11 @@ onBeforeUnmount(() => {
   
     <Sidebar
       :show="sidebarOpen"
-      @show-configuration-modal="openConfigModal"
+      @show-opt-configuration-modal="openConfigModal"
+      @show-eps-configuration-modal="openEpsConfigModal"
       @sidebar-toggle="sidebarOpen = $event"
       @opt-configuration="handleOptConfiguration"
+      @eps-configuration="handleEpsConfiguration"
       @user-interface-configuration="handleUserInterfaceConfig"
       @dashboard="handleDashboard"
       @network-configuration="handleNetworkConfiguration"
@@ -417,15 +452,25 @@ onBeforeUnmount(() => {
                 @close="showConfigModal = false"
                 @submitted="handleConfigSubmitted"
               />
-              <ConfigurationTemplateModal
+              <OptConfigurationTemplateModal
                 :show="showOPTConfigurationTemplate"
                 :data="templateData || {}"
                 @submit="showOPTConfigurationTemplate = false"
+              />
+              <EpsConfigurationModal
+                :show="showEpsConfigModal"
+                @close="showEpsConfigModal = false"
+                @submitted="handleEpsConfigSubmitted"
               />
               <PasswordChangeModal
                 :show="showPasswordChangeModal"
                 @close="showPasswordChangeModal = false"
                 @success="handlePasswordChangeSuccess"
+              />
+              <EpsConfigurationTemplateModal
+                :show="showEPSConfigurationTemplate"
+                :data="epsTemplateData || {}"
+                @submit="showEPSConfigurationTemplate = false"
               />
               <transition :key="activeModal" mode="out-in">
                 <template v-if="activeModal === 'opt' && showOPTConfiguration">
@@ -434,6 +479,14 @@ onBeforeUnmount(() => {
                     :data="optConfiguration || {}"
                     :searchValue="searchValue"
                     @update="handleUpdateConfiguration"
+                  />
+                </template>
+                <template v-else-if="activeModal === 'eps' && showEpsConfiguration">
+                  <EpsConfigurationCard
+                    :show="showEpsConfiguration"
+                    :data="epsConfiguration || {}"
+                    :searchValue="searchValue"
+                    @update="handleUpdateEpsConfiguration"
                   />
                 </template>
                 <template v-else-if="activeModal === 'ui' && showUserInterfaceConfig">
@@ -452,22 +505,22 @@ onBeforeUnmount(() => {
                 </template>
               </transition>
             </div>
-            <div
-              v-if="hasAppInfoData && activeModal !== 'appInfo'"
-              class="flex flex-col items-end pt-5 pr-4 mr-20 z-40"
-              style="pointer-events: none"
-            >
-              <div style="pointer-events: auto">
-                <AppInfoCard
-                  v-for="(info, idx) in filteredAppInfoData"
-                  :key="idx"
-                  :info="info"
-                  :smallVersion="true"
-                />
+            <transition name="appinfo-slide-right" mode="out-in">
+              <div
+                v-if="hasAppInfoData && activeModal !== 'appInfo'"
+                class="flex flex-col items-end pt-5 pr-4 mr-20 z-40"
+                style="pointer-events: none"
+              >
+                <div style="pointer-events: auto">
+                  <AppInfoCard
+                    v-for="(info, idx) in filteredAppInfoData"
+                    :key="idx"
+                    :info="info"
+                    :smallVersion="true"
+                  />
+                </div>
               </div>
-            </div>
-            <!-- AppInfoCards in original position when dashboard is open -->
-            <transition name="">
+            </transition>
               <div
                 v-if="activeModal === 'appInfo' && showAppInfoCard"
                 id="popup-modal"
@@ -531,13 +584,10 @@ onBeforeUnmount(() => {
                         :stroke="10"
                         type="disk"
                       />
-
-      
                     </div>
                   </div>
                 </div>
               </div>
-            </transition>
           </div>
         </div>
       </div>
@@ -610,5 +660,35 @@ onBeforeUnmount(() => {
 }
 .dark .shape-fill {
   fill: #303030;
+}
+/* Modern dashboard modal transition */
+.dashboard-fade-slide-enter-active, .dashboard-fade-slide-leave-active {
+  transition: opacity 0.3s cubic-bezier(0.4,0,0.2,1), transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+/* Dashboard modal slides in from left, returns to original position */
+.dashboard-fade-slide-enter-from, .dashboard-fade-slide-leave-to {
+  opacity: 0;
+  transform: scale(1) translateX(40px);
+  filter: blur(5px);
+}
+.dashboard-fade-slide-enter-to, .dashboard-fade-slide-leave-from {
+  opacity: 1;
+  transform: scale(1) translateX(0);
+  filter: blur(0);
+}
+/* AppInfoCard floating slide-right transition */
+.appinfo-slide-right-enter-active, .appinfo-slide-right-leave-active {
+  transition: opacity 0.15s cubic-bezier(0.4,0,0.2,1), transform 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+/* AppInfoCard floats in from right, returns to original position */
+.appinfo-slide-right-enter-from, .appinfo-slide-right-leave-to {
+  opacity: 0;
+  transform: translateX(-40px) scale(1);
+  filter: blur(5px);
+}
+.appinfo-slide-right-enter-to, .appinfo-slide-right-leave-from {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+  filter: blur(0);
 }
 </style>
