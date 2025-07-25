@@ -22,7 +22,7 @@ import {
   ServerStackIcon,
   IdentificationIcon,
   // ...add more as needed
-} from '@heroicons/vue/24/outline'
+} from "@heroicons/vue/24/outline";
 
 const getEnumOptions = getEnumOptionsHelper;
 
@@ -35,7 +35,7 @@ const props = defineProps({
   },
   searchValue: {
     type: String,
-    default: '',
+    default: "",
   },
 });
 
@@ -121,17 +121,27 @@ const iconMap = {
   IngenicoConfiguration: CreditCardIcon,
   IntermarcheConfiguration: BuildingStorefrontIcon,
   BongasConfiguration: GlobeAltIcon,
-}
+};
 
 function nonBooleanFields(obj) {
-  return Object.fromEntries(Object.entries(obj).filter(([k, v]) => typeof v !== 'boolean' && !isAssignedPumpsArrayFdc(k, v)));
+  return Object.fromEntries(
+    Object.entries(obj).filter(
+      ([k, v]) => typeof v !== "boolean" && !isAssignedPumpsArrayFdc(k, v)
+    )
+  );
 }
 function booleanFields(obj) {
-  return Object.fromEntries(Object.entries(obj).filter(([k, v]) => typeof v === 'boolean'));
+  return Object.fromEntries(
+    Object.entries(obj).filter(([k, v]) => typeof v === "boolean")
+  );
 }
 function isAssignedPumpsArrayFdc(key, value) {
   // Only for FdcConfiguration > AssignedPumps
-  return key === 'AssignedPumps' && Array.isArray(value) && value.every(v => typeof v === 'number');
+  return (
+    key === "AssignedPumps" &&
+    Array.isArray(value) &&
+    value.every((v) => typeof v === "number")
+  );
 }
 function addAssignedPumpFdc() {
   const arr = localData.value.FdcConfiguration.AssignedPumps;
@@ -147,13 +157,28 @@ function removeAssignedPumpFdc(idx) {
 </script>
 
 <template>
-  <div v-if="props.show" class="py-9 px-8 ">
-    <div class="w-full min-w-[320px] max-w-full  md:min-w-[950px] md:max-w-[70vw] rounded-2xl shadow-md bg-modal-color border border-color flex flex-col" style="z-index: 10; position: relative;">
+  <div v-if="props.show" class="py-9 px-8">
+    <div
+      class="w-full min-w-[320px] max-w-full md:min-w-[950px] md:max-w-[70vw] rounded-2xl shadow-md bg-modal-color border border-color flex flex-col"
+      style="z-index: 10; position: relative"
+    >
       <!-- Top line with label -->
-      <div class="w-full flex items-center border-b border-color px-8 py-4 mb-2">
-        <span class="text-xl font-semibold text-gray-900 dark:text-white tracking-wide">OPT Configuration</span>
+      <div class="w-full flex items-center border-b border-color px-4.5 py-4 mb-2">
+        <span class="inline-block align-middle px-3.5">
+          <img
+            src="@/assets/petrol-pump.png"
+            alt="Petrol Pump icon"
+            width="32"
+            height="32"
+            class="inline-block align-middle mr-1 petrol-pump-icon"
+          />
+          <span class="sr-only">Petrol Pump icon</span>
+        </span>
+        <span class="text-xl font-semibold text-gray-900 dark:text-white tracking-wide"
+          >OPT Configuration</span
+        >
       </div>
-      
+
       <div class="flex flex-1 min-h-0">
         <!-- Tabs on the left -->
         <ul
@@ -164,16 +189,15 @@ function removeAssignedPumpFdc(idx) {
             <button
               type="button"
               class="tab-animate flex items-center flex-1 text-left px-2 py-1.5 my-1.5 mx-3 cursor-pointer"
-              :class="[activeTab === key
-                ? 'active text-color font-semibold'
-                : 'text-color-secondary']"
+              :class="[
+                activeTab === key
+                  ? 'active text-color font-semibold'
+                  : 'text-color-secondary',
+              ]"
               @click="activeTab = key"
-              style="position:relative;"
+              style="position: relative"
             >
-              <component
-                :is="iconMap[key] || Cog6ToothIcon"
-                class="w-5 h-5 mr-2"
-              />
+              <component :is="iconMap[key] || Cog6ToothIcon" class="w-5 h-5 mr-2" />
               {{
                 formatLabel(key)
                   .replace(/configuration/i, "")
@@ -192,15 +216,18 @@ function removeAssignedPumpFdc(idx) {
           >
             <h2
               class="mb-5 text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white"
-            >
-            </h2>
+            ></h2>
             <template
-              v-if="filteredData[activeTab] && typeof filteredData[activeTab] === 'object'"
+              v-if="
+                filteredData[activeTab] && typeof filteredData[activeTab] === 'object'
+              "
             >
               <div class="grid grid-cols-1 md:grid-cols-2 gap-x-15 gap-y-2">
                 <!-- Non-boolean fields first -->
                 <template
-                  v-for="(propValue, propKey) in nonBooleanFields(filteredData[activeTab])"
+                  v-for="(propValue, propKey) in nonBooleanFields(
+                    filteredData[activeTab]
+                  )"
                   :key="propKey"
                 >
                   <InputTransparent
@@ -212,9 +239,11 @@ function removeAssignedPumpFdc(idx) {
                     class="w-full m-1"
                   />
                 </template>
-                
+
                 <!-- Separator line before booleans, only if there are boolean fields -->
-                <template v-if="Object.keys(booleanFields(filteredData[activeTab])).length">
+                <template
+                  v-if="Object.keys(booleanFields(filteredData[activeTab])).length"
+                >
                   <div class="my-6 col-span-full">
                     <hr class="my-4 border border-color hidden" />
                   </div>
@@ -224,10 +253,12 @@ function removeAssignedPumpFdc(idx) {
                   v-for="(propValue, propKey) in booleanFields(filteredData[activeTab])"
                   :key="propKey"
                 >
-                  <div class="flex items-center space-x-3 mx-3 ">
-                    <label :for="`${activeTab}-${propKey}`" class="block text-sm font-medium text-gray-900 dark:text-white flex-1 mb-0">{{
-                      formatLabel(propKey)
-                    }}</label>
+                  <div class="flex items-center space-x-3 mx-3">
+                    <label
+                      :for="`${activeTab}-${propKey}`"
+                      class="block text-sm font-medium text-gray-900 dark:text-white flex-1 mb-0"
+                      >{{ formatLabel(propKey) }}</label
+                    >
                     <!-- Slider toggle switch -->
                     <label class="inline-flex items-center cursor-pointer ml-auto">
                       <input
@@ -237,13 +268,13 @@ function removeAssignedPumpFdc(idx) {
                         v-model="localData[activeTab][propKey]"
                       />
                       <div
-                        :class=" [
+                        :class="[
                           'relative w-11 h-6 rounded-full peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[\'\'] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all',
                           localData[activeTab][propKey]
                             ? 'boolean-selector-active'
-                            : 'boolean-selector-inactive'
+                            : 'boolean-selector-inactive',
                         ]"
-                        style="border: 0px solid var(--toggle-border);"
+                        style="border: 0px solid var(--toggle-border)"
                       ></div>
                     </label>
                   </div>
@@ -252,34 +283,65 @@ function removeAssignedPumpFdc(idx) {
             </template>
 
             <!-- Separator line before AssignedPumps, only if in FdcConfiguration -->
-                <template v-if="activeTab === 'FdcConfiguration' && localData.FdcConfiguration && Array.isArray(localData.FdcConfiguration.AssignedPumps)">
-                  <div class="col-span-full">
-                    <hr class="my-8 mx-2 border border-color" />
+            <template
+              v-if="
+                activeTab === 'FdcConfiguration' &&
+                localData.FdcConfiguration &&
+                Array.isArray(localData.FdcConfiguration.AssignedPumps)
+              "
+            >
+              <div class="col-span-full">
+                <hr class="my-8 mx-2 border border-color" />
+              </div>
+              <div class="col-span-full mx-3">
+                <label
+                  class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                  >Assigned Pumps</label
+                >
+                <div class="flex flex-col gap-2">
+                  <div
+                    v-for="(pump, idx) in localData.FdcConfiguration.AssignedPumps"
+                    :key="idx"
+                    class="flex items-center gap-2"
+                  >
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      class="w-24 px-2 py-1 rounded border border-color"
+                      v-model.number="localData.FdcConfiguration.AssignedPumps[idx]"
+                    />
+                    <button
+                      type="button"
+                      class="ml-2 px-2 py-1 rounded bg-red-500 text-white text-xs hover:bg-red-600"
+                      @click="removeAssignedPumpFdc(idx)"
+                    >
+                      Remove
+                    </button>
                   </div>
-                  <div class="col-span-full mx-3">
-                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Assigned Pumps</label>
-                    <div class="flex flex-col gap-2">
-                      <div v-for="(pump, idx) in localData.FdcConfiguration.AssignedPumps" :key="idx" class="flex items-center gap-2">
-                        <input type="number" min="0" step="1" class="w-24 px-2 py-1 rounded border border-color" v-model.number="localData.FdcConfiguration.AssignedPumps[idx]" />
-                        <button type="button" class="ml-2 px-2 py-1 rounded bg-red-500 text-white text-xs hover:bg-red-600" @click="removeAssignedPumpFdc(idx)">Remove</button>
-                      </div>
-                      <button type="button" class="mt-2 px-3 py-1 rounded bg-green-600 text-white text-xs hover:bg-green-700 w-fit" @click="addAssignedPumpFdc">+ Add Pump</button>
-                    </div>
-                  </div>
-                </template>
+                  <button
+                    type="button"
+                    class="mt-2 px-3 py-1 rounded bg-green-600 text-white text-xs hover:bg-green-700 w-fit"
+                    @click="addAssignedPumpFdc"
+                  >
+                    + Add Pump
+                  </button>
+                </div>
+              </div>
+            </template>
             <div
               v-else-if="filteredData[activeTab] === null"
               class="text-gray-500 dark:text-gray-400"
             >
               No data
             </div>
-            
           </div>
         </div>
       </div>
       <!-- Search and Button always at the bottom of the card -->
-      <div class="flex flex-col md:flex-row items-center justify-end gap-4 mt-8 mb-4 px-8">
-        
+      <div
+        class="flex flex-col md:flex-row items-center justify-end gap-4 mt-8 mb-4 px-8"
+      >
         <button
           @click="updateConfiguration"
           class="p-4 text-white bg-blue-600 focus:outline-none hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 font-medium rounded-full text-sm px-10 py-2.5 dark:bg-blue-700 dark:text-white dark:border-blue-600 dark:hover:bg-blue-800 dark:hover:border-blue-600 dark:focus:ring-blue-800"
@@ -305,10 +367,18 @@ function removeAssignedPumpFdc(idx) {
   background: var(--input-border-color-selected); /* use the selector color */
   border-radius: 2px;
   transform: scaleX(0);
-  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
 }
 .tab-animate.active .tab-border {
   transform: scaleX(1);
+}
+
+/* Tint petrol-pump icon to white in dark mode */
+.petrol-pump-icon {
+  /* Default: no filter */
+}
+.dark .petrol-pump-icon {
+  filter: brightness(0) invert(1);
 }
 </style>

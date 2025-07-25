@@ -150,7 +150,7 @@ watch(showSidebar, (val) => {
 
 function fetchOptConfiguration() {
   const token = localStorage.getItem('jwt');
-  axios.get(`${API_BASE_URL}/configuration`, {
+  axios.get(`${API_BASE_URL}/opt-configuration`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {}
   })
     .then(response => {

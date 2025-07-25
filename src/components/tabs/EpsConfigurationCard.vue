@@ -191,7 +191,11 @@ function booleanFields(obj) {
   <div v-if="props.show" class="py-9 px-8 ">
     <div class="w-full min-w-[320px] max-w-full  md:min-w-[950px] md:max-w-[70vw] rounded-2xl shadow-md bg-modal-color border border-color flex flex-col" style="z-index: 10; position: relative;">
       <!-- Top line with label -->
-      <div class="w-full flex items-center border-b border-color px-8 py-4 mb-2">
+      <div class="w-full flex items-center border-b border-color px-7 py-4 mb-2">
+      <span class="inline-block align-middle px-2.5">
+                <img src="@/assets/payment.png" alt="Payment icon" width="32" height="32" class="inline-block align-middle mr-1 payment-icon" />
+                <span class="sr-only">Payment icon</span>
+              </span>
         <span class="text-xl font-semibold text-gray-900 dark:text-white tracking-wide">EPS Configuration</span>
       </div>
       
@@ -398,4 +402,14 @@ function booleanFields(obj) {
 .tab-animate.active .tab-border {
   transform: scaleX(1);
 }
+
+/* Tint payment icon to white in dark mode */
+.payment-icon {
+  /* Default: no filter */
+}
+.dark .payment-icon {
+  filter: brightness(0) invert(1);
+}
 </style>
+
+
