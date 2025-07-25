@@ -74,6 +74,7 @@ const networkConfiguration = ref({});
 const templateData = ref({});
 const epsTemplateData = ref({});
 const epsConfiguration = ref(null);
+const newEpsConfiguration = ref(null);
 
 
 // --- Component refs ---
@@ -81,6 +82,7 @@ const sidebarOpen = ref(false);
 const toastRef = ref(null);
 const diffModalRef = ref(null);
 const uiDiffModalRef = ref(null);
+const epsDiffModalRef = ref(null);
 
 // --- Search functionality ---
 const searchValue = ref("");
@@ -254,8 +256,12 @@ function handleEpsConfiguration(data) {
 }
 
 function handleUpdateEpsConfiguration(data) {
-  // You can add diff logic here if needed, similar to OPT
-  epsConfiguration.value = data.config;
+  newEpsConfiguration.value = data;
+  epsDiffModalRef.value?.showDiff(
+    epsConfiguration.value,
+    newEpsConfiguration.value.config,
+    "eps"
+  );
   showEpsConfiguration.value = true;
 }
 
@@ -601,6 +607,10 @@ onBeforeUnmount(() => {
   <ConfirmConfigurationChanges
     ref="uiDiffModalRef"
     @on-updated-data="handleUserInterfaceConfig"
+  />
+  <ConfirmConfigurationChanges
+    ref="epsDiffModalRef"
+    @on-updated-data="handleEpsConfiguration"
   />
   <ConfirmationToast ref="toastRef" />
 </template>

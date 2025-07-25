@@ -69,13 +69,80 @@ function computeDiff(obj1, obj2) {
     const val1 = obj1[key];
     const val2 = obj2[key];
 
-    if (isPlainObject(val1) && isPlainObject(val2)) {
+    if (Array.isArray(val1) && Array.isArray(val2)) {
+      // Handle arrays by comparing each element
+      if (val1.length !== val2.length) {
+        diffs[key] = {
+          old: `Array(${val1.length} items)`,
+          new: `Array(${val2.length} items)`,
+        };
+      } else {
+        // Compare each array element
+        for (let i = 0; i < val1.length; i++) {
+          const item1 = val1[i];
+          const item2 = val2[i];
+          
+          if (isPlainObject(item1) && isPlainObject(item2)) {
+            // Compare properties within array objects
+            const itemKeys = new Set([...Object.keys(item1), ...Object.keys(item2)]);
+            for (const itemKey of itemKeys) {
+              const subVal1 = item1[itemKey];
+              const subVal2 = item2[itemKey];
+              
+              // Handle arrays within objects (like AllowedAcquirerIds)
+              if (Array.isArray(subVal1) && Array.isArray(subVal2)) {
+                if (!arraysEqual(subVal1, subVal2)) {
+                  diffs[`${key}[${i}].${itemKey}`] = {
+                    old: JSON.stringify(subVal1),
+                    new: JSON.stringify(subVal2),
+                  };
+                }
+              } else if (subVal1 !== subVal2) {
+                diffs[`${key}[${i}].${itemKey}`] = {
+                  old: subVal1 ?? "N/A",
+                  new: subVal2 ?? "N/A",
+                };
+              }
+            }
+          } else if (Array.isArray(item1) && Array.isArray(item2)) {
+            if (!arraysEqual(item1, item2)) {
+              diffs[`${key}[${i}]`] = {
+                old: JSON.stringify(item1),
+                new: JSON.stringify(item2),
+              };
+            }
+          } else if (item1 !== item2) {
+            diffs[`${key}[${i}]`] = {
+              old: item1 ?? "N/A",
+              new: item2 ?? "N/A",
+            };
+          }
+        }
+      }
+    } else if (Array.isArray(val1) || Array.isArray(val2)) {
+      // One is array, other is not
+      diffs[key] = {
+        old: Array.isArray(val1) ? `Array(${val1.length} items)` : val1 ?? "N/A",
+        new: Array.isArray(val2) ? `Array(${val2.length} items)` : val2 ?? "N/A",
+      };
+    } else if (isPlainObject(val1) && isPlainObject(val2)) {
       const subkeys = new Set([...Object.keys(val1), ...Object.keys(val2)]);
       for (const subkey of subkeys) {
-        if (val1[subkey] !== val2[subkey]) {
+        const subVal1 = val1[subkey];
+        const subVal2 = val2[subkey];
+        
+        // Handle arrays within objects
+        if (Array.isArray(subVal1) && Array.isArray(subVal2)) {
+          if (!arraysEqual(subVal1, subVal2)) {
+            diffs[`${key}.${subkey}`] = {
+              old: JSON.stringify(subVal1),
+              new: JSON.stringify(subVal2),
+            };
+          }
+        } else if (subVal1 !== subVal2) {
           diffs[`${key}.${subkey}`] = {
-            old: val1[subkey] ?? "N/A",
-            new: val2[subkey] ?? "N/A",
+            old: subVal1 ?? "N/A",
+            new: subVal2 ?? "N/A",
           };
         }
       }
@@ -88,6 +155,20 @@ function computeDiff(obj1, obj2) {
   }
 
   return diffs;
+}
+
+function arraysEqual(arr1, arr2) {
+  if (arr1.length !== arr2.length) return false;
+  for (let i = 0; i < arr1.length; i++) {
+    if (Array.isArray(arr1[i]) && Array.isArray(arr2[i])) {
+      if (!arraysEqual(arr1[i], arr2[i])) return false;
+    } else if (isPlainObject(arr1[i]) && isPlainObject(arr2[i])) {
+      if (JSON.stringify(arr1[i]) !== JSON.stringify(arr2[i])) return false;
+    } else if (arr1[i] !== arr2[i]) {
+      return false;
+    }
+  }
+  return true;
 }
 
 function isPlainObject(value) {
@@ -110,9 +191,11 @@ async function confirm() {
 
   const token = localStorage.getItem('jwt');
 
-  let url = `${API_BASE_URL}/configuration/opt`;
+  let url = `${API_BASE_URL}/opt-configuration`;
   if (showDiff.type === 'ui') {
     url = `${API_BASE_URL}/configuration/ui`;
+  } else if (showDiff.type === 'eps') {
+    url = `${API_BASE_URL}/eps-configuration`;
   }
 
   try {

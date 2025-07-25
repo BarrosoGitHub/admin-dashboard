@@ -20,6 +20,7 @@ import {
   ServerStackIcon,
   IdentificationIcon,
   ListBulletIcon,
+  ChevronDownIcon,
 } from '@heroicons/vue/24/outline'
 
 const getEnumOptions = getEnumOptionsHelper;
@@ -64,8 +65,17 @@ const transformedData = computed(() => {
 });
 
 const activeTab = ref("General");
+const activeSubTab = ref(null);
+// Initialize with all array-based tabs collapsed
+const collapsedTabs = ref(new Set());
 
 const emit = defineEmits(["update"]);
+
+// Initialize collapsed tabs when transformedData changes
+watch(transformedData, (newData) => {
+  const arrayTabs = Object.keys(newData).filter(key => Array.isArray(newData[key]));
+  collapsedTabs.value = new Set(arrayTabs);
+}, { immediate: true });
 
 watch(
   () => props.data,
@@ -75,6 +85,8 @@ watch(
     if (!keys.includes(activeTab.value)) {
       activeTab.value = keys.length ? keys[0] : "General";
     }
+    // Reset sub-tab if main tab changes
+    activeSubTab.value = null;
   }
 );
 
@@ -124,25 +136,13 @@ watch(filteredData, (newFiltered) => {
   const keys = Object.keys(newFiltered);
   if (!keys.includes(activeTab.value)) {
     activeTab.value = keys.length ? keys[0] : "";
+    activeSubTab.value = null;
   }
 });
 
 function updateConfiguration() {
-  // Reconstruct the original structure from transformedData
-  const reconstructed = {};
-  
-  for (const [section, fields] of Object.entries(transformedData.value)) {
-    if (section === 'General') {
-      // Add general properties directly to the root
-      Object.assign(reconstructed, fields);
-    } else {
-      // Add list properties as they are
-      reconstructed[section] = fields;
-    }
-  }
-  
   emit("update", {
-    config: reconstructed,
+    config: localData.value,
   });
 }
 
@@ -150,6 +150,26 @@ function formatLabel(key) {
   return key
     .replace(/([a-z])([A-Z])/g, "$1 $2")
     .replace(/^./, (str) => str.toUpperCase());
+}
+
+function toggleTabCollapse(tabKey) {
+  const newCollapsed = new Set(collapsedTabs.value);
+  if (newCollapsed.has(tabKey)) {
+    newCollapsed.delete(tabKey);
+  } else {
+    newCollapsed.add(tabKey);
+  }
+  collapsedTabs.value = newCollapsed;
+}
+
+function selectMainTab(tabKey) {
+  activeTab.value = tabKey;
+  activeSubTab.value = null;
+}
+
+function selectSubTab(tabKey, index) {
+  activeTab.value = tabKey;
+  activeSubTab.value = index;
 }
 
 const iconMap = {
@@ -193,7 +213,7 @@ function booleanFields(obj) {
       <!-- Top line with label -->
       <div class="w-full flex items-center border-b border-color px-7 py-4 mb-2">
       <span class="inline-block align-middle px-2.5">
-                <img src="@/assets/payment.png" alt="Payment icon" width="32" height="32" class="inline-block align-middle mr-1 payment-icon" />
+                <img src="@/assets/payment.png" alt="Payment icon" width="32" height="32" class="inline-block align-middle mr-1" />
                 <span class="sr-only">Payment icon</span>
               </span>
         <span class="text-xl font-semibold text-gray-900 dark:text-white tracking-wide">EPS Configuration</span>
@@ -205,14 +225,15 @@ function booleanFields(obj) {
           class="flex flex-col w-63 text-sm font-medium text-left text-white-900 dark:text-white-900 py-2 px-4"
           role="tablist"
         >
-          <li v-for="key in Object.keys(filteredData)" :key="key" class="flex">
+          <li v-for="key in Object.keys(filteredData)" :key="key" class="flex flex-col">
+            <!-- Main tab button -->
             <button
               type="button"
               class="tab-animate flex items-center flex-1 text-left px-2 py-1.5 my-1.5 mx-3 cursor-pointer"
-              :class="[activeTab === key
+              :class="[activeTab === key && activeSubTab === null
                 ? 'active text-color font-semibold'
                 : 'text-color-secondary']"
-              @click="activeTab = key"
+              @click="Array.isArray(filteredData[key]) ? toggleTabCollapse(key) : selectMainTab(key)"
               style="position:relative;"
             >
               <component
@@ -224,15 +245,43 @@ function booleanFields(obj) {
                   .replace(/configuration/i, "")
                   .trim()
               }}
+              <!-- Chevron for collapsible tabs -->
+              <ChevronDownIcon
+                v-if="Array.isArray(filteredData[key])"
+                class="w-4 h-4 ml-auto transition-transform duration-200"
+                :class="{ 'rotate-180': !collapsedTabs.has(key) }"
+              />
               <span class="tab-border"></span>
             </button>
+            
+            <!-- Sub-tabs for array items -->
+            <div
+              v-if="Array.isArray(filteredData[key]) && !collapsedTabs.has(key)"
+              class="ml-5 space-y-1"
+            >
+              <button
+                v-for="(item, index) in filteredData[key]"
+                :key="`${key}-${index}`"
+                type="button"
+                class="tab-animate flex items-center w-full text-left px-2 py-1 mx-3 cursor-pointer text-sm"
+                :class="[activeTab === key && activeSubTab === index
+                  ? 'active text-color font-medium'
+                  : 'text-color-secondary']"
+                @click="selectSubTab(key, index)"
+                style="position:relative;"
+              >
+                <span class="w-2 h-2 rounded-full bg-current mr-2 opacity-50"></span>
+                {{ formatLabel(key).slice(0, -1) }} {{ index + 1 }}
+                <span class="tab-border"></span>
+              </button>
+            </div>
           </li>
         </ul>
         <!-- Content on the right -->
         <div class="flex-1 min-h-0 table flex-col">
           <div
             v-if="activeTab && filteredData[activeTab]"
-            :key="activeTab + props.searchValue"
+            :key="activeTab + activeSubTab + props.searchValue"
             class="rounded-xl md:pr-15 md:pl-5 flex-1 overflow-y-auto"
           >
             <h2
@@ -240,8 +289,8 @@ function booleanFields(obj) {
             >
             </h2>
             
-            <!-- General tab - show properties as form fields -->
-            <template v-if="activeTab === 'General' && !Array.isArray(filteredData[activeTab])">
+            <!-- General tab or main tab without sub-selection -->
+            <template v-if="(activeTab === 'General' || !Array.isArray(filteredData[activeTab])) && activeSubTab === null">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-x-15 gap-y-2">
                 <!-- Non-boolean fields first -->
                 <template
@@ -295,30 +344,23 @@ function booleanFields(obj) {
               </div>
             </template>
             
-            <!-- List tabs - show array items -->
-            <template v-else-if="Array.isArray(filteredData[activeTab])">
+            <!-- Single sub-tab item view -->
+            <template v-else-if="Array.isArray(filteredData[activeTab]) && activeSubTab !== null">
               <div class="space-y-4">
-                <div v-if="filteredData[activeTab].length === 0" class="text-gray-500 dark:text-gray-400 text-center py-8">
-                  No {{ formatLabel(activeTab).toLowerCase() }} configured
-                </div>
-                <div 
-                  v-for="(item, index) in filteredData[activeTab]" 
-                  :key="index"
-                  class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm"
-                >
+                <div class="bg-white bg-modal-color  p-4">
                   <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                    {{ formatLabel(activeTab).slice(0, -1) }} {{ index + 1 }}
+                    {{ formatLabel(activeTab).slice(0, -1) }} {{ activeSubTab + 1 }}
                   </h3>
-                  <div v-if="typeof item === 'object' && item !== null" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
+                  <div v-if="typeof filteredData[activeTab][activeSubTab] === 'object' && filteredData[activeTab][activeSubTab] !== null" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
                     <!-- Non-boolean fields first -->
                     <template
-                      v-for="(propValue, propKey) in nonBooleanFields(item)"
+                      v-for="(propValue, propKey) in nonBooleanFields(filteredData[activeTab][activeSubTab])"
                       :key="propKey"
                     >
                       <InputTransparent
                         :label="formatLabel(propKey)"
                         :placeholder="String(propValue)"
-                        v-model="transformedData[activeTab][index][propKey]"
+                        v-model="transformedData[activeTab][activeSubTab][propKey]"
                         :type="getEnumOptions(activeTab, propKey) ? 'select' : 'text'"
                         :options="getEnumOptions(activeTab, propKey) || undefined"
                         class="w-full m-1"
@@ -326,24 +368,24 @@ function booleanFields(obj) {
                     </template>
                     <!-- Boolean fields -->
                     <template
-                      v-for="(propValue, propKey) in booleanFields(item)"
+                      v-for="(propValue, propKey) in booleanFields(filteredData[activeTab][activeSubTab])"
                       :key="propKey"
                     >
                       <div class="flex items-center space-x-3 mx-3">
-                        <label :for="`${activeTab}-${index}-${propKey}`" class="block text-sm font-medium text-gray-900 dark:text-white flex-1 mb-0">{{
+                        <label :for="`${activeTab}-${activeSubTab}-${propKey}`" class="block text-sm font-medium text-gray-900 dark:text-white flex-1 mb-0">{{
                           formatLabel(propKey)
                         }}</label>
                         <label class="inline-flex items-center cursor-pointer ml-auto">
                           <input
                             type="checkbox"
                             class="sr-only peer"
-                            :id="`${activeTab}-${index}-${propKey}`"
-                            v-model="transformedData[activeTab][index][propKey]"
+                            :id="`${activeTab}-${activeSubTab}-${propKey}`"
+                            v-model="transformedData[activeTab][activeSubTab][propKey]"
                           />
                           <div
                             :class="[
                               'relative w-11 h-6 rounded-full peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[\'\'] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all',
-                              transformedData[activeTab][index][propKey]
+                              transformedData[activeTab][activeSubTab][propKey]
                                 ? 'boolean-selector-active'
                                 : 'boolean-selector-inactive'
                             ]"
@@ -352,6 +394,31 @@ function booleanFields(obj) {
                         </label>
                       </div>
                     </template>
+                  </div>
+                  <div v-else class="text-gray-600 dark:text-gray-400">
+                    {{ filteredData[activeTab][activeSubTab] }}
+                  </div>
+                </div>
+              </div>
+            </template>
+            
+            <!-- List tabs - show all array items (when no sub-tab is selected) -->
+            <template v-else-if="Array.isArray(filteredData[activeTab]) && activeSubTab === null">
+              <div class="space-y-4">
+                <div v-if="filteredData[activeTab].length === 0" class="text-gray-500 dark:text-gray-400 text-center py-8">
+                  No {{ formatLabel(activeTab).toLowerCase() }} configured
+                </div>
+                <div 
+                  v-for="(item, index) in filteredData[activeTab]" 
+                  :key="index"
+                  class="bg-white bg-modal-color rounded-lg border border-gray-200 dark:border-neutral-700 p-4 shadow-sm cursor-pointer hover:border-blue-300 dark:hover:border-blue-600 transition-colors"
+                  @click="selectSubTab(activeTab, index)"
+                >
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                    {{ formatLabel(activeTab).slice(0, -1) }} {{ index + 1 }}
+                  </h3>
+                  <div v-if="typeof item === 'object' && item !== null" class="text-sm text-gray-600 dark:text-gray-400">
+                    Click to edit this {{ formatLabel(activeTab).slice(0, -1).toLowerCase() }}
                   </div>
                   <div v-else class="text-gray-600 dark:text-gray-400">
                     {{ item }}
@@ -404,12 +471,7 @@ function booleanFields(obj) {
 }
 
 /* Tint payment icon to white in dark mode */
-.payment-icon {
-  /* Default: no filter */
-}
 .dark .payment-icon {
   filter: brightness(0) invert(1);
 }
 </style>
-
-
