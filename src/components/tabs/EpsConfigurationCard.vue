@@ -40,11 +40,10 @@ const props = defineProps({
 
 const localData = ref(JSON.parse(JSON.stringify(props.data)));
 
-// Transform the data structure to group properties
+// Group properties into general and list sections
 const transformedData = computed(() => {
   const general = {};
   const lists = {};
-  
   for (const [key, value] of Object.entries(localData.value)) {
     if (Array.isArray(value)) {
       lists[key] = value;
@@ -52,26 +51,22 @@ const transformedData = computed(() => {
       general[key] = value;
     }
   }
-  
   const result = {};
   if (Object.keys(general).length > 0) {
     result.General = general;
   }
-  
-  // Add list properties as separate tabs
   Object.assign(result, lists);
-  
   return result;
 });
 
 const activeTab = ref("General");
 const activeSubTab = ref(null);
-// Initialize with all array-based tabs collapsed
+// Collapsed state for array-based tabs
 const collapsedTabs = ref(new Set());
 
 const emit = defineEmits(["update"]);
 
-// Initialize collapsed tabs when transformedData changes
+// Update collapsed tabs when transformedData changes
 watch(transformedData, (newData) => {
   const arrayTabs = Object.keys(newData).filter(key => Array.isArray(newData[key]));
   collapsedTabs.value = new Set(arrayTabs);
@@ -85,7 +80,6 @@ watch(
     if (!keys.includes(activeTab.value)) {
       activeTab.value = keys.length ? keys[0] : "General";
     }
-    // Reset sub-tab if main tab changes
     activeSubTab.value = null;
   }
 );
@@ -94,15 +88,13 @@ const filteredData = computed(() => {
   if (!props.searchValue.trim()) return transformedData.value;
   const result = {};
   const search = props.searchValue.toLowerCase();
-  
   for (const [section, fields] of Object.entries(transformedData.value)) {
     if (section.toLowerCase().includes(search)) {
       result[section] = fields;
       continue;
     }
-    
     if (Array.isArray(fields)) {
-      // For list properties, search within the array items
+      // Search within array items
       const filteredItems = fields.filter(item => {
         if (typeof item === 'object' && item !== null) {
           return Object.entries(item).some(([key, value]) =>
@@ -116,7 +108,7 @@ const filteredData = computed(() => {
         result[section] = filteredItems;
       }
     } else if (typeof fields === "object" && fields !== null) {
-      // For general properties
+      // Search within general properties
       const filteredFields = Object.fromEntries(
         Object.entries(fields).filter(
           ([key, value]) =>
@@ -200,10 +192,13 @@ const iconMap = {
 }
 
 function nonBooleanFields(obj) {
-  return Object.fromEntries(Object.entries(obj).filter(([k, v]) => typeof v !== 'boolean'));
+  return Object.fromEntries(Object.entries(obj).filter(([k, v]) => typeof v !== 'boolean' && !Array.isArray(v)));
 }
 function booleanFields(obj) {
   return Object.fromEntries(Object.entries(obj).filter(([k, v]) => typeof v === 'boolean'));
+}
+function arrayFields(obj) {
+  return Object.fromEntries(Object.entries(obj).filter(([k, v]) => Array.isArray(v)));
 }
 </script>
 
@@ -213,7 +208,7 @@ function booleanFields(obj) {
       <!-- Top line with label -->
       <div class="w-full flex items-center border-b border-color px-7 py-4 mb-2">
       <span class="inline-block align-middle px-2.5">
-                <img src="@/assets/payment.png" alt="Payment icon" width="32" height="32" class="inline-block align-middle mr-1" />
+                <img src="@/assets/payment.png" alt="Payment icon" width="36" height="36" class="inline-block align-middle mr-1 payment-icon" />
                 <span class="sr-only">Payment icon</span>
               </span>
         <span class="text-xl font-semibold text-gray-900 dark:text-white tracking-wide">EPS Configuration</span>
@@ -227,54 +222,59 @@ function booleanFields(obj) {
         >
           <li v-for="key in Object.keys(filteredData)" :key="key" class="flex flex-col">
             <!-- Main tab button -->
-            <button
-              type="button"
-              class="tab-animate flex items-center flex-1 text-left px-2 py-1.5 my-1.5 mx-3 cursor-pointer"
-              :class="[activeTab === key && activeSubTab === null
-                ? 'active text-color font-semibold'
-                : 'text-color-secondary']"
-              @click="Array.isArray(filteredData[key]) ? toggleTabCollapse(key) : selectMainTab(key)"
-              style="position:relative;"
-            >
+            <div class="tab-animate flex items-center flex-1 text-left px-2 py-1.5 my-1.5 mx-3 cursor-pointer"
+              :class="[activeTab === key && activeSubTab === null ? 'active text-color font-semibold' : 'text-color-secondary']"
+              style="position:relative;">
               <component
                 :is="iconMap[key] || Cog6ToothIcon"
                 class="w-5 h-5 mr-2"
               />
-              {{
-                formatLabel(key)
-                  .replace(/configuration/i, "")
-                  .trim()
-              }}
+              <span
+                class="flex-1"
+                @click="selectMainTab(key)"
+                style="user-select: none;"
+              >
+                {{
+                  formatLabel(key)
+                    .replace(/configuration/i, "")
+                    .trim()
+                }}
+              </span>
               <!-- Chevron for collapsible tabs -->
               <ChevronDownIcon
                 v-if="Array.isArray(filteredData[key])"
                 class="w-4 h-4 ml-auto transition-transform duration-200"
                 :class="{ 'rotate-180': !collapsedTabs.has(key) }"
+                @click.stop="toggleTabCollapse(key)"
+                style="cursor:pointer;"
               />
               <span class="tab-border"></span>
-            </button>
-            
-            <!-- Sub-tabs for array items -->
-            <div
-              v-if="Array.isArray(filteredData[key]) && !collapsedTabs.has(key)"
-              class="ml-5 space-y-1"
-            >
-              <button
-                v-for="(item, index) in filteredData[key]"
-                :key="`${key}-${index}`"
-                type="button"
-                class="tab-animate flex items-center w-full text-left px-2 py-1 mx-3 cursor-pointer text-sm"
-                :class="[activeTab === key && activeSubTab === index
-                  ? 'active text-color font-medium'
-                  : 'text-color-secondary']"
-                @click="selectSubTab(key, index)"
-                style="position:relative;"
-              >
-                <span class="w-2 h-2 rounded-full bg-current mr-2 opacity-50"></span>
-                {{ formatLabel(key).slice(0, -1) }} {{ index + 1 }}
-                <span class="tab-border"></span>
-              </button>
             </div>
+            
+            <!-- Sub-tabs for array items with smooth transition -->
+            <transition name="subtab-fade" mode="out-in">
+              <div
+                v-if="Array.isArray(filteredData[key]) && !collapsedTabs.has(key)"
+                class="ml-5 space-y-1 subtab-transition-wrapper"
+                key="subtab-list"
+              >
+                <button
+                  v-for="(item, index) in filteredData[key]"
+                  :key="`${key}-${index}`"
+                  type="button"
+                  class="tab-animate flex items-center w-full text-left px-2 py-1 mx-3 cursor-pointer text-sm"
+                  :class="[activeTab === key && activeSubTab === index
+                    ? 'active text-color font-medium'
+                    : 'text-color-secondary']"
+                  @click="selectSubTab(key, index)"
+                  style="position:relative;"
+                >
+                  <span class="w-2 h-2 rounded-full bg-current mr-2 opacity-50"></span>
+                  {{ formatLabel(key).slice(0, -1) }} {{ index + 1 }}
+                  <span class="tab-border"></span>
+                </button>
+              </div>
+            </transition>
           </li>
         </ul>
         <!-- Content on the right -->
@@ -347,7 +347,7 @@ function booleanFields(obj) {
             <!-- Single sub-tab item view -->
             <template v-else-if="Array.isArray(filteredData[activeTab]) && activeSubTab !== null">
               <div class="space-y-4">
-                <div class="bg-white bg-modal-color  p-4">
+                <div class="bg-white bg-modal-color p-4">
                   <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                     {{ formatLabel(activeTab).slice(0, -1) }} {{ activeSubTab + 1 }}
                   </h3>
@@ -394,6 +394,66 @@ function booleanFields(obj) {
                         </label>
                       </div>
                     </template>
+                    <!-- Array fields as collapsible property -->
+                    <details>
+                      <summary class="font-semibold">...</summary>
+                    
+                    <template v-if="Object.keys(arrayFields(filteredData[activeTab][activeSubTab])).length">
+                      <template v-for="(arr, arrKey) in arrayFields(filteredData[activeTab][activeSubTab])" :key="`array-${arrKey}`">
+                        <details class=" my-2">
+                          <summary class="font-semibold ">{{ formatLabel(arrKey) }} ({{ Array.isArray(arr) ? arr.length : 0 }})</summary>
+                          <div v-if="Array.isArray(arr) && arr.length > 0" class="space-y-2 mt-2">
+                            <div v-for="(element, idx) in arr" :key="`element-${arrKey}-${idx}`" class="border border-gray-200 dark:border-neutral-700 rounded p-2 mb-2">
+                              <div v-if="typeof element === 'object' && element !== null">
+                                <details class="mb-2">
+                                  <summary class="font-semibold cursor-pointer">{{ formatLabel(arrKey) }} Item {{ idx + 1 }}</summary>
+                                  <div class="mt-2">
+                                    <template v-for="(elValue, elKey) in element" :key="elKey">
+                                        <div v-if="typeof elValue === 'object' && elValue !== null">
+                                            <details class="mb-2">
+                                                <summary class="font-semibold cursor-pointer">{{ formatLabel(elKey) }} Item {{ idx + 1 }}</summary>
+                                                 <div class="mt-2">
+                                                    <template v-for="(subElValue, subElKey) in elValue" :key="subElKey">
+
+                                                        <InputTransparent
+                                                            :label="formatLabel(subElKey)"
+                                                            :placeholder="String(subElValue)"
+                                                            v-model="transformedData[activeTab][activeSubTab][arrKey][idx][elKey][subElKey]"
+                                                            class="w-full m-1"
+                                                        />
+                                                        </template>
+
+                                                 </div>
+                                            </details>
+                                        </div>
+
+                                        <div v-else class="text-gray-600 dark:text-gray-400">
+                                            <InputTransparent
+                                            :label="formatLabel(elKey)"
+                                            :placeholder="String(elValue)"
+                                            v-model="transformedData[activeTab][activeSubTab][arrKey][idx][elKey]"
+                                            class="w-full m-1"
+                                        />
+                                        </div>
+
+                                        
+                                    
+                                      
+                                    </template>
+                                  </div>
+                                </details>
+                              </div>
+                              <div v-else class="text-gray-600 dark:text-gray-400">
+                                {{ element }}
+                              </div>
+                            </div>
+                          </div>
+                          <div v-else class="text-gray-500 dark:text-gray-400 italic">No items</div>
+                        </details>
+                      </template>
+                    </template>
+            </details>
+
                   </div>
                   <div v-else class="text-gray-600 dark:text-gray-400">
                     {{ filteredData[activeTab][activeSubTab] }}
@@ -401,6 +461,7 @@ function booleanFields(obj) {
                 </div>
               </div>
             </template>
+            
             
             <!-- List tabs - show all array items (when no sub-tab is selected) -->
             <template v-else-if="Array.isArray(filteredData[activeTab]) && activeSubTab === null">
@@ -436,6 +497,7 @@ function booleanFields(obj) {
           </div>
         </div>
       </div>
+      
       <!-- Search and Button always at the bottom of the card -->
       <div class="flex flex-col md:flex-row items-center justify-end gap-4 mt-8 mb-4 px-8">
         <button
@@ -470,8 +532,29 @@ function booleanFields(obj) {
   transform: scaleX(1);
 }
 
+/* Hide the default triangle/marker for <summary> in <details> */
+details > summary {
+  list-style: none;
+}
+details > summary::-webkit-details-marker {
+  display: none;
+}
+
 /* Tint payment icon to white in dark mode */
 .dark .payment-icon {
   filter: brightness(0) invert(1);
+}
+/* Sub-tab open/close animation */
+.subtab-fade-enter-active, .subtab-fade-leave-active {
+  transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.3s cubic-bezier(0.4,0,0.2,1);
+  overflow: hidden;
+}
+.subtab-fade-enter-from, .subtab-fade-leave-to {
+  max-height: 0;
+  opacity: 0;
+}
+.subtab-fade-enter-to, .subtab-fade-leave-from {
+  max-height: 500px;
+  opacity: 1;
 }
 </style>
