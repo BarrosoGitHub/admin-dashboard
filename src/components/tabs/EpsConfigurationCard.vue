@@ -359,10 +359,17 @@ function createObjectFromTemplate(template) {
         newObj[key] = [];
       }
     } else if (typeof value === 'object' && value !== null) {
-      // Only create nested objects if they have meaningful content
-      const nestedObj = createObjectFromTemplate(value);
-      if (Object.keys(nestedObj).length > 0) {
-        newObj[key] = nestedObj;
+      // Check if it's a dictionary-like object (empty object or has string keys)
+      const keys = Object.keys(value);
+      if (keys.length === 0 || keys.every(k => typeof k === 'string')) {
+        // Create empty dictionary for dictionaries
+        newObj[key] = {};
+      } else {
+        // Only create nested objects if they have meaningful content
+        const nestedObj = createObjectFromTemplate(value);
+        if (Object.keys(nestedObj).length > 0) {
+          newObj[key] = nestedObj;
+        }
       }
     } else if (typeof value === 'string') {
       newObj[key] = '';
@@ -625,19 +632,55 @@ function addItemToNestedArray(tabKey, subTabIndex, arrayKey) {
   console.log('Adding item to nested array:', tabKey, subTabIndex, arrayKey);
   
   // Try to get schema template for the nested array
-  let newItem = {};
+  let newItem = null;
   
   if (schema.value && schema.value[tabKey] && Array.isArray(schema.value[tabKey]) && schema.value[tabKey].length > 0) {
     const parentTemplate = schema.value[tabKey][0];
     if (parentTemplate[arrayKey] && Array.isArray(parentTemplate[arrayKey]) && parentTemplate[arrayKey].length > 0) {
       const arrayItemTemplate = parentTemplate[arrayKey][0];
-      newItem = createObjectFromTemplate(arrayItemTemplate);
+      
+      // Check if the template item is a primitive type (number, string, boolean)
+      if (typeof arrayItemTemplate === 'number') {
+        newItem = 0;
+      } else if (typeof arrayItemTemplate === 'string') {
+        newItem = '';
+      } else if (typeof arrayItemTemplate === 'boolean') {
+        newItem = false;
+      } else if (typeof arrayItemTemplate === 'object' && arrayItemTemplate !== null) {
+        // Only create object template for actual objects
+        newItem = createObjectFromTemplate(arrayItemTemplate);
+      }
     }
   }
   
-  // If no template found, create a basic object
-  if (Object.keys(newItem).length === 0) {
-    newItem = { name: '', value: '' }; // Basic fallback
+  // If no template found, check the existing array for type hints
+  if (newItem === null && localData.value[tabKey][subTabIndex][arrayKey].length > 0) {
+    const existingItem = localData.value[tabKey][subTabIndex][arrayKey][0];
+    if (typeof existingItem === 'number') {
+      newItem = 0;
+    } else if (typeof existingItem === 'string') {
+      newItem = '';
+    } else if (typeof existingItem === 'boolean') {
+      newItem = false;
+    } else if (typeof existingItem === 'object' && existingItem !== null) {
+      newItem = createObjectFromTemplate(existingItem);
+    }
+  }
+  
+  // Final fallback - but be smarter about it based on array name
+  if (newItem === null) {
+    // Check array name for hints about what type of data it should contain
+    const arrayKeyLower = arrayKey.toLowerCase();
+    if (arrayKeyLower.includes('id') || arrayKeyLower.includes('count') || arrayKeyLower.includes('number')) {
+      newItem = 0; // Likely numeric
+    } else if (arrayKeyLower.includes('name') || arrayKeyLower.includes('text') || arrayKeyLower.includes('description')) {
+      newItem = ''; // Likely string
+    } else if (arrayKeyLower.includes('enabled') || arrayKeyLower.includes('active') || arrayKeyLower.includes('flag')) {
+      newItem = false; // Likely boolean
+    } else {
+      // Generic object fallback
+      newItem = { name: '', value: '' };
+    }
   }
   
   localData.value[tabKey][subTabIndex][arrayKey].push(newItem);
@@ -660,6 +703,79 @@ function deleteNestedArrayItem(tabKey, subTabIndex, arrayKey, itemIndex) {
   if (confirm(`Are you sure you want to delete this ${formatLabel(arrayKey).slice(0, -1).toLowerCase()}?`)) {
     array.splice(itemIndex, 1);
     console.log('Deleted item from nested array at index:', itemIndex);
+  }
+}
+
+// Function to add entry to dictionary
+function addDictionaryEntry(tabKey, subTabIndex, arrayKey, itemIndex, dictKey) {
+  if (!localData.value[tabKey] || !localData.value[tabKey][subTabIndex] || !localData.value[tabKey][subTabIndex][arrayKey] || !localData.value[tabKey][subTabIndex][arrayKey][itemIndex]) {
+    console.warn(`Invalid path for dictionary: ${tabKey}[${subTabIndex}].${arrayKey}[${itemIndex}].${dictKey}`);
+    return;
+  }
+  
+  const dictionary = localData.value[tabKey][subTabIndex][arrayKey][itemIndex][dictKey];
+  if (typeof dictionary !== 'object' || Array.isArray(dictionary)) {
+    console.warn('Target is not a dictionary object');
+    return;
+  }
+  
+  // Prompt user for new key
+  const newKey = prompt('Enter key for new entry:');
+  if (newKey && newKey.trim() && !dictionary.hasOwnProperty(newKey)) {
+    dictionary[newKey] = '';
+    console.log('Added new dictionary entry:', newKey);
+  } else if (dictionary.hasOwnProperty(newKey)) {
+    alert('Key already exists!');
+  }
+}
+
+// Function to delete entry from dictionary
+function deleteDictionaryEntry(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, entryKey) {
+  if (!localData.value[tabKey] || !localData.value[tabKey][subTabIndex] || !localData.value[tabKey][subTabIndex][arrayKey] || !localData.value[tabKey][subTabIndex][arrayKey][itemIndex]) {
+    console.warn(`Invalid path for dictionary: ${tabKey}[${subTabIndex}].${arrayKey}[${itemIndex}].${dictKey}`);
+    return;
+  }
+  
+  const dictionary = localData.value[tabKey][subTabIndex][arrayKey][itemIndex][dictKey];
+  if (typeof dictionary !== 'object' || Array.isArray(dictionary)) {
+    console.warn('Target is not a dictionary object');
+    return;
+  }
+  
+  if (confirm(`Are you sure you want to delete the entry "${entryKey}"?`)) {
+    delete dictionary[entryKey];
+    console.log('Deleted dictionary entry:', entryKey);
+  }
+}
+
+// Function to update dictionary key
+function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, oldKey, newKey) {
+  if (!localData.value[tabKey] || !localData.value[tabKey][subTabIndex] || !localData.value[tabKey][subTabIndex][arrayKey] || !localData.value[tabKey][subTabIndex][arrayKey][itemIndex]) {
+    console.warn(`Invalid path for dictionary: ${tabKey}[${subTabIndex}].${arrayKey}[${itemIndex}].${dictKey}`);
+    return;
+  }
+  
+  const dictionary = localData.value[tabKey][subTabIndex][arrayKey][itemIndex][dictKey];
+  if (typeof dictionary !== 'object' || Array.isArray(dictionary)) {
+    console.warn('Target is not a dictionary object');
+    return;
+  }
+  
+  // If key hasn't changed, do nothing
+  if (oldKey === newKey) return;
+  
+  // Check if new key already exists
+  if (newKey && newKey.trim() && dictionary.hasOwnProperty(newKey)) {
+    alert('Key already exists!');
+    return;
+  }
+  
+  // If new key is valid, update the dictionary
+  if (newKey && newKey.trim()) {
+    const value = dictionary[oldKey];
+    delete dictionary[oldKey];
+    dictionary[newKey] = value;
+    console.log('Updated dictionary key:', oldKey, '->', newKey);
   }
 }
 </script>
@@ -902,18 +1018,58 @@ function deleteNestedArrayItem(tabKey, subTabIndex, arrayKey, itemIndex) {
                                     <template v-for="(elValue, elKey) in element" :key="elKey">
                                         <div v-if="typeof elValue === 'object' && elValue !== null">
                                             <details class="mb-2">
-                                                <summary class="font-semibold cursor-pointer">{{ formatLabel(elKey) }} Item {{ idx + 1 }}</summary>
+                                                <summary class="font-semibold cursor-pointer">{{ formatLabel(elKey) }}</summary>
                                                  <div class="mt-2">
-                                                    <template v-for="(subElValue, subElKey) in elValue" :key="subElKey">
-
+                                                    <!-- Check if it's a dictionary-like object (has string keys) -->
+                                                    <div v-if="typeof elValue === 'object' && elValue !== null && !Array.isArray(elValue)">
+                                                        <div class="space-y-2">
+                                                            <div class="flex justify-end mb-2">
+                                                                <button
+                                                                    @click="addDictionaryEntry(activeTab, activeSubTab, arrKey, idx, elKey)"
+                                                                    class="flex items-center justify-center w-6 h-6 text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-200 rounded transition-colors"
+                                                                    title="Add Entry"
+                                                                >
+                                                                    <PlusIcon class="w-4 h-4" />
+                                                                </button>
+                                                            </div>
+                                                            <div v-for="(dictValue, dictKey) in elValue" :key="dictKey" class="flex items-center space-x-2 border border-gray-200 dark:border-neutral-700 rounded p-2">
+                                                                <div class="flex-1 grid grid-cols-2 gap-2">
+                                                                    <InputTransparent
+                                                                        :label="'Key'"
+                                                                        :placeholder="String(dictKey)"
+                                                                        :modelValue="dictKey"
+                                                                        @update:modelValue="updateDictionaryKey(activeTab, activeSubTab, arrKey, idx, elKey, dictKey, $event)"
+                                                                        class="w-full"
+                                                                    />
+                                                                    <InputTransparent
+                                                                        :label="'Value'"
+                                                                        :placeholder="String(dictValue)"
+                                                                        v-model="localData[activeTab][activeSubTab][arrKey][idx][elKey][dictKey]"
+                                                                        class="w-full"
+                                                                    />
+                                                                </div>
+                                                                <button
+                                                                    @click="deleteDictionaryEntry(activeTab, activeSubTab, arrKey, idx, elKey, dictKey)"
+                                                                    class="p-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                                                                    title="Delete this entry"
+                                                                >
+                                                                    <TrashIcon class="w-3 h-3" />
+                                                                </button>
+                                                            </div>
+                                                            <div v-if="Object.keys(elValue).length === 0" class="text-gray-500 dark:text-gray-400 italic text-center py-2">
+                                                                No entries - click the + button above to add your first entry
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- Regular nested object handling -->
+                                                    <template v-else v-for="(subElValue, subElKey) in elValue" :key="subElKey">
                                                         <InputTransparent
                                                             :label="formatLabel(subElKey)"
                                                             :placeholder="String(subElValue)"
                                                             v-model="localData[activeTab][activeSubTab][arrKey][idx][elKey][subElKey]"
                                                             class="w-full m-1"
                                                         />
-                                                        </template>
-
+                                                    </template>
                                                  </div>
                                             </details>
                                         </div>
@@ -934,8 +1090,23 @@ function deleteNestedArrayItem(tabKey, subTabIndex, arrayKey, itemIndex) {
                                   </div>
                                 </details>
                               </div>
-                              <div v-else class="text-gray-600 dark:text-gray-400">
-                                {{ element }}
+                              <div v-else class="flex items-center justify-between">
+                                <div class="flex-1 mr-2">
+                                  <InputTransparent
+                                    :label="`${formatLabel(arrKey).slice(0, -1)} ${idx + 1}`"
+                                    :placeholder="String(element)"
+                                    v-model="localData[activeTab][activeSubTab][arrKey][idx]"
+                                    :type="typeof element === 'number' ? 'number' : 'text'"
+                                    class="w-full"
+                                  />
+                                </div>
+                                <button
+                                  @click="deleteNestedArrayItem(activeTab, activeSubTab, arrKey, idx)"
+                                  class="p-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                                  title="Delete this item"
+                                >
+                                  <TrashIcon class="w-3 h-3" />
+                                </button>
                               </div>
                             </div>
                           </div>
