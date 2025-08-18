@@ -831,7 +831,7 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
               <!-- Chevron for collapsible tabs -->
               <ChevronDownIcon
                 v-if="Array.isArray(filteredData[key])"
-                class="w-4 h-4 ml-auto transition-transform duration-200"
+                class="w-4 h-4 ml-auto transition-transform duration-100"
                 :class="{ 'rotate-180': !collapsedTabs.has(key) }"
                 @click.stop="toggleTabCollapse(key)"
                 style="cursor:pointer;"
@@ -867,11 +867,13 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
         </ul>
         <!-- Content on the right -->
         <div class="flex-1 min-h-0 table flex-col">
-          <div
-            v-if="activeTab && filteredData[activeTab]"
-            :key="activeTab + activeSubTab + props.searchValue"
-            class="rounded-xl md:pr-15 md:pl-5 flex-1 overflow-y-auto"
-          >
+          <transition name="tab-content" mode="out-in">
+            <div
+              v-if="activeTab && filteredData[activeTab]"
+              :key="activeTab + activeSubTab + props.searchValue"
+              class="rounded-xl md:pr-15 md:pl-5 flex-1 overflow-y-auto"
+            >
+            
             <h2
               class="mb-5 text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white"
             >
@@ -949,200 +951,202 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                   </div>
                   <div v-if="typeof filteredData[activeTab][activeSubTab] === 'object' && filteredData[activeTab][activeSubTab] !== null" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
 
-                    <!-- Primitive properties (shown by default, hidden when showArrayProperties is true) -->
-                    <template v-if="!showArrayProperties">
-                      <!-- Non-boolean fields first -->
-                      <template
-                        v-for="(propValue, propKey) in nonBooleanFields(filteredData[activeTab][activeSubTab])"
-                        :key="propKey"
-                      >
-                        <InputTransparent
-                          :label="formatLabel(propKey)"
-                          :placeholder="String(propValue)"
-                          v-model="localData[activeTab][activeSubTab][propKey]"
-                          :type="getEnumOptions(activeTab, propKey) ? 'select' : 'text'"
-                          :options="getEnumOptions(activeTab, propKey) || undefined"
-                          class="w-full m-1"
-                        />
-                      </template>
+                    <transition name="slide-fade" mode="out-in">
+                      <!-- Primitive properties panel -->
+                      <div v-if="!showArrayProperties" key="primitive" class="col-span-full grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
+                        <!-- Non-boolean fields first -->
+                        <template
+                          v-for="(propValue, propKey) in nonBooleanFields(filteredData[activeTab][activeSubTab])"
+                          :key="propKey"
+                        >
+                          <InputTransparent
+                            :label="formatLabel(propKey)"
+                            :placeholder="String(propValue)"
+                            v-model="localData[activeTab][activeSubTab][propKey]"
+                            :type="getEnumOptions(activeTab, propKey) ? 'select' : 'text'"
+                            :options="getEnumOptions(activeTab, propKey) || undefined"
+                            class="w-full m-1"
+                          />
+                        </template>
 
-                      <!-- Spacer before boolean fields (if any) -->
-                      <template v-if="Object.keys(booleanFields(filteredData[activeTab][activeSubTab])).length">
-                        <div class="my-3.5 col-span-full"></div>
-                      </template>
+                        <!-- Spacer before boolean fields (if any) -->
+                        <template v-if="Object.keys(booleanFields(filteredData[activeTab][activeSubTab])).length">
+                          <div class="my-3.5 col-span-full"></div>
+                        </template>
 
-                      <!-- Boolean fields -->
-                      <template
-                        v-for="(propValue, propKey) in booleanFields(filteredData[activeTab][activeSubTab])"
-                        :key="propKey"
-                      >
-                        <div class="flex items-center space-x-3 mx-3">
-                          <label :for="`${activeTab}-${activeSubTab}-${propKey}`" class="block text-sm font-medium text-gray-900 dark:text-white flex-1 mb-0">{{
-                            formatLabel(propKey)
-                          }}</label>
-                          <label class="inline-flex items-center cursor-pointer ml-auto">
-                            <input
-                              type="checkbox"
-                              class="sr-only peer"
-                              :id="`${activeTab}-${activeSubTab}-${propKey}`"
-                              v-model="localData[activeTab][activeSubTab][propKey]"
-                            />
-                            <div
-                              :class=" [
-                                'relative w-11 h-6 rounded-full peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[\'\'] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all',
-                                localData[activeTab][activeSubTab][propKey]
-                                  ? 'boolean-selector-active'
-                                  : 'boolean-selector-inactive'
-                              ]"
-                              style="border: 0px solid var(--toggle-border);"
-                            ></div>
-                          </label>
-                        </div>
-                      </template>
-                    </template>
-                    
-                    <!-- Array fields content (shown when showArrayProperties is true) -->
-                    <div v-if="showArrayProperties && Object.keys(arrayFields(filteredData[activeTab][activeSubTab])).length > 0" class="col-span-full">
-                    
-                    <template v-if="Object.keys(arrayFields(filteredData[activeTab][activeSubTab])).length">
-                      <template v-for="(arr, arrKey) in arrayFields(filteredData[activeTab][activeSubTab])" :key="`array-${arrKey}`">
-                        <details class=" my-2">
-                          <summary class="font-semibold ">{{ formatLabel(arrKey) }} ({{ Array.isArray(arr) ? arr.length : 0 }})</summary>
-                          <div v-if="Array.isArray(arr) && arr.length > 0" class="space-y-2 mt-2">
-                            <div class="flex justify-end mb-2">
-                              <button
-                                @click="addItemToNestedArray(activeTab, activeSubTab, arrKey)"
-                                class="flex items-center justify-center w-6 h-6 text-color-secondary bg-gray-100 dark:bg-gray-700 hover:text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-200 rounded transition-colors"
-                                :title="`Add ${formatLabel(arrKey).slice(0, -1)}`"
-                              >
-                                <PlusIcon class="w-4 h-4" />
-                              </button>
-                            </div>
-                            <div v-for="(element, idx) in arr" :key="`element-${arrKey}-${idx}`" class="border border-gray-200 dark:border-neutral-700 rounded p-2 mb-2">
-                              <div v-if="typeof element === 'object' && element !== null">
-                                <details class="mb-2">
-                                  <summary class="font-semibold cursor-pointer flex justify-between items-center">
-                                    <span>{{ formatLabel(arrKey) }} Item {{ idx + 1 }}</span>
-                                    <button
-                                      @click.stop="deleteNestedArrayItem(activeTab, activeSubTab, arrKey, idx)"
-                                      class="ml-2 p-1 text-color-secondary hover:text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                                      title="Delete this item"
-                                    >
-                                      <TrashIcon class="w-3 h-3" />
-                                    </button>
-                                  </summary>
-                                  <div class="mt-2">
-                                    <template v-for="(elValue, elKey) in element" :key="elKey">
-                                        <div v-if="typeof elValue === 'object' && elValue !== null">
-                                            <details class="mb-2">
-                                                <summary class="font-semibold cursor-pointer">{{ formatLabel(elKey) }}</summary>
-                                                 <div class="mt-2">
-                                                    <!-- Check if it's a dictionary-like object (has string keys) -->
-                                                    <div v-if="typeof elValue === 'object' && elValue !== null && !Array.isArray(elValue)">
-                                                        <div class="space-y-2">
-                                                            <div class="flex justify-end mb-2">
-                                                                <button
-                                                                    @click="addDictionaryEntry(activeTab, activeSubTab, arrKey, idx, elKey)"
-                                                                    class="flex items-center justify-center w-6 h-6 text-color-secondary bg-gray-100 dark:bg-gray-700 hover:text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-200 rounded transition-colors"
-                                                                    title="Add Entry"
-                                                                >
-                                                                    <PlusIcon class="w-4 h-4" />
-                                                                </button>
-                                                            </div>
-                                                            <div v-for="(dictValue, dictKey) in elValue" :key="dictKey" class="flex items-center space-x-2 border border-gray-200 dark:border-neutral-700 rounded p-2">
-                                                                <div class="flex-1 grid grid-cols-2 gap-2">
-                                                                    <InputTransparent
-                                                                        :label="'Key'"
-                                                                        :placeholder="String(dictKey)"
-                                                                        :modelValue="dictKey"
-                                                                        @update:modelValue="updateDictionaryKey(activeTab, activeSubTab, arrKey, idx, elKey, dictKey, $event)"
-                                                                        class="w-full"
-                                                                    />
-                                                                    <InputTransparent
-                                                                        :label="'Value'"
-                                                                        :placeholder="String(dictValue)"
-                                                                        v-model="localData[activeTab][activeSubTab][arrKey][idx][elKey][dictKey]"
-                                                                        class="w-full"
-                                                                    />
+                        <!-- Boolean fields -->
+                        <template
+                          v-for="(propValue, propKey) in booleanFields(filteredData[activeTab][activeSubTab])"
+                          :key="propKey"
+                        >
+                          <div class="flex items-center space-x-3 mx-3">
+                            <label :for="`${activeTab}-${activeSubTab}-${propKey}`" class="block text-sm font-medium text-gray-900 dark:text-white flex-1 mb-0">{{
+                              formatLabel(propKey)
+                            }}</label>
+                            <label class="inline-flex items-center cursor-pointer ml-auto">
+                              <input
+                                type="checkbox"
+                                class="sr-only peer"
+                                :id="`${activeTab}-${activeSubTab}-${propKey}`"
+                                v-model="localData[activeTab][activeSubTab][propKey]"
+                              />
+                              <div
+                                :class=" [
+                                  'relative w-11 h-6 rounded-full peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[\'\'] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all',
+                                  localData[activeTab][activeSubTab][propKey]
+                                    ? 'boolean-selector-active'
+                                    : 'boolean-selector-inactive'
+                                ]"
+                                style="border: 0px solid var(--toggle-border);"
+                              ></div>
+                            </label>
+                          </div>
+                        </template>
+                      </div>
+
+                      <!-- Array properties panel -->
+                      <div v-else key="array" class="col-span-full">
+                        <template v-if="Object.keys(arrayFields(filteredData[activeTab][activeSubTab])).length">
+                          <template v-for="(arr, arrKey) in arrayFields(filteredData[activeTab][activeSubTab])" :key="`array-${arrKey}`">
+                            <details class=" my-2">
+                              <summary class="font-semibold ">{{ formatLabel(arrKey) }} ({{ Array.isArray(arr) ? arr.length : 0 }})</summary>
+                              <div v-if="Array.isArray(arr) && arr.length > 0" class="space-y-2 mt-2">
+                                <div class="flex justify-end mb-2">
+                                  <button
+                                    @click="addItemToNestedArray(activeTab, activeSubTab, arrKey)"
+                                    class="flex items-center justify-center w-6 h-6 text-color-secondary bg-gray-100 dark:bg-gray-700 hover:text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-200 rounded transition-colors"
+                                    :title="`Add ${formatLabel(arrKey).slice(0, -1)}`"
+                                  >
+                                    <PlusIcon class="w-4 h-4" />
+                                  </button>
+                                </div>
+                                <transition-group name="item-fade" tag="div" class="space-y-2">
+                                  <div v-for="(element, idx) in arr" :key="`element-${arrKey}-${idx}-${element.id || idx}`" class="border border-gray-200 dark:border-neutral-700 rounded p-2 mb-2">
+                                    <div v-if="typeof element === 'object' && element !== null">
+                                      <details class="mb-2">
+                                      <summary class="font-semibold cursor-pointer flex justify-between items-center">
+                                        <span>{{ formatLabel(arrKey) }} Item {{ idx + 1 }}</span>
+                                        <button
+                                          @click.stop="deleteNestedArrayItem(activeTab, activeSubTab, arrKey, idx)"
+                                          class="ml-2 p-1 text-color-secondary hover:text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                                          title="Delete this item"
+                                        >
+                                          <TrashIcon class="w-4 h-4" />
+                                        </button>
+                                      </summary>
+                                      <div class="mt-2">
+                                        <template v-for="(elValue, elKey) in element" :key="elKey">
+                                            <div v-if="typeof elValue === 'object' && elValue !== null">
+                                                <details class="mb-2">
+                                                    <summary class="font-semibold cursor-pointer">{{ formatLabel(elKey) }}</summary>
+                                                     <div class="mt-2">
+                                                        <!-- Check if it's a dictionary-like object (has string keys) -->
+                                                        <div v-if="typeof elValue === 'object' && elValue !== null && !Array.isArray(elValue)">
+                                                            <div class="space-y-2">
+                                                                <div class="flex justify-end mb-2">
+                                                                    <button
+                                                                        @click="addDictionaryEntry(activeTab, activeSubTab, arrKey, idx, elKey)"
+                                                                        class="flex items-center justify-center w-6 h-6 text-color-secondary bg-gray-100 dark:bg-gray-700 hover:text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-200 rounded transition-colors"
+                                                                        title="Add Entry"
+                                                                    >
+                                                                        <PlusIcon class="w-4 h-4" />
+                                                                    </button>
                                                                 </div>
-                                                                <button
-                                                                    @click="deleteDictionaryEntry(activeTab, activeSubTab, arrKey, idx, elKey, dictKey)"
-                                                                    class="p-1 text-color-secondary hover:text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                                                                    title="Delete this entry"
-                                                                >
-                                                                    <TrashIcon class="w-3 h-3" />
-                                                                </button>
-                                                            </div>
-                                                            <div v-if="Object.keys(elValue).length === 0" class="text-gray-500 dark:text-gray-400 italic text-center py-2">
-                                                                No entries - click the + button above to add your first entry
+                                                                <transition-group name="item-fade" tag="div" class="space-y-2">
+                                                                  <div v-for="(dictValue, dictKey) in elValue" :key="`dict-${dictKey}-${JSON.stringify(dictValue)}`" class="flex items-center space-x-2 border border-gray-200 dark:border-neutral-700 rounded p-2">
+                                                                      <div class="flex-1 grid grid-cols-2 gap-2">
+                                                                          <InputTransparent
+                                                                              :label="'Key'"
+                                                                              :placeholder="String(dictKey)"
+                                                                              :modelValue="dictKey"
+                                                                              @update:modelValue="updateDictionaryKey(activeTab, activeSubTab, arrKey, idx, elKey, dictKey, $event)"
+                                                                              class="w-full"
+                                                                          />
+                                                                          <InputTransparent
+                                                                              :label="'Value'"
+                                                                              :placeholder="String(dictValue)"
+                                                                              v-model="localData[activeTab][activeSubTab][arrKey][idx][elKey][dictKey]"
+                                                                              class="w-full"
+                                                                          />
+                                                                      </div>
+                                                                      <button
+                                                                          @click="deleteDictionaryEntry(activeTab, activeSubTab, arrKey, idx, elKey, dictKey)"
+                                                                          class="p-1 text-color-secondary hover:text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                                                                          title="Delete this entry"
+                                                                      >
+                                                                          <TrashIcon class="w-3 h-3" />
+                                                                      </button>
+                                                                  </div>
+                                                                </transition-group>
+                                                                <div v-if="Object.keys(elValue).length === 0" class="text-gray-500 dark:text-gray-400 italic text-center py-2">
+                                                                    No entries - click the + button above to add your first entry
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                    <!-- Regular nested object handling -->
-                                                    <template v-else v-for="(subElValue, subElKey) in elValue" :key="subElKey">
-                                                        <InputTransparent
-                                                            :label="formatLabel(subElKey)"
-                                                            :placeholder="String(subElValue)"
-                                                            v-model="localData[activeTab][activeSubTab][arrKey][idx][elKey][subElKey]"
-                                                            class="w-full m-1"
-                                                        />
-                                                    </template>
-                                                 </div>
-                                            </details>
-                                        </div>
+                                                        <!-- Regular nested object handling -->
+                                                        <template v-else v-for="(subElValue, subElKey) in elValue" :key="subElKey">
+                                                            <InputTransparent
+                                                                :label="formatLabel(subElKey)"
+                                                                :placeholder="String(subElValue)"
+                                                                v-model="localData[activeTab][activeSubTab][arrKey][idx][elKey][subElKey]"
+                                                                class="w-full m-1"
+                                                            />
+                                                        </template>
+                                                     </div>
+                                                </details>
+                                            </div>
 
-                                        <div v-else class="text-gray-600 dark:text-gray-400">
-                                            <InputTransparent
-                                            :label="formatLabel(elKey)"
-                                            :placeholder="String(elValue)"
-                                            v-model="localData[activeTab][activeSubTab][arrKey][idx][elKey]"
-                                            class="w-full m-1"
-                                        />
-                                        </div>
+                                            <div v-else class="text-gray-600 dark:text-gray-400">
+                                                <InputTransparent
+                                                :label="formatLabel(elKey)"
+                                                :placeholder="String(elValue)"
+                                                v-model="localData[activeTab][activeSubTab][arrKey][idx][elKey]"
+                                                class="w-full m-1"
+                                            />
+                                            </div>
 
-                                        
-                                    
-                                      
-                                    </template>
+                                        </template>
+                                      </div>
+                                    </details>
                                   </div>
-                                </details>
-                              </div>
-                              <div v-else class="flex items-center justify-between">
-                                <div class="flex-1 mr-2">
-                                  <InputTransparent
-                                    :label="`${formatLabel(arrKey).slice(0, -1)} ${idx + 1}`"
-                                    :placeholder="String(element)"
-                                    v-model="localData[activeTab][activeSubTab][arrKey][idx]"
-                                    :type="typeof element === 'number' ? 'number' : 'text'"
-                                    class="w-full"
-                                  />
+                                  <div v-else class="flex items-center justify-between">
+                                    <div class="flex-1 mr-2">
+                                      <InputTransparent
+                                        :label="`${formatLabel(arrKey).slice(0, -1)} ${idx + 1}`"
+                                        :placeholder="String(element)"
+                                        v-model="localData[activeTab][activeSubTab][arrKey][idx]"
+                                        :type="typeof element === 'number' ? 'number' : 'text'"
+                                        class="w-full"
+                                      />
+                                    </div>
+                                    <button
+                                      @click="deleteNestedArrayItem(activeTab, activeSubTab, arrKey, idx)"
+                                      class="p-1 text-color-secondary hover:text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                                      title="Delete this item"
+                                    >
+                                      <TrashIcon class="w-4 h-4" />
+                                    </button>
+                                  </div>
                                 </div>
-                                <button
-                                  @click="deleteNestedArrayItem(activeTab, activeSubTab, arrKey, idx)"
-                                  class="p-1 text-color-secondary hover:text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                                  title="Delete this item"
-                                >
-                                  <TrashIcon class="w-3 h-3" />
-                                </button>
+                              </transition-group>
                               </div>
-                            </div>
-                          </div>
-                          <div v-else class="text-gray-500 dark:text-gray-400 italic mt-2">
-                            <div class="flex items-center justify-between">
-                              <span>No items</span>
-                              <button
-                                @click="addItemToNestedArray(activeTab, activeSubTab, arrKey)"
-                                class="flex items-center justify-center w-6 h-6 text-color-secondary bg-gray-100 dark:bg-gray-700 hover:text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-200 rounded transition-colors"
-                                :title="`Add ${formatLabel(arrKey).slice(0, -1)}`"
-                              >
-                                <PlusIcon class="w-4 h-4" />
-                              </button>
-                            </div>
-                          </div>
-                        </details>
-                      </template>
-                    </template>
-            </div>
+                              <div v-else class="text-gray-500 dark:text-gray-400 italic mt-2">
+                                <div class="flex items-center justify-between">
+                                  <span>No items</span>
+                                  <button
+                                    @click="addItemToNestedArray(activeTab, activeSubTab, arrKey)"
+                                    class="flex items-center justify-center w-6 h-6 text-color-secondary bg-gray-100 dark:bg-gray-700 hover:text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-200 rounded transition-colors"
+                                    :title="`Add ${formatLabel(arrKey).slice(0, -1)}`"
+                                  >
+                                    <PlusIcon class="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </div>
+                            </details>
+                          </template>
+                        </template>
+                      </div>
+                    </transition>
 
                   </div>
                   
@@ -1156,7 +1160,7 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                       <ListBulletIcon class="w-4 h-4 mr-2" />
                       <span>{{ showArrayProperties ? 'Basic Properties' : 'More Properties' }}</span>
                       <ChevronDownIcon 
-                        class="w-4 h-4 ml-2 transition-transform duration-200"
+                        class="w-4 h-4 ml-2 transition-transform duration-100"
                         :class="{ 'rotate-180': showArrayProperties }"
                       />
                     </button>
@@ -1187,32 +1191,34 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                 <div v-if="filteredData[activeTab].length === 0" class="text-gray-500 dark:text-gray-400 text-center py-8">
                   No {{ formatLabel(activeTab).toLowerCase() }} configured
                 </div>
-                <div 
-                  v-for="(item, index) in filteredData[activeTab]" 
-                  :key="index"
-                  class="bg-white bg-modal-color rounded-lg border border-gray-200 dark:border-neutral-700 p-4 shadow-sm hover:border-blue-300 dark:hover:border-blue-600 transition-colors"
-                >
-                  <div class="flex justify-between items-start">
-                    <div class="flex-1 cursor-pointer" @click="selectSubTab(activeTab, index)">
-                      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                        {{ formatLabel(activeTab).slice(0, -1) }} {{ index + 1 }}
-                      </h3>
-                      <div v-if="typeof item === 'object' && item !== null" class="text-sm text-gray-600 dark:text-gray-400">
-                        Click to edit this {{ formatLabel(activeTab).slice(0, -1).toLowerCase() }}
+                <transition-group name="item-fade" tag="div" class="space-y-4">
+                  <div 
+                    v-for="(item, index) in filteredData[activeTab]" 
+                    :key="`main-item-${index}-${item.id || JSON.stringify(item).slice(0,50)}`"
+                    class="bg-white bg-modal-color rounded-lg border border-gray-200 dark:border-neutral-700 p-4 shadow-sm hover:border-blue-300 dark:hover:border-blue-600 transition-colors"
+                  >
+                    <div class="flex justify-between items-start">
+                      <div class="flex-1 cursor-pointer" @click="selectSubTab(activeTab, index)">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                          {{ formatLabel(activeTab).slice(0, -1) }} {{ index + 1 }}
+                        </h3>
+                        <div v-if="typeof item === 'object' && item !== null" class="text-sm text-gray-600 dark:text-gray-400">
+                          Click to edit this {{ formatLabel(activeTab).slice(0, -1).toLowerCase() }}
+                        </div>
+                        <div v-else class="text-gray-600 dark:text-gray-400">
+                          {{ item }}
+                        </div>
                       </div>
-                      <div v-else class="text-gray-600 dark:text-gray-400">
-                        {{ item }}
-                      </div>
+                      <button
+                        @click.stop="deleteArrayItem(activeTab, index)"
+                        class="ml-3 p-1 text-color-secondary hover:text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                        title="Delete this item"
+                      >
+                        <TrashIcon class="w-4 h-4" />
+                      </button>
                     </div>
-                    <button
-                      @click.stop="deleteArrayItem(activeTab, index)"
-                      class="ml-3 p-1 text-color-secondary hover:text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                      title="Delete this item"
-                    >
-                      <TrashIcon class="w-4 h-4" />
-                    </button>
                   </div>
-                </div>
+                </transition-group>
               </div>
             </template>
             
@@ -1222,7 +1228,8 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
             >
               No data
             </div>
-          </div>
+            </div>
+          </transition>
         </div>
       </div>
       
@@ -1274,7 +1281,7 @@ details > summary::-webkit-details-marker {
 }
 /* Sub-tab open/close animation */
 .subtab-fade-enter-active, .subtab-fade-leave-active {
-  transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.3s cubic-bezier(0.4,0,0.2,1);
+  transition: max-height 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.12s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   overflow: hidden;
 }
 .subtab-fade-enter-from, .subtab-fade-leave-to {
@@ -1284,5 +1291,51 @@ details > summary::-webkit-details-marker {
 .subtab-fade-enter-to, .subtab-fade-leave-from {
   max-height: 500px;
   opacity: 1;
+}
+
+/* Main tab content transition */
+.tab-content-enter-active, .tab-content-leave-active {
+  transition: opacity 120ms cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 120ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.tab-content-enter-from, .tab-content-leave-to {
+  opacity: 0;
+  transform: translateY(6px);
+}
+.tab-content-enter-to, .tab-content-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Slide + fade used for property panel toggles */
+.slide-fade-enter-active, .slide-fade-leave-active {
+  transition: opacity 100ms ease-out, transform 100ms ease-out;
+}
+.slide-fade-enter-from, .slide-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+.slide-fade-enter-to, .slide-fade-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Item add/delete animations for dynamic lists */
+.item-fade-enter-active, .item-fade-leave-active {
+  transition: all 150ms ease-out;
+}
+.item-fade-enter-from {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.95);
+}
+.item-fade-leave-to {
+  opacity: 0;
+  transform: translateY(10px) scale(0.95);
+}
+.item-fade-enter-to, .item-fade-leave-from {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.item-fade-move {
+  transition: transform 150ms ease-out;
 }
 </style>
