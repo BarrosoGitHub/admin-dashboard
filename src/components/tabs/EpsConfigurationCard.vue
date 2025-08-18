@@ -879,7 +879,7 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
             
             <!-- General tab or main tab without sub-selection -->
             <template v-if="(activeTab === 'General' || !Array.isArray(filteredData[activeTab])) && activeSubTab === null">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-x-15 gap-y-2">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-x-15 gap-y-4">
                 <!-- Non-boolean fields first -->
                 <template
                   v-for="(propValue, propKey) in nonBooleanFields(filteredData[activeTab])"
@@ -894,11 +894,9 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                     class="w-full m-1"
                   />
                 </template>
-                <!-- Separator line before booleans, only if there are boolean fields -->
+                <!-- Spacer before booleans, only if there are boolean fields -->
                 <template v-if="Object.keys(booleanFields(filteredData[activeTab])).length">
-                  <div class="my-6 col-span-full">
-                    <hr class="my-4 border border-color hidden" />
-                  </div>
+                  <div class="my-8 col-span-full"></div>
                 </template>
                 <!-- Boolean fields at the end, with slider (no icon) -->
                 <template
@@ -967,6 +965,12 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                           class="w-full m-1"
                         />
                       </template>
+
+                      <!-- Spacer before boolean fields (if any) -->
+                      <template v-if="Object.keys(booleanFields(filteredData[activeTab][activeSubTab])).length">
+                        <div class="my-3.5 col-span-full"></div>
+                      </template>
+
                       <!-- Boolean fields -->
                       <template
                         v-for="(propValue, propKey) in booleanFields(filteredData[activeTab][activeSubTab])"
@@ -984,7 +988,7 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                               v-model="localData[activeTab][activeSubTab][propKey]"
                             />
                             <div
-                              :class="[
+                              :class=" [
                                 'relative w-11 h-6 rounded-full peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[\'\'] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all',
                                 localData[activeTab][activeSubTab][propKey]
                                   ? 'boolean-selector-active'
@@ -1143,7 +1147,7 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                   </div>
                   
                   <!-- More Properties toggle button at the bottom -->
-                  <div v-if="Object.keys(arrayFields(filteredData[activeTab][activeSubTab])).length > 0" class="flex justify-center mt-4">
+                  <div v-if="Object.keys(arrayFields(filteredData[activeTab][activeSubTab])).length > 0" class="flex justify-center mt-10">
                     <button
                       @click="toggleArrayProperties"
                       class="flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg transition-colors"
