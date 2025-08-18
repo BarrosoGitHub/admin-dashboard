@@ -1,9 +1,10 @@
 <script setup>
-import { ref, defineProps, watch, computed, defineEmits } from "vue";
+import { ref, defineProps, watch, computed, defineEmits, onMounted } from "vue";
 import InputTransparent from "../inputs/InputTransparent.vue";
 import enumOptions, {
   getEnumOptions as getEnumOptionsHelper,
 } from "../../enums/enumOptions.js";
+import { getApiBaseUrl } from "../../apiConfig.js";
 import {
   CreditCardIcon,
   Cog6ToothIcon,
@@ -21,6 +22,8 @@ import {
   IdentificationIcon,
   ListBulletIcon,
   ChevronDownIcon,
+  PlusIcon,
+  TrashIcon,
 } from '@heroicons/vue/24/outline'
 
 const getEnumOptions = getEnumOptionsHelper;
@@ -39,6 +42,26 @@ const props = defineProps({
 });
 
 const localData = ref(JSON.parse(JSON.stringify(props.data)));
+const schema = ref(null);
+
+// Fetch schema on component mount
+onMounted(async () => {
+  try {
+    const apiBaseUrl = getApiBaseUrl();
+    const token = localStorage.getItem('jwt');
+    const response = await fetch(`${apiBaseUrl}/eps-configuration/schema`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+    if (response.ok) {
+      schema.value = await response.json();
+      console.log('Schema loaded successfully:', schema.value);
+    } else {
+      console.error('Failed to fetch schema:', response.status, response.statusText);
+    }
+  } catch (error) {
+    console.error('Failed to fetch schema:', error);
+  }
+});
 
 // Group properties into general and list sections
 const transformedData = computed(() => {
@@ -200,6 +223,445 @@ function booleanFields(obj) {
 function arrayFields(obj) {
   return Object.fromEntries(Object.entries(obj).filter(([k, v]) => Array.isArray(v)));
 }
+
+// Function to create a new object based on schema
+function createNewObjectFromSchema(schemaPath) {
+  if (!schema.value) {
+    console.warn('No schema available for creating object');
+    return {};
+  }
+  
+  try {
+    console.log('Creating new object for schema path:', schemaPath);
+    console.log('Available schema:', schema.value);
+    
+    // Check if this is a template object (not JSON Schema format)
+    if (schema.value[schemaPath] && Array.isArray(schema.value[schemaPath])) {
+      const arrayTemplate = schema.value[schemaPath];
+      console.log('Found array template:', arrayTemplate);
+      
+      if (arrayTemplate.length > 0) {
+        // Use the first item as a template
+        const template = arrayTemplate[0];
+        console.log('Using template:', template);
+        
+        // Create a minimal object with only essential properties
+        const result = createMinimalObjectFromTemplate(template);
+        console.log('Created minimal object:', result);
+        return result;
+      }
+    }
+    
+    // If it's a JSON Schema format, handle it the old way
+    let currentSchema = schema.value;
+    
+    // For array properties, we need to look at the items schema
+    if (currentSchema.properties && currentSchema.properties[schemaPath]) {
+      const arraySchema = currentSchema.properties[schemaPath];
+      if (arraySchema.type === 'array' && arraySchema.items) {
+        return createObjectFromSchema(arraySchema.items);
+      }
+    }
+    
+    // If direct path doesn't work, try navigating through the schema
+    const pathParts = schemaPath.split('.');
+    for (const part of pathParts) {
+      if (currentSchema.properties && currentSchema.properties[part]) {
+        currentSchema = currentSchema.properties[part];
+      } else if (currentSchema.items) {
+        currentSchema = currentSchema.items;
+      } else {
+        console.warn(`Schema path not found: ${part} in ${schemaPath}`);
+        break;
+      }
+    }
+    
+    // If we found array items schema, use it
+    if (currentSchema.items) {
+      return createObjectFromSchema(currentSchema.items);
+    }
+    
+    return createObjectFromSchema(currentSchema);
+  } catch (error) {
+    console.error('Error creating object from schema:', error);
+    return {};
+  }
+}
+
+// Helper function to create object with default values based on schema
+function createObjectFromSchema(schemaObj) {
+  if (!schemaObj) {
+    console.warn('No schema object provided');
+    return {};
+  }
+  
+  // If schema doesn't have properties, try to create a basic object
+  if (!schemaObj.properties) {
+    console.warn('Schema object has no properties:', schemaObj);
+    // Return empty object or try to infer from schema type
+    if (schemaObj.type === 'object') {
+      return {};
+    }
+    return {};
+  }
+  
+  const newObj = {};
+  
+  Object.entries(schemaObj.properties).forEach(([key, prop]) => {
+    switch (prop.type) {
+      case 'string':
+        newObj[key] = prop.default || '';
+        break;
+      case 'number':
+      case 'integer':
+        newObj[key] = prop.default || 0;
+        break;
+      case 'boolean':
+        newObj[key] = prop.default !== undefined ? prop.default : false;
+        break;
+      case 'array':
+        newObj[key] = prop.default || [];
+        break;
+      case 'object':
+        newObj[key] = createObjectFromSchema(prop);
+        break;
+      default:
+        // Handle any type or unknown types
+        if (prop.default !== undefined) {
+          newObj[key] = prop.default;
+        } else if (prop.enum && prop.enum.length > 0) {
+          newObj[key] = prop.enum[0]; // Use first enum value as default
+        } else {
+          newObj[key] = null;
+        }
+    }
+  });
+  
+  console.log('Created object from schema:', newObj);
+  return newObj;
+}
+
+// Helper function to create object from template (for template-based schemas)
+function createObjectFromTemplate(template) {
+  if (!template || typeof template !== 'object') {
+    console.warn('Invalid template provided:', template);
+    return {};
+  }
+  
+  const newObj = {};
+  
+  Object.entries(template).forEach(([key, value]) => {
+    // Skip creating properties that have complex nested objects or arrays
+    // Only create basic properties that actually exist in the template
+    if (Array.isArray(value)) {
+      // Only create array if it has items, otherwise skip
+      if (value.length > 0) {
+        newObj[key] = [];
+      }
+    } else if (typeof value === 'object' && value !== null) {
+      // Only create nested objects if they have meaningful content
+      const nestedObj = createObjectFromTemplate(value);
+      if (Object.keys(nestedObj).length > 0) {
+        newObj[key] = nestedObj;
+      }
+    } else if (typeof value === 'string') {
+      newObj[key] = '';
+    } else if (typeof value === 'number') {
+      newObj[key] = 0;
+    } else if (typeof value === 'boolean') {
+      newObj[key] = false;
+    } else {
+      // Skip null or undefined values
+      if (value !== null && value !== undefined) {
+        newObj[key] = null;
+      }
+    }
+  });
+  
+  console.log('Created object from template:', newObj);
+  console.log('Original template was:', template);
+  return newObj;
+}
+
+// Helper function to create minimal object with only essential properties
+function createMinimalObjectFromTemplate(template) {
+  if (!template || typeof template !== 'object') {
+    console.warn('Invalid template provided for minimal object:', template);
+    return {};
+  }
+  
+  const newObj = {};
+  
+  // Only include properties that have non-empty values in the template
+  Object.entries(template).forEach(([key, value]) => {
+    if (typeof value === 'string' && value !== '') {
+      newObj[key] = '';
+    } else if (typeof value === 'number' && value !== 0) {
+      newObj[key] = 0;
+    } else if (typeof value === 'boolean') {
+      newObj[key] = false;
+    } else if (Array.isArray(value) && value.length > 0) {
+      // Only include arrays that have content in the template
+      newObj[key] = [];
+    } else if (typeof value === 'object' && value !== null && Object.keys(value).length > 0) {
+      // Only include objects that have properties
+      const nestedObj = createMinimalObjectFromTemplate(value);
+      if (Object.keys(nestedObj).length > 0) {
+        newObj[key] = nestedObj;
+      }
+    }
+    // Skip empty strings, zero numbers, empty arrays, empty objects, null values
+  });
+  
+  console.log('Created minimal object:', newObj);
+  console.log('From template:', template);
+  return newObj;
+}
+
+// Function to add new item to array
+function addNewArrayItem(tabKey) {
+  if (!Array.isArray(transformedData.value[tabKey])) {
+    console.warn(`Tab key ${tabKey} is not an array`);
+    return;
+  }
+  
+  console.log('Adding new array item for:', tabKey);
+  console.log('Schema available:', !!schema.value);
+  
+  const newItem = createNewObjectFromSchema(tabKey);
+  console.log('Created new item:', newItem);
+  
+  // Update both transformedData and localData
+  if (tabKey === 'General') {
+    // Handle general properties differently
+    console.warn('Cannot add array items to General tab');
+    return;
+  }
+  
+  localData.value[tabKey] = localData.value[tabKey] || [];
+  localData.value[tabKey].push(newItem);
+  
+  console.log('Updated localData:', localData.value[tabKey]);
+  
+  // Select the new item
+  const newIndex = localData.value[tabKey].length - 1;
+  selectSubTab(tabKey, newIndex);
+}
+
+// Function to get missing properties based on schema
+function getMissingProperties(currentObj, schemaPath) {
+  if (!schema.value) return [];
+  
+  try {
+    // Check if this is a template object (not JSON Schema format)
+    if (schema.value[schemaPath] && Array.isArray(schema.value[schemaPath])) {
+      const arrayTemplate = schema.value[schemaPath];
+      if (arrayTemplate.length > 0) {
+        const template = arrayTemplate[0];
+        const existingKeys = Object.keys(currentObj || {});
+        const templateKeys = Object.keys(template || {});
+        return templateKeys.filter(key => !existingKeys.includes(key));
+      }
+    }
+    
+    // Handle direct template properties (for General tab)
+    if (schemaPath === 'root' || schemaPath === 'General') {
+      const existingKeys = Object.keys(currentObj || {});
+      const schemaKeys = Object.keys(schema.value || {}).filter(key => !Array.isArray(schema.value[key]));
+      return schemaKeys.filter(key => !existingKeys.includes(key));
+    }
+    
+    // Handle JSON Schema format
+    const pathParts = schemaPath.split('.');
+    let currentSchema = schema.value;
+    
+    for (const part of pathParts) {
+      if (currentSchema.properties && currentSchema.properties[part]) {
+        currentSchema = currentSchema.properties[part];
+      } else if (currentSchema.items) {
+        currentSchema = currentSchema.items;
+      } else {
+        break;
+      }
+    }
+    
+    if (!currentSchema.properties) return [];
+    
+    const existingKeys = Object.keys(currentObj || {});
+    const schemaKeys = Object.keys(currentSchema.properties);
+    
+    return schemaKeys.filter(key => !existingKeys.includes(key));
+  } catch (error) {
+    console.error('Error getting missing properties:', error);
+    return [];
+  }
+}
+
+// Function to add missing property
+function addMissingProperty(propertyName, schemaPath) {
+  if (!schema.value) return;
+  
+  try {
+    let defaultValue;
+    
+    // Check if this is a template object (not JSON Schema format)
+    if (schema.value[schemaPath] && Array.isArray(schema.value[schemaPath])) {
+      const arrayTemplate = schema.value[schemaPath];
+      if (arrayTemplate.length > 0) {
+        const template = arrayTemplate[0];
+        if (template[propertyName] !== undefined) {
+          const templateValue = template[propertyName];
+          if (Array.isArray(templateValue)) {
+            defaultValue = [];
+          } else if (typeof templateValue === 'object' && templateValue !== null) {
+            defaultValue = createObjectFromTemplate(templateValue);
+          } else if (typeof templateValue === 'string') {
+            defaultValue = '';
+          } else if (typeof templateValue === 'number') {
+            defaultValue = 0;
+          } else if (typeof templateValue === 'boolean') {
+            defaultValue = false;
+          } else {
+            defaultValue = null;
+          }
+        }
+      }
+    }
+    
+    // Handle direct template properties (for General tab)
+    if ((schemaPath === 'root' || schemaPath === 'General') && schema.value[propertyName] !== undefined) {
+      const templateValue = schema.value[propertyName];
+      if (Array.isArray(templateValue)) {
+        defaultValue = [];
+      } else if (typeof templateValue === 'object' && templateValue !== null) {
+        defaultValue = createObjectFromTemplate(templateValue);
+      } else if (typeof templateValue === 'string') {
+        defaultValue = '';
+      } else if (typeof templateValue === 'number') {
+        defaultValue = 0;
+      } else if (typeof templateValue === 'boolean') {
+        defaultValue = false;
+      } else {
+        defaultValue = null;
+      }
+    }
+    
+    // Handle JSON Schema format (fallback)
+    if (defaultValue === undefined) {
+      const pathParts = schemaPath.split('.');
+      let currentSchema = schema.value;
+      
+      for (const part of pathParts) {
+        if (currentSchema.properties && currentSchema.properties[part]) {
+          currentSchema = currentSchema.properties[part];
+        } else if (currentSchema.items) {
+          currentSchema = currentSchema.items;
+        } else {
+          break;
+        }
+      }
+      
+      if (currentSchema.properties && currentSchema.properties[propertyName]) {
+        const propSchema = currentSchema.properties[propertyName];
+        
+        switch (propSchema.type) {
+          case 'string':
+            defaultValue = propSchema.default || '';
+            break;
+          case 'number':
+          case 'integer':
+            defaultValue = propSchema.default || 0;
+            break;
+          case 'boolean':
+            defaultValue = propSchema.default || false;
+            break;
+          case 'array':
+            defaultValue = [];
+            break;
+          case 'object':
+            defaultValue = createObjectFromSchema(propSchema);
+            break;
+          default:
+            defaultValue = propSchema.default || null;
+        }
+      }
+    }
+    
+    // Add to the appropriate location
+    if (activeTab.value === 'General') {
+      localData.value[propertyName] = defaultValue;
+    } else if (activeSubTab.value !== null) {
+      localData.value[activeTab.value][activeSubTab.value][propertyName] = defaultValue;
+    }
+  } catch (error) {
+    console.error('Error adding missing property:', error);
+  }
+}
+
+// Function to delete array item
+function deleteArrayItem(tabKey, index) {
+  if (!Array.isArray(localData.value[tabKey]) || index < 0 || index >= localData.value[tabKey].length) return;
+  
+  if (confirm(`Are you sure you want to delete this ${formatLabel(tabKey).slice(0, -1).toLowerCase()}?`)) {
+    localData.value[tabKey].splice(index, 1);
+    
+    // If we deleted the currently selected item, reset selection
+    if (activeTab.value === tabKey && activeSubTab.value === index) {
+      activeSubTab.value = null;
+    } else if (activeTab.value === tabKey && activeSubTab.value > index) {
+      // Adjust selection if we deleted an item before the current selection
+      activeSubTab.value = activeSubTab.value - 1;
+    }
+  }
+}
+
+// Function to add item to nested array within an object
+function addItemToNestedArray(tabKey, subTabIndex, arrayKey) {
+  if (!localData.value[tabKey] || !localData.value[tabKey][subTabIndex] || !Array.isArray(localData.value[tabKey][subTabIndex][arrayKey])) {
+    console.warn(`Invalid path for nested array: ${tabKey}[${subTabIndex}].${arrayKey}`);
+    return;
+  }
+  
+  console.log('Adding item to nested array:', tabKey, subTabIndex, arrayKey);
+  
+  // Try to get schema template for the nested array
+  let newItem = {};
+  
+  if (schema.value && schema.value[tabKey] && Array.isArray(schema.value[tabKey]) && schema.value[tabKey].length > 0) {
+    const parentTemplate = schema.value[tabKey][0];
+    if (parentTemplate[arrayKey] && Array.isArray(parentTemplate[arrayKey]) && parentTemplate[arrayKey].length > 0) {
+      const arrayItemTemplate = parentTemplate[arrayKey][0];
+      newItem = createObjectFromTemplate(arrayItemTemplate);
+    }
+  }
+  
+  // If no template found, create a basic object
+  if (Object.keys(newItem).length === 0) {
+    newItem = { name: '', value: '' }; // Basic fallback
+  }
+  
+  localData.value[tabKey][subTabIndex][arrayKey].push(newItem);
+  console.log('Added item to nested array:', newItem);
+}
+
+// Function to delete item from nested array
+function deleteNestedArrayItem(tabKey, subTabIndex, arrayKey, itemIndex) {
+  if (!localData.value[tabKey] || !localData.value[tabKey][subTabIndex] || !Array.isArray(localData.value[tabKey][subTabIndex][arrayKey])) {
+    console.warn(`Invalid path for nested array: ${tabKey}[${subTabIndex}].${arrayKey}`);
+    return;
+  }
+  
+  const array = localData.value[tabKey][subTabIndex][arrayKey];
+  if (itemIndex < 0 || itemIndex >= array.length) {
+    console.warn(`Invalid index ${itemIndex} for array of length ${array.length}`);
+    return;
+  }
+  
+  if (confirm(`Are you sure you want to delete this ${formatLabel(arrayKey).slice(0, -1).toLowerCase()}?`)) {
+    array.splice(itemIndex, 1);
+    console.log('Deleted item from nested array at index:', itemIndex);
+  }
+}
 </script>
 
 <template>
@@ -300,7 +762,7 @@ function arrayFields(obj) {
                   <InputTransparent
                     :label="formatLabel(propKey)"
                     :placeholder="String(propValue)"
-                    v-model="transformedData.General[propKey]"
+                    v-model="localData[propKey]"
                     :type="getEnumOptions(activeTab, propKey) ? 'select' : 'text'"
                     :options="getEnumOptions(activeTab, propKey) || undefined"
                     class="w-full m-1"
@@ -327,12 +789,12 @@ function arrayFields(obj) {
                         type="checkbox"
                         class="sr-only peer"
                         :id="`${activeTab}-${propKey}`"
-                        v-model="transformedData.General[propKey]"
+                        v-model="localData[propKey]"
                       />
                       <div
                         :class=" [
                           'relative w-11 h-6 rounded-full peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[\'\'] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all',
-                          transformedData.General[propKey]
+                          localData[propKey]
                             ? 'boolean-selector-active'
                             : 'boolean-selector-inactive'
                         ]"
@@ -348,9 +810,19 @@ function arrayFields(obj) {
             <template v-else-if="Array.isArray(filteredData[activeTab]) && activeSubTab !== null">
               <div class="space-y-4">
                 <div class="bg-white bg-modal-color p-4">
-                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                    {{ formatLabel(activeTab).slice(0, -1) }} {{ activeSubTab + 1 }}
-                  </h3>
+                  <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                      {{ formatLabel(activeTab).slice(0, -1) }} {{ activeSubTab + 1 }}
+                    </h3>
+                    <button
+                      @click="deleteArrayItem(activeTab, activeSubTab)"
+                      class="flex items-center px-3 py-1 text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-200 rounded-lg transition-colors"
+                      title="Delete this item"
+                    >
+                      <TrashIcon class="w-4 h-4 mr-1" />
+                      Delete
+                    </button>
+                  </div>
                   <div v-if="typeof filteredData[activeTab][activeSubTab] === 'object' && filteredData[activeTab][activeSubTab] !== null" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
                     <!-- Non-boolean fields first -->
                     <template
@@ -360,7 +832,7 @@ function arrayFields(obj) {
                       <InputTransparent
                         :label="formatLabel(propKey)"
                         :placeholder="String(propValue)"
-                        v-model="transformedData[activeTab][activeSubTab][propKey]"
+                        v-model="localData[activeTab][activeSubTab][propKey]"
                         :type="getEnumOptions(activeTab, propKey) ? 'select' : 'text'"
                         :options="getEnumOptions(activeTab, propKey) || undefined"
                         class="w-full m-1"
@@ -380,12 +852,12 @@ function arrayFields(obj) {
                             type="checkbox"
                             class="sr-only peer"
                             :id="`${activeTab}-${activeSubTab}-${propKey}`"
-                            v-model="transformedData[activeTab][activeSubTab][propKey]"
+                            v-model="localData[activeTab][activeSubTab][propKey]"
                           />
                           <div
                             :class="[
                               'relative w-11 h-6 rounded-full peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[\'\'] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all',
-                              transformedData[activeTab][activeSubTab][propKey]
+                              localData[activeTab][activeSubTab][propKey]
                                 ? 'boolean-selector-active'
                                 : 'boolean-selector-inactive'
                             ]"
@@ -394,6 +866,7 @@ function arrayFields(obj) {
                         </label>
                       </div>
                     </template>
+                    
                     <!-- Array fields as collapsible property -->
                     <details>
                       <summary class="font-semibold">...</summary>
@@ -403,10 +876,28 @@ function arrayFields(obj) {
                         <details class=" my-2">
                           <summary class="font-semibold ">{{ formatLabel(arrKey) }} ({{ Array.isArray(arr) ? arr.length : 0 }})</summary>
                           <div v-if="Array.isArray(arr) && arr.length > 0" class="space-y-2 mt-2">
+                            <div class="flex justify-end mb-2">
+                              <button
+                                @click="addItemToNestedArray(activeTab, activeSubTab, arrKey)"
+                                class="flex items-center justify-center w-6 h-6 text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-200 rounded transition-colors"
+                                :title="`Add ${formatLabel(arrKey).slice(0, -1)}`"
+                              >
+                                <PlusIcon class="w-4 h-4" />
+                              </button>
+                            </div>
                             <div v-for="(element, idx) in arr" :key="`element-${arrKey}-${idx}`" class="border border-gray-200 dark:border-neutral-700 rounded p-2 mb-2">
                               <div v-if="typeof element === 'object' && element !== null">
                                 <details class="mb-2">
-                                  <summary class="font-semibold cursor-pointer">{{ formatLabel(arrKey) }} Item {{ idx + 1 }}</summary>
+                                  <summary class="font-semibold cursor-pointer flex justify-between items-center">
+                                    <span>{{ formatLabel(arrKey) }} Item {{ idx + 1 }}</span>
+                                    <button
+                                      @click.stop="deleteNestedArrayItem(activeTab, activeSubTab, arrKey, idx)"
+                                      class="ml-2 p-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                                      title="Delete this item"
+                                    >
+                                      <TrashIcon class="w-3 h-3" />
+                                    </button>
+                                  </summary>
                                   <div class="mt-2">
                                     <template v-for="(elValue, elKey) in element" :key="elKey">
                                         <div v-if="typeof elValue === 'object' && elValue !== null">
@@ -418,7 +909,7 @@ function arrayFields(obj) {
                                                         <InputTransparent
                                                             :label="formatLabel(subElKey)"
                                                             :placeholder="String(subElValue)"
-                                                            v-model="transformedData[activeTab][activeSubTab][arrKey][idx][elKey][subElKey]"
+                                                            v-model="localData[activeTab][activeSubTab][arrKey][idx][elKey][subElKey]"
                                                             class="w-full m-1"
                                                         />
                                                         </template>
@@ -431,7 +922,7 @@ function arrayFields(obj) {
                                             <InputTransparent
                                             :label="formatLabel(elKey)"
                                             :placeholder="String(elValue)"
-                                            v-model="transformedData[activeTab][activeSubTab][arrKey][idx][elKey]"
+                                            v-model="localData[activeTab][activeSubTab][arrKey][idx][elKey]"
                                             class="w-full m-1"
                                         />
                                         </div>
@@ -448,7 +939,18 @@ function arrayFields(obj) {
                               </div>
                             </div>
                           </div>
-                          <div v-else class="text-gray-500 dark:text-gray-400 italic">No items</div>
+                          <div v-else class="text-gray-500 dark:text-gray-400 italic mt-2">
+                            <div class="flex items-center justify-between">
+                              <span>No items</span>
+                              <button
+                                @click="addItemToNestedArray(activeTab, activeSubTab, arrKey)"
+                                class="flex items-center justify-center w-6 h-6 text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-200 rounded transition-colors"
+                                :title="`Add ${formatLabel(arrKey).slice(0, -1)}`"
+                              >
+                                <PlusIcon class="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
                         </details>
                       </template>
                     </template>
@@ -466,23 +968,47 @@ function arrayFields(obj) {
             <!-- List tabs - show all array items (when no sub-tab is selected) -->
             <template v-else-if="Array.isArray(filteredData[activeTab]) && activeSubTab === null">
               <div class="space-y-4">
+                <!-- Add new item button -->
+                <div class="flex justify-between items-center mb-4">
+                  <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+                    {{ formatLabel(activeTab) }}
+                  </h2>
+                  <button
+                    @click="addNewArrayItem(activeTab)"
+                    class="flex items-center justify-center w-8 h-8 text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-200 rounded-lg transition-colors"
+                    :title="`Add New ${formatLabel(activeTab).slice(0, -1)}`"
+                  >
+                    <PlusIcon class="w-5 h-5" />
+                  </button>
+                </div>
+                
                 <div v-if="filteredData[activeTab].length === 0" class="text-gray-500 dark:text-gray-400 text-center py-8">
                   No {{ formatLabel(activeTab).toLowerCase() }} configured
                 </div>
                 <div 
                   v-for="(item, index) in filteredData[activeTab]" 
                   :key="index"
-                  class="bg-white bg-modal-color rounded-lg border border-gray-200 dark:border-neutral-700 p-4 shadow-sm cursor-pointer hover:border-blue-300 dark:hover:border-blue-600 transition-colors"
-                  @click="selectSubTab(activeTab, index)"
+                  class="bg-white bg-modal-color rounded-lg border border-gray-200 dark:border-neutral-700 p-4 shadow-sm hover:border-blue-300 dark:hover:border-blue-600 transition-colors"
                 >
-                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                    {{ formatLabel(activeTab).slice(0, -1) }} {{ index + 1 }}
-                  </h3>
-                  <div v-if="typeof item === 'object' && item !== null" class="text-sm text-gray-600 dark:text-gray-400">
-                    Click to edit this {{ formatLabel(activeTab).slice(0, -1).toLowerCase() }}
-                  </div>
-                  <div v-else class="text-gray-600 dark:text-gray-400">
-                    {{ item }}
+                  <div class="flex justify-between items-start">
+                    <div class="flex-1 cursor-pointer" @click="selectSubTab(activeTab, index)">
+                      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                        {{ formatLabel(activeTab).slice(0, -1) }} {{ index + 1 }}
+                      </h3>
+                      <div v-if="typeof item === 'object' && item !== null" class="text-sm text-gray-600 dark:text-gray-400">
+                        Click to edit this {{ formatLabel(activeTab).slice(0, -1).toLowerCase() }}
+                      </div>
+                      <div v-else class="text-gray-600 dark:text-gray-400">
+                        {{ item }}
+                      </div>
+                    </div>
+                    <button
+                      @click.stop="deleteArrayItem(activeTab, index)"
+                      class="ml-3 p-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                      title="Delete this item"
+                    >
+                      <TrashIcon class="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
               </div>
