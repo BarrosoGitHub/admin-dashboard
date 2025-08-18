@@ -86,6 +86,8 @@ const activeTab = ref("General");
 const activeSubTab = ref(null);
 // Collapsed state for array-based tabs
 const collapsedTabs = ref(new Set());
+// Toggle state for showing array properties in sub-tab view
+const showArrayProperties = ref(false);
 
 const emit = defineEmits(["update"]);
 
@@ -180,11 +182,19 @@ function toggleTabCollapse(tabKey) {
 function selectMainTab(tabKey) {
   activeTab.value = tabKey;
   activeSubTab.value = null;
+  // Reset array properties visibility when switching main tabs
+  showArrayProperties.value = false;
 }
 
 function selectSubTab(tabKey, index) {
   activeTab.value = tabKey;
   activeSubTab.value = index;
+  // Reset array properties visibility when switching tabs
+  showArrayProperties.value = false;
+}
+
+function toggleArrayProperties() {
+  showArrayProperties.value = !showArrayProperties.value;
 }
 
 const iconMap = {
@@ -940,52 +950,55 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                     </button>
                   </div>
                   <div v-if="typeof filteredData[activeTab][activeSubTab] === 'object' && filteredData[activeTab][activeSubTab] !== null" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
-                    <!-- Non-boolean fields first -->
-                    <template
-                      v-for="(propValue, propKey) in nonBooleanFields(filteredData[activeTab][activeSubTab])"
-                      :key="propKey"
-                    >
-                      <InputTransparent
-                        :label="formatLabel(propKey)"
-                        :placeholder="String(propValue)"
-                        v-model="localData[activeTab][activeSubTab][propKey]"
-                        :type="getEnumOptions(activeTab, propKey) ? 'select' : 'text'"
-                        :options="getEnumOptions(activeTab, propKey) || undefined"
-                        class="w-full m-1"
-                      />
-                    </template>
-                    <!-- Boolean fields -->
-                    <template
-                      v-for="(propValue, propKey) in booleanFields(filteredData[activeTab][activeSubTab])"
-                      :key="propKey"
-                    >
-                      <div class="flex items-center space-x-3 mx-3">
-                        <label :for="`${activeTab}-${activeSubTab}-${propKey}`" class="block text-sm font-medium text-gray-900 dark:text-white flex-1 mb-0">{{
-                          formatLabel(propKey)
-                        }}</label>
-                        <label class="inline-flex items-center cursor-pointer ml-auto">
-                          <input
-                            type="checkbox"
-                            class="sr-only peer"
-                            :id="`${activeTab}-${activeSubTab}-${propKey}`"
-                            v-model="localData[activeTab][activeSubTab][propKey]"
-                          />
-                          <div
-                            :class="[
-                              'relative w-11 h-6 rounded-full peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[\'\'] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all',
-                              localData[activeTab][activeSubTab][propKey]
-                                ? 'boolean-selector-active'
-                                : 'boolean-selector-inactive'
-                            ]"
-                            style="border: 0px solid var(--toggle-border);"
-                          ></div>
-                        </label>
-                      </div>
+
+                    <!-- Primitive properties (shown by default, hidden when showArrayProperties is true) -->
+                    <template v-if="!showArrayProperties">
+                      <!-- Non-boolean fields first -->
+                      <template
+                        v-for="(propValue, propKey) in nonBooleanFields(filteredData[activeTab][activeSubTab])"
+                        :key="propKey"
+                      >
+                        <InputTransparent
+                          :label="formatLabel(propKey)"
+                          :placeholder="String(propValue)"
+                          v-model="localData[activeTab][activeSubTab][propKey]"
+                          :type="getEnumOptions(activeTab, propKey) ? 'select' : 'text'"
+                          :options="getEnumOptions(activeTab, propKey) || undefined"
+                          class="w-full m-1"
+                        />
+                      </template>
+                      <!-- Boolean fields -->
+                      <template
+                        v-for="(propValue, propKey) in booleanFields(filteredData[activeTab][activeSubTab])"
+                        :key="propKey"
+                      >
+                        <div class="flex items-center space-x-3 mx-3">
+                          <label :for="`${activeTab}-${activeSubTab}-${propKey}`" class="block text-sm font-medium text-gray-900 dark:text-white flex-1 mb-0">{{
+                            formatLabel(propKey)
+                          }}</label>
+                          <label class="inline-flex items-center cursor-pointer ml-auto">
+                            <input
+                              type="checkbox"
+                              class="sr-only peer"
+                              :id="`${activeTab}-${activeSubTab}-${propKey}`"
+                              v-model="localData[activeTab][activeSubTab][propKey]"
+                            />
+                            <div
+                              :class="[
+                                'relative w-11 h-6 rounded-full peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[\'\'] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all',
+                                localData[activeTab][activeSubTab][propKey]
+                                  ? 'boolean-selector-active'
+                                  : 'boolean-selector-inactive'
+                              ]"
+                              style="border: 0px solid var(--toggle-border);"
+                            ></div>
+                          </label>
+                        </div>
+                      </template>
                     </template>
                     
-                    <!-- Array fields as collapsible property -->
-                    <details>
-                      <summary class="font-semibold">...</summary>
+                    <!-- Array fields content (shown when showArrayProperties is true) -->
+                    <div v-if="showArrayProperties && Object.keys(arrayFields(filteredData[activeTab][activeSubTab])).length > 0" class="col-span-full">
                     
                     <template v-if="Object.keys(arrayFields(filteredData[activeTab][activeSubTab])).length">
                       <template v-for="(arr, arrKey) in arrayFields(filteredData[activeTab][activeSubTab])" :key="`array-${arrKey}`">
@@ -995,7 +1008,7 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                             <div class="flex justify-end mb-2">
                               <button
                                 @click="addItemToNestedArray(activeTab, activeSubTab, arrKey)"
-                                class="flex items-center justify-center w-6 h-6 text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-200 rounded transition-colors"
+                                class="flex items-center justify-center w-6 h-6 text-color-secondary bg-gray-100 dark:bg-gray-700 hover:text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-200 rounded transition-colors"
                                 :title="`Add ${formatLabel(arrKey).slice(0, -1)}`"
                               >
                                 <PlusIcon class="w-4 h-4" />
@@ -1008,7 +1021,7 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                                     <span>{{ formatLabel(arrKey) }} Item {{ idx + 1 }}</span>
                                     <button
                                       @click.stop="deleteNestedArrayItem(activeTab, activeSubTab, arrKey, idx)"
-                                      class="ml-2 p-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                                      class="ml-2 p-1 text-color-secondary hover:text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
                                       title="Delete this item"
                                     >
                                       <TrashIcon class="w-3 h-3" />
@@ -1026,7 +1039,7 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                                                             <div class="flex justify-end mb-2">
                                                                 <button
                                                                     @click="addDictionaryEntry(activeTab, activeSubTab, arrKey, idx, elKey)"
-                                                                    class="flex items-center justify-center w-6 h-6 text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-200 rounded transition-colors"
+                                                                    class="flex items-center justify-center w-6 h-6 text-color-secondary bg-gray-100 dark:bg-gray-700 hover:text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-200 rounded transition-colors"
                                                                     title="Add Entry"
                                                                 >
                                                                     <PlusIcon class="w-4 h-4" />
@@ -1050,7 +1063,7 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                                                                 </div>
                                                                 <button
                                                                     @click="deleteDictionaryEntry(activeTab, activeSubTab, arrKey, idx, elKey, dictKey)"
-                                                                    class="p-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                                                                    class="p-1 text-color-secondary hover:text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
                                                                     title="Delete this entry"
                                                                 >
                                                                     <TrashIcon class="w-3 h-3" />
@@ -1102,7 +1115,7 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                                 </div>
                                 <button
                                   @click="deleteNestedArrayItem(activeTab, activeSubTab, arrKey, idx)"
-                                  class="p-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                                  class="p-1 text-color-secondary hover:text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
                                   title="Delete this item"
                                 >
                                   <TrashIcon class="w-3 h-3" />
@@ -1115,7 +1128,7 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                               <span>No items</span>
                               <button
                                 @click="addItemToNestedArray(activeTab, activeSubTab, arrKey)"
-                                class="flex items-center justify-center w-6 h-6 text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-200 rounded transition-colors"
+                                class="flex items-center justify-center w-6 h-6 text-color-secondary bg-gray-100 dark:bg-gray-700 hover:text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-200 rounded transition-colors"
                                 :title="`Add ${formatLabel(arrKey).slice(0, -1)}`"
                               >
                                 <PlusIcon class="w-4 h-4" />
@@ -1125,12 +1138,26 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                         </details>
                       </template>
                     </template>
-            </details>
+            </div>
 
                   </div>
-                  <div v-else class="text-gray-600 dark:text-gray-400">
-                    {{ filteredData[activeTab][activeSubTab] }}
+                  
+                  <!-- More Properties toggle button at the bottom -->
+                  <div v-if="Object.keys(arrayFields(filteredData[activeTab][activeSubTab])).length > 0" class="flex justify-center mt-4">
+                    <button
+                      @click="toggleArrayProperties"
+                      class="flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg transition-colors"
+                      :title="showArrayProperties ? 'Show basic properties' : 'Show more properties'"
+                    >
+                      <ListBulletIcon class="w-4 h-4 mr-2" />
+                      <span>{{ showArrayProperties ? 'Basic Properties' : 'More Properties' }}</span>
+                      <ChevronDownIcon 
+                        class="w-4 h-4 ml-2 transition-transform duration-200"
+                        :class="{ 'rotate-180': showArrayProperties }"
+                      />
+                    </button>
                   </div>
+                  
                 </div>
               </div>
             </template>
@@ -1146,7 +1173,7 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                   </h2>
                   <button
                     @click="addNewArrayItem(activeTab)"
-                    class="flex items-center justify-center w-8 h-8 text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-200 rounded-lg transition-colors"
+                    class="flex items-center justify-center w-8 h-8 text-color-secondary bg-gray-100 dark:bg-gray-700 hover:text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-200 rounded-lg transition-colors"
                     :title="`Add New ${formatLabel(activeTab).slice(0, -1)}`"
                   >
                     <PlusIcon class="w-5 h-5" />
@@ -1175,7 +1202,7 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                     </div>
                     <button
                       @click.stop="deleteArrayItem(activeTab, index)"
-                      class="ml-3 p-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                      class="ml-3 p-1 text-color-secondary hover:text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
                       title="Delete this item"
                     >
                       <TrashIcon class="w-4 h-4" />
