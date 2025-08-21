@@ -75,22 +75,22 @@
                     <div class="shadow-sm rounded-full">
                       <!-- Use select if enum options exist -->
                       <select
-                        v-if="getEnumOptions(filteredGroupLabels[currentPage], prop)"
+                        v-if="getEnumOptionsForProperty(filteredGroupLabels[currentPage], prop)"
                         :id="`${filteredGroupLabels[currentPage]}-${prop}`"
                         v-model="fields[filteredGroupLabels[currentPage]][prop]"
                         class="bg-input-color text-gray-900 text-sm rounded-md border input-border-color focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pl-5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white shadow-sm"
                       >
                         <option
-                          v-if="getEnumOptions(filteredGroupLabels[currentPage], prop).find(o => o.value === fields[filteredGroupLabels[currentPage]][prop])"
+                          v-if="getEnumOptionsForProperty(filteredGroupLabels[currentPage], prop).find(o => o.value === fields[filteredGroupLabels[currentPage]][prop])"
                           :value="fields[filteredGroupLabels[currentPage]][prop]"
                         >
                           {{
-                            getEnumOptions(filteredGroupLabels[currentPage], prop).find(o => o.value === fields[filteredGroupLabels[currentPage]][prop])?.label
+                            getEnumOptionsForProperty(filteredGroupLabels[currentPage], prop).find(o => o.value === fields[filteredGroupLabels[currentPage]][prop])?.label
                           }}
                         </option>
-                        <option disabled v-if="getEnumOptions(filteredGroupLabels[currentPage], prop).length > 1">──────────</option>
+                        <option disabled v-if="getEnumOptionsForProperty(filteredGroupLabels[currentPage], prop).length > 1">──────────</option>
                         <option
-                          v-for="option in getEnumOptions(filteredGroupLabels[currentPage], prop).filter(o => o.value !== fields[filteredGroupLabels[currentPage]][prop])"
+                          v-for="option in getEnumOptionsForProperty(filteredGroupLabels[currentPage], prop).filter(o => o.value !== fields[filteredGroupLabels[currentPage]][prop])"
                           :key="option.value"
                           :value="option.value"
                         >
@@ -165,13 +165,14 @@
 
 <script setup>
 import SearchBar from "../searchbar/SearchBar.vue";
-import { reactive, defineProps, defineEmits, watch, ref, computed } from "vue";
+import { reactive, defineProps, defineEmits, watch, ref, computed, onMounted } from "vue";
 import enumOptions, {
   getEnumOptions as getEnumOptionsHelper,
 } from "../../enums/enumOptions.js";
 // Import axios
 import axios from "axios";
 import { API_BASE_URL } from '@/apiConfig.js';
+import { getApiBaseUrl } from "../../apiConfig.js";
 import {
   HomeIcon,
   CreditCardIcon,
@@ -191,6 +192,7 @@ import {
 } from "@heroicons/vue/24/outline";
 
 const getEnumOptions = getEnumOptionsHelper;
+const dynamicEnums = ref({});
 
 const props = defineProps({
   show: {
@@ -213,6 +215,27 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["close", "submit"]);
+
+// Fetch dynamic enums on component mount
+onMounted(async () => {
+  try {
+    const apiBaseUrl = getApiBaseUrl();
+    const token = localStorage.getItem('jwt');
+    
+    const enumsResponse = await fetch(`${apiBaseUrl}/opt-configuration/enums`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+    
+    if (enumsResponse.ok) {
+      dynamicEnums.value = await enumsResponse.json();
+      console.log('OPT Template modal enums loaded:', dynamicEnums.value);
+    } else {
+      console.error('Failed to fetch OPT enums:', enumsResponse.status, enumsResponse.statusText);
+    }
+  } catch (error) {
+    console.error('Failed to fetch OPT enums:', error);
+  }
+});
 
 function clone(obj) {
   return JSON.parse(JSON.stringify(obj));
@@ -289,6 +312,95 @@ function formatLabel(label) {
   return label
     .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
     .replace(/^./, (str) => str.toUpperCase());
+}
+
+// Helper function to format enum options into the expected format
+function formatEnumOptions(enumData) {
+  if (!enumData) return null;
+  
+  // If it's already in the correct format { value, label }[]
+  if (Array.isArray(enumData) && enumData.length > 0 && typeof enumData[0] === 'object' && 'value' in enumData[0] && 'label' in enumData[0]) {
+    return enumData;
+  }
+  
+  // Handle API format with { Value, Name } properties (from backend)
+  if (Array.isArray(enumData) && enumData.length > 0 && typeof enumData[0] === 'object' && 'Value' in enumData[0] && 'Name' in enumData[0]) {
+    return enumData.map(item => ({ 
+      value: item.Value, 
+      label: item.Name 
+    }));
+  }
+  
+  // If it's an array of strings, convert to { value, label } format
+  if (Array.isArray(enumData) && enumData.length > 0 && typeof enumData[0] === 'string') {
+    return enumData.map((item, index) => ({ value: index, label: item }));
+  }
+  
+  // If it's an object with key-value pairs, convert to { value, label } format
+  if (typeof enumData === 'object' && !Array.isArray(enumData)) {
+    return Object.entries(enumData).map(([key, value]) => ({ 
+      value: isNaN(Number(key)) ? key : Number(key), 
+      label: String(value) 
+    }));
+  }
+  
+  return null;
+}
+
+// Enhanced function to get enum options - prioritizes dynamic enums over static ones
+function getEnumOptionsForProperty(tab, prop) {
+  // First try dynamic enums
+  if (dynamicEnums.value) {
+    // Check if there's a direct match for the property
+    if (dynamicEnums.value[prop]) {
+      return formatEnumOptions(dynamicEnums.value[prop]);
+    }
+    
+    // Check if there's a tab-specific enum
+    if (dynamicEnums.value[tab] && dynamicEnums.value[tab][prop]) {
+      return formatEnumOptions(dynamicEnums.value[tab][prop]);
+    }
+    
+    // Check with case-insensitive matching
+    const tabKey = Object.keys(dynamicEnums.value).find(
+      k => k.toLowerCase() === tab.toLowerCase()
+    );
+    if (tabKey && typeof dynamicEnums.value[tabKey] === "object" && dynamicEnums.value[tabKey][prop]) {
+      return formatEnumOptions(dynamicEnums.value[tabKey][prop]);
+    }
+    
+    // Check for partial property name matches
+    const enumKey = Object.keys(dynamicEnums.value).find(key => {
+      // Try exact match first
+      if (key === prop) return true;
+      
+      // Try case-insensitive match
+      if (key.toLowerCase() === prop.toLowerCase()) return true;
+      
+      // Try partial matches for common patterns
+      const keyLower = key.toLowerCase();
+      const propLower = prop.toLowerCase();
+      
+      // Check if property name contains the enum key or vice versa
+      if (keyLower.includes(propLower) || propLower.includes(keyLower)) return true;
+      
+      // Check for common suffixes/prefixes
+      if (keyLower.endsWith('type') && propLower.includes('type')) return true;
+      if (keyLower.endsWith('mode') && propLower.includes('mode')) return true;
+      if (keyLower.endsWith('language') && propLower.includes('language')) return true;
+      if (keyLower.endsWith('identifier') && propLower.includes('identifier')) return true;
+      
+      return false;
+    });
+    
+    if (enumKey) {
+      console.log(`Found enum match: ${prop} -> ${enumKey}`, dynamicEnums.value[enumKey]);
+      return formatEnumOptions(dynamicEnums.value[enumKey]);
+    }
+  }
+  
+  // Fallback to static enums
+  return getEnumOptions(tab, prop);
 }
 
 const iconMap = {

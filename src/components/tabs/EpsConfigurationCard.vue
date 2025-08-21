@@ -43,23 +43,46 @@ const props = defineProps({
 
 const localData = ref(JSON.parse(JSON.stringify(props.data)));
 const schema = ref(null);
+const dynamicEnums = ref({});
+const enumsLoading = ref(false);
 
-// Fetch schema on component mount
+// Fetch schema and enums on component mount
 onMounted(async () => {
   try {
     const apiBaseUrl = getApiBaseUrl();
     const token = localStorage.getItem('jwt');
-    const response = await fetch(`${apiBaseUrl}/eps-configuration/schema`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {}
-    });
-    if (response.ok) {
-      schema.value = await response.json();
+    enumsLoading.value = true;
+    
+    // Fetch schema and enums in parallel
+    const [schemaResponse, enumsResponse] = await Promise.all([
+      fetch(`${apiBaseUrl}/eps-configuration/schema`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      }),
+      fetch(`${apiBaseUrl}/eps-configuration/enums`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      })
+    ]);
+    
+    if (schemaResponse.ok) {
+      schema.value = await schemaResponse.json();
       console.log('Schema loaded successfully:', schema.value);
     } else {
-      console.error('Failed to fetch schema:', response.status, response.statusText);
+      console.error('Failed to fetch schema:', schemaResponse.status, schemaResponse.statusText);
+    }
+    
+    if (enumsResponse.ok) {
+      dynamicEnums.value = await enumsResponse.json();
+      console.log('Enums loaded successfully:', dynamicEnums.value);
+    } else {
+      console.error('Failed to fetch enums:', enumsResponse.status, enumsResponse.statusText);
+      // If enums endpoint doesn't exist yet, just log and continue
+      console.info('Enums endpoint not available, using static enums only');
     }
   } catch (error) {
-    console.error('Failed to fetch schema:', error);
+    console.error('Failed to fetch schema or enums:', error);
+    console.info('Falling back to static enums only');
+  } finally {
+    enumsLoading.value = false;
   }
 });
 
@@ -167,6 +190,95 @@ function formatLabel(key) {
   return key
     .replace(/([a-z])([A-Z])/g, "$1 $2")
     .replace(/^./, (str) => str.toUpperCase());
+}
+
+// Enhanced function to get enum options - prioritizes dynamic enums over static ones
+function getEnumOptionsForProperty(tab, prop) {
+  // First try dynamic enums
+  if (dynamicEnums.value && !enumsLoading.value) {
+    // Check if there's a direct match for the property
+    if (dynamicEnums.value[prop]) {
+      return formatEnumOptions(dynamicEnums.value[prop]);
+    }
+    
+    // Check if there's a tab-specific enum
+    if (dynamicEnums.value[tab] && dynamicEnums.value[tab][prop]) {
+      return formatEnumOptions(dynamicEnums.value[tab][prop]);
+    }
+    
+    // Check with case-insensitive matching
+    const tabKey = Object.keys(dynamicEnums.value).find(
+      k => k.toLowerCase() === tab.toLowerCase()
+    );
+    if (tabKey && typeof dynamicEnums.value[tabKey] === "object" && dynamicEnums.value[tabKey][prop]) {
+      return formatEnumOptions(dynamicEnums.value[tabKey][prop]);
+    }
+    
+    // Check for partial property name matches (useful for common patterns)
+    const enumKey = Object.keys(dynamicEnums.value).find(key => {
+      // Try exact match first
+      if (key === prop) return true;
+      
+      // Try case-insensitive match
+      if (key.toLowerCase() === prop.toLowerCase()) return true;
+      
+      // Try partial matches for common patterns
+      const keyLower = key.toLowerCase();
+      const propLower = prop.toLowerCase();
+      
+      // Check if property name contains the enum key or vice versa
+      if (keyLower.includes(propLower) || propLower.includes(keyLower)) return true;
+      
+      // Check for common suffixes/prefixes
+      if (keyLower.endsWith('type') && propLower.includes('type')) return true;
+      if (keyLower.endsWith('mode') && propLower.includes('mode')) return true;
+      if (keyLower.endsWith('language') && propLower.includes('language')) return true;
+      if (keyLower.endsWith('identifier') && propLower.includes('identifier')) return true;
+      
+      return false;
+    });
+    
+    if (enumKey) {
+      console.log(`Found enum match: ${prop} -> ${enumKey}`, dynamicEnums.value[enumKey]);
+      return formatEnumOptions(dynamicEnums.value[enumKey]);
+    }
+  }
+  
+  // Fallback to static enums
+  return getEnumOptions(tab, prop);
+}
+
+// Helper function to format enum options into the expected format
+function formatEnumOptions(enumData) {
+  if (!enumData) return null;
+  
+  // If it's already in the correct format { value, label }[]
+  if (Array.isArray(enumData) && enumData.length > 0 && typeof enumData[0] === 'object' && 'value' in enumData[0] && 'label' in enumData[0]) {
+    return enumData;
+  }
+  
+  // Handle API format with { Value, Name } properties (from your backend)
+  if (Array.isArray(enumData) && enumData.length > 0 && typeof enumData[0] === 'object' && 'Value' in enumData[0] && 'Name' in enumData[0]) {
+    return enumData.map(item => ({ 
+      value: item.Value, 
+      label: item.Name 
+    }));
+  }
+  
+  // If it's an array of strings, convert to { value, label } format
+  if (Array.isArray(enumData) && enumData.length > 0 && typeof enumData[0] === 'string') {
+    return enumData.map((item, index) => ({ value: index, label: item }));
+  }
+  
+  // If it's an object with key-value pairs, convert to { value, label } format
+  if (typeof enumData === 'object' && !Array.isArray(enumData)) {
+    return Object.entries(enumData).map(([key, value]) => ({ 
+      value: isNaN(Number(key)) ? key : Number(key), 
+      label: String(value) 
+    }));
+  }
+  
+  return null;
 }
 
 function toggleTabCollapse(tabKey) {
@@ -800,6 +912,14 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                 <span class="sr-only">Payment icon</span>
               </span>
         <span class="text-xl font-semibold text-gray-900 dark:text-white tracking-wide">EPS Configuration</span>
+        <!-- Loading indicator for enums -->
+        <div v-if="enumsLoading" class="ml-auto flex items-center text-sm text-gray-500 dark:text-gray-400">
+          <svg class="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Loading options...
+        </div>
       </div>
       
       <div class="flex flex-1 min-h-0">
@@ -891,8 +1011,8 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                     :label="formatLabel(propKey)"
                     :placeholder="String(propValue)"
                     v-model="localData[propKey]"
-                    :type="getEnumOptions(activeTab, propKey) ? 'select' : 'text'"
-                    :options="getEnumOptions(activeTab, propKey) || undefined"
+                    :type="getEnumOptionsForProperty(activeTab, propKey) ? 'select' : 'text'"
+                    :options="getEnumOptionsForProperty(activeTab, propKey) || undefined"
                     class="w-full m-1"
                   />
                 </template>
@@ -963,8 +1083,8 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                             :label="formatLabel(propKey)"
                             :placeholder="String(propValue)"
                             v-model="localData[activeTab][activeSubTab][propKey]"
-                            :type="getEnumOptions(activeTab, propKey) ? 'select' : 'text'"
-                            :options="getEnumOptions(activeTab, propKey) || undefined"
+                            :type="getEnumOptionsForProperty(activeTab, propKey) ? 'select' : 'text'"
+                            :options="getEnumOptionsForProperty(activeTab, propKey) || undefined"
                             class="w-full m-1"
                           />
                         </template>
@@ -1089,6 +1209,8 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                                                                 :label="formatLabel(subElKey)"
                                                                 :placeholder="String(subElValue)"
                                                                 v-model="localData[activeTab][activeSubTab][arrKey][idx][elKey][subElKey]"
+                                                                :type="getEnumOptionsForProperty(activeTab, subElKey) ? 'select' : 'text'"
+                                                                :options="getEnumOptionsForProperty(activeTab, subElKey) || undefined"
                                                                 class="w-full m-1"
                                                             />
                                                         </template>
@@ -1101,6 +1223,8 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                                                 :label="formatLabel(elKey)"
                                                 :placeholder="String(elValue)"
                                                 v-model="localData[activeTab][activeSubTab][arrKey][idx][elKey]"
+                                                :type="getEnumOptionsForProperty(activeTab, elKey) ? 'select' : 'text'"
+                                                :options="getEnumOptionsForProperty(activeTab, elKey) || undefined"
                                                 class="w-full m-1"
                                             />
                                             </div>
