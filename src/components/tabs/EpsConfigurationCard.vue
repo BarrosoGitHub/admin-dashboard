@@ -367,9 +367,24 @@ function createNewObjectFromSchema(schemaPath) {
         const template = arrayTemplate[0];
         console.log('Using template:', template);
         
-        // Create a minimal object with only essential properties
-        const result = createMinimalObjectFromTemplate(template);
-        console.log('Created minimal object:', result);
+        // Create a full object based on the template structure
+        const result = createObjectFromTemplate(template);
+        console.log('Created object from template:', result);
+        return result;
+      }
+    }
+    
+    // Try with camelCase conversion (RegisteredTerminals -> registeredTerminals)
+    const camelCaseSchemaPath = schemaPath.charAt(0).toLowerCase() + schemaPath.slice(1);
+    if (schema.value[camelCaseSchemaPath] && Array.isArray(schema.value[camelCaseSchemaPath])) {
+      const arrayTemplate = schema.value[camelCaseSchemaPath];
+      console.log('Found camelCase array template:', arrayTemplate);
+      
+      if (arrayTemplate.length > 0) {
+        const template = arrayTemplate[0];
+        console.log('Using camelCase template:', template);
+        const result = createObjectFromTemplate(template);
+        console.log('Created object from camelCase template:', result);
         return result;
       }
     }
@@ -380,6 +395,14 @@ function createNewObjectFromSchema(schemaPath) {
     // For array properties, we need to look at the items schema
     if (currentSchema.properties && currentSchema.properties[schemaPath]) {
       const arraySchema = currentSchema.properties[schemaPath];
+      if (arraySchema.type === 'array' && arraySchema.items) {
+        return createObjectFromSchema(arraySchema.items);
+      }
+    }
+    
+    // Try with camelCase for JSON Schema too
+    if (currentSchema.properties && currentSchema.properties[camelCaseSchemaPath]) {
+      const arraySchema = currentSchema.properties[camelCaseSchemaPath];
       if (arraySchema.type === 'array' && arraySchema.items) {
         return createObjectFromSchema(arraySchema.items);
       }
@@ -415,6 +438,13 @@ function createObjectFromSchema(schemaObj) {
   if (!schemaObj) {
     console.warn('No schema object provided');
     return {};
+  }
+  
+  // Check if this is actually a template object (not a JSON Schema)
+  // If it has properties that are not JSON Schema properties, treat it as a template
+  if (typeof schemaObj === 'object' && !schemaObj.type && !schemaObj.properties && !schemaObj.items) {
+    console.log('Schema object appears to be a template, using createObjectFromTemplate');
+    return createObjectFromTemplate(schemaObj);
   }
   
   // If schema doesn't have properties, try to create a basic object
@@ -473,26 +503,12 @@ function createObjectFromTemplate(template) {
   const newObj = {};
   
   Object.entries(template).forEach(([key, value]) => {
-    // Skip creating properties that have complex nested objects or arrays
-    // Only create basic properties that actually exist in the template
     if (Array.isArray(value)) {
-      // Only create array if it has items, otherwise skip
-      if (value.length > 0) {
-        newObj[key] = [];
-      }
+      // Create empty array for arrays
+      newObj[key] = [];
     } else if (typeof value === 'object' && value !== null) {
-      // Check if it's a dictionary-like object (empty object or has string keys)
-      const keys = Object.keys(value);
-      if (keys.length === 0 || keys.every(k => typeof k === 'string')) {
-        // Create empty dictionary for dictionaries
-        newObj[key] = {};
-      } else {
-        // Only create nested objects if they have meaningful content
-        const nestedObj = createObjectFromTemplate(value);
-        if (Object.keys(nestedObj).length > 0) {
-          newObj[key] = nestedObj;
-        }
-      }
+      // For objects, recursively create the structure
+      newObj[key] = createObjectFromTemplate(value);
     } else if (typeof value === 'string') {
       newObj[key] = '';
     } else if (typeof value === 'number') {
@@ -500,10 +516,8 @@ function createObjectFromTemplate(template) {
     } else if (typeof value === 'boolean') {
       newObj[key] = false;
     } else {
-      // Skip null or undefined values
-      if (value !== null && value !== undefined) {
-        newObj[key] = null;
-      }
+      // For null or undefined, set appropriate default
+      newObj[key] = null;
     }
   });
   
