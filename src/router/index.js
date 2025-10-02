@@ -4,7 +4,7 @@ import { API_BASE_URL } from '@/apiConfig.js';
 
 const routes = [
   {
-    path: '',
+    path: '/',
     redirect: { name: 'Home' }
   },
   {

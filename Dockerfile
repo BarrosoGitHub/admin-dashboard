@@ -13,8 +13,8 @@ RUN npm run build
 # Use ARM64 Nginx image to serve the built app
 FROM --platform=linux/arm64 nginx:alpine
 
-# Copy the built app
-COPY --from=build /app/dist /usr/share/nginx/html
+# Copy the built app into /configurator subdirectory
+COPY --from=build /app/dist /usr/share/nginx/html/configurator
 
 # Copy custom nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
