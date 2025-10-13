@@ -80,4 +80,12 @@ input.input-border-color:focus, select.input-border-color:focus {
 input:focus, select:focus {
   color: var(--text-color) !important;
 }
+
+/* Dark mode dropdown options */
+@media (prefers-color-scheme: dark) {
+  select option {
+    background-color: #4b4b4b; /* gray-700 */
+    color: white;
+  }
+}
 </style>

@@ -4,7 +4,7 @@
       <div class="relative">
         <select
           :id="inputId"
-          class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border-1 input-border-color appearance-none dark:text-white border-color focus:outline-none focus:ring-0 focus:border-blue-600 peer pr-8 text-left"
+          class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border-1 input-border-color appearance-none dark:text-white dark:bg-gray-700 border-color focus:outline-none focus:ring-0 focus:border-blue-600 peer pr-8 text-left"
           :value="modelValue"
           @change="emit('update:modelValue', $event.target.value)"
           required
