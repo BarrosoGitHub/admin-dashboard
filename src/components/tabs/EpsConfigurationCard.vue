@@ -1169,7 +1169,8 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                                         </button>
                                       </summary>
                                       <div class="mt-2">
-                                        <template v-for="(elValue, elKey) in element" :key="elKey">
+                                        <!-- Non-boolean and object fields first -->
+                                        <template v-for="(elValue, elKey) in element" :key="`non-bool-${elKey}`">
                                             <div v-if="typeof elValue === 'object' && elValue !== null">
                                                 <details class="mb-2">
                                                     <summary class="font-semibold cursor-pointer">{{ formatLabel(elKey) }}</summary>
@@ -1217,9 +1218,11 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <!-- Regular nested object handling -->
-                                                        <template v-else v-for="(subElValue, subElKey) in elValue" :key="subElKey">
+                                                        <!-- Regular nested object handling - non-boolean fields first -->
+                                                        <template v-else>
+                                                          <template v-for="(subElValue, subElKey) in elValue" :key="`non-bool-${subElKey}`">
                                                             <InputTransparent
+                                                                v-if="typeof subElValue !== 'boolean'"
                                                                 :label="formatLabel(subElKey)"
                                                                 :placeholder="String(subElValue)"
                                                                 v-model="localData[activeTab][activeSubTab][arrKey][idx][elKey][subElKey]"
@@ -1227,12 +1230,42 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                                                                 :options="getEnumOptionsForProperty(activeTab, subElKey) || undefined"
                                                                 class="w-full m-1"
                                                             />
+                                                          </template>
+                                                          <!-- Boolean fields grouped together -->
+                                                          <template v-if="Object.values(elValue).some(v => typeof v === 'boolean')">
+                                                            <div class="my-3"></div>
+                                                            <template v-for="(subElValue, subElKey) in elValue" :key="`bool-${subElKey}`">
+                                                              <div v-if="typeof subElValue === 'boolean'" class="flex items-center space-x-3 mx-1 my-2">
+                                                                <label :for="`${activeTab}-${activeSubTab}-${arrKey}-${idx}-${elKey}-${subElKey}`" class="block text-sm font-medium text-gray-900 dark:text-white flex-1 mb-0">{{
+                                                                  formatLabel(subElKey)
+                                                                }}</label>
+                                                                <label class="inline-flex items-center cursor-pointer ml-auto">
+                                                                  <input
+                                                                    type="checkbox"
+                                                                    class="sr-only peer"
+                                                                    :id="`${activeTab}-${activeSubTab}-${arrKey}-${idx}-${elKey}-${subElKey}`"
+                                                                    v-model="localData[activeTab][activeSubTab][arrKey][idx][elKey][subElKey]"
+                                                                  />
+                                                                  <div
+                                                                    :class=" [
+                                                                      'relative w-11 h-6 rounded-full peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[\'\'] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all',
+                                                                      localData[activeTab][activeSubTab][arrKey][idx][elKey][subElKey]
+                                                                        ? 'boolean-selector-active'
+                                                                        : 'boolean-selector-inactive'
+                                                                    ]"
+                                                                    style="border: 0px solid var(--toggle-border);"
+                                                                  ></div>
+                                                                </label>
+                                                              </div>
+                                                            </template>
+                                                          </template>
                                                         </template>
                                                      </div>
                                                 </details>
                                             </div>
 
-                                            <div v-else class="text-gray-600 dark:text-gray-400">
+                                            <!-- Non-boolean, non-object fields -->
+                                            <div v-else-if="typeof elValue !== 'boolean'" class="text-gray-600 dark:text-gray-400">
                                                 <InputTransparent
                                                 :label="formatLabel(elKey)"
                                                 :placeholder="String(elValue)"
@@ -1242,7 +1275,35 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                                                 class="w-full m-1"
                                             />
                                             </div>
+                                        </template>
 
+                                        <!-- Boolean fields grouped together at the end -->
+                                        <template v-if="Object.values(element).some(v => typeof v === 'boolean')">
+                                          <div class="my-4"></div>
+                                          <template v-for="(elValue, elKey) in element" :key="`bool-${elKey}`">
+                                            <div v-if="typeof elValue === 'boolean'" class="flex items-center space-x-3 mx-1 my-2">
+                                              <label :for="`${activeTab}-${activeSubTab}-${arrKey}-${idx}-${elKey}`" class="block text-sm font-medium text-gray-900 dark:text-white flex-1 mb-0">{{
+                                                formatLabel(elKey)
+                                              }}</label>
+                                              <label class="inline-flex items-center cursor-pointer ml-auto">
+                                                <input
+                                                  type="checkbox"
+                                                  class="sr-only peer"
+                                                  :id="`${activeTab}-${activeSubTab}-${arrKey}-${idx}-${elKey}`"
+                                                  v-model="localData[activeTab][activeSubTab][arrKey][idx][elKey]"
+                                                />
+                                                <div
+                                                  :class=" [
+                                                    'relative w-11 h-6 rounded-full peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[\'\'] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all',
+                                                    localData[activeTab][activeSubTab][arrKey][idx][elKey]
+                                                      ? 'boolean-selector-active'
+                                                      : 'boolean-selector-inactive'
+                                                  ]"
+                                                  style="border: 0px solid var(--toggle-border);"
+                                                ></div>
+                                              </label>
+                                            </div>
+                                          </template>
                                         </template>
                                       </div>
                                     </details>

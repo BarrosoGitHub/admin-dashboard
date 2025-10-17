@@ -12,7 +12,7 @@
           >
             <h3 class="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
               <span class="inline-block align-middle">
-                <img src="@/assets/petrol-pump.png" alt="Petrol Pump icon" width="32" height="32" class="inline-block align-middle mr-1" />
+                <img src="@/assets/petrol-pump.png" alt="Petrol Pump icon" width="32" height="32" class="inline-block align-middle mr-1 petrol-pump-icon" />
                 <span class="sr-only">Petrol Pump icon</span>
               </span>
               New OPT configuration
@@ -186,6 +186,10 @@ async function submitForm(e) {
 .fade-slide-leave-to {
   opacity: 0;
   transform: translateY(20px); /* leave lower */
+}
+
+.dark .petrol-pump-icon {
+  filter: brightness(0) invert(1);
 }
 
 </style>
