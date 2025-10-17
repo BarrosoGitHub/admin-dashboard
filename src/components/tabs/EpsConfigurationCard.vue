@@ -1143,7 +1143,7 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                         <template v-if="Object.keys(arrayFields(filteredData[activeTab][activeSubTab])).length">
                           <template v-for="(arr, arrKey) in arrayFields(filteredData[activeTab][activeSubTab])" :key="`array-${arrKey}`">
                             <details class=" my-2">
-                              <summary class="font-semibold ">{{ formatLabel(arrKey) }} ({{ Array.isArray(arr) ? arr.length : 0 }})</summary>
+                              <summary class="font-semibold text-gray-900 dark:text-white">{{ formatLabel(arrKey) }} ({{ Array.isArray(arr) ? arr.length : 0 }})</summary>
                               <div v-if="Array.isArray(arr) && arr.length > 0" class="space-y-2 mt-2">
                                 <div class="flex justify-end mb-2">
                                   <button
@@ -1158,7 +1158,7 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                                   <div v-for="(element, idx) in arr" :key="`element-${arrKey}-${idx}-${element.id || idx}`" class="border border-gray-200 dark:border-neutral-700 rounded p-2 mb-2">
                                     <div v-if="typeof element === 'object' && element !== null">
                                       <details class="mb-2">
-                                      <summary class="font-semibold cursor-pointer flex justify-between items-center">
+                                      <summary class="font-semibold text-gray-900 dark:text-white cursor-pointer flex justify-between items-center">
                                         <span>{{ formatLabel(arrKey) }} Item {{ idx + 1 }}</span>
                                         <button
                                           @click.stop="deleteNestedArrayItem(activeTab, activeSubTab, arrKey, idx)"
