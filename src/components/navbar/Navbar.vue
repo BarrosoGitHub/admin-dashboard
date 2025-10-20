@@ -56,7 +56,7 @@
           class="inline-flex items-center justify-center p-0.5 w-12 h-12 text-sm icon-color rounded-full bg-modal-color transition-all duration-200 hover:scale-105 relative overflow-hidden"
           aria-controls="navbar-hamburger"
           aria-expanded="false"
-          style="z-index: 1002; position: relative;"
+          style="z-index: 40; position: relative;"
         >
           <span class="sr-only">Open Sidebar</span>
           <!-- Hamburger Icon -->
