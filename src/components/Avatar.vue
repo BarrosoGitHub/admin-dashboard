@@ -1,30 +1,40 @@
 <template>
   <div
-    ref="avatarRef"
-    class="relative w-12 h-12 overflow-hidden border border-color bg-modal-color rounded-full cursor-pointer"
-    @click="toggleDropdown"
+    ref="avatarContainerRef"
+    class="relative"
+    @mouseenter="showDropdown = true"
+    @mouseleave="showDropdown = false"
   >
-    <svg
-      class="absolute w-13.5 h-14 text-gray-400 -left-1"
-      fill="currentColor"
-      viewBox="0 0 20 20"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        fill-rule="evenodd"
-        d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-        clip-rule="evenodd"
-      ></path>
-    </svg>
-  </div>
-  <!-- Dropdown menu -->
-  <Transition name="dropdown-fade">
     <div
-        v-if="showDropdown"
-        ref="dropdownRef"
-        id="userDropdown"
-        class="z-170 absolute right-8 top-20 mt-2 bg-modal-color divide-y divide-neutral-700 rounded-lg shadow-sm w-44 border border-color shadow-xl"
+      ref="avatarRef"
+      class="relative w-12 h-12 overflow-hidden border border-color bg-modal-color rounded-full cursor-pointer transition-transform duration-200 hover:scale-105"
+    >
+      <svg
+        class="absolute w-13.5 h-14 text-gray-400 -left-1"
+        fill="currentColor"
+        viewBox="0 0 20 20"
+        xmlns="http://www.w3.org/2000/svg"
       >
+        <path
+          fill-rule="evenodd"
+          d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+          clip-rule="evenodd"
+        ></path>
+      </svg>
+    </div>
+    <!-- Spacing bridge between avatar and dropdown to prevent gaps -->
+    <div 
+      v-if="showDropdown" 
+      class="absolute right-0 top-12 h-6 w-48"
+    ></div>
+    <!-- Dropdown menu -->
+    <Transition name="dropdown-fade">
+      <div
+          v-if="showDropdown"
+          ref="dropdownRef"
+          id="userDropdown"
+          class="z-170 absolute right-0 top-16 bg-modal-color divide-y divide-neutral-700 rounded-lg shadow-sm w-48 border border-color shadow-xl"
+        >
     <div class="px-4 py-3 text-sm text-gray-900 dark:text-white">
       <div>Username [PH]</div>
     </div>
@@ -76,12 +86,13 @@
       <a
         href="#"
         @click.prevent="handleSignOut"
-        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+        class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 dark:text-red-400 dark:hover:text-red-300 transition-colors"
         >Sign out</a
       >
     </div>
+      </div>
+    </Transition>
   </div>
-  </Transition>
 </template>
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
@@ -94,6 +105,7 @@ const router = useRouter();
 const isDarkMode = ref(true); // Default to dark mode since the app appears to be dark themed
 const dropdownRef = ref(null);
 const avatarRef = ref(null);
+const avatarContainerRef = ref(null);
 
 function toggleDropdown() {
   showDropdown.value = !showDropdown.value;
@@ -120,18 +132,7 @@ function toggleTheme() {
   console.log('Theme toggled to:', isDarkMode.value ? 'Dark' : 'Light');
 }
 
-function handleClickOutside(event) {
-  if (dropdownRef.value && avatarRef.value) {
-    // Check if click is outside both the dropdown and the avatar button
-    if (!dropdownRef.value.contains(event.target) && !avatarRef.value.contains(event.target)) {
-      showDropdown.value = false;
-    }
-  }
-}
-
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside);
-  
   // Initialize dark mode from localStorage or default to true
   const savedDarkMode = localStorage.getItem('darkMode');
   if (savedDarkMode !== null) {
@@ -152,7 +153,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside);
+  // No cleanup needed
 });
 
 async function handleSignOut() {

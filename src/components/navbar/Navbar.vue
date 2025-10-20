@@ -1,6 +1,7 @@
 <script setup>
   import Avatar from '../Avatar.vue';
   import SearchBar from '../searchbar/SearchBar.vue';
+  import { ref } from 'vue';
   
   const props = defineProps({
     searchValue: {
@@ -14,10 +15,16 @@
     activeCard: {
       type: String,
       default: ''
+    },
+    sidebarOpen: {
+      type: Boolean,
+      default: false
     }
   });
   
   const emit = defineEmits(['sidebar-toggle', 'password-change', 'search-update']);
+  
+  const isHovered = ref(false);
   
   function handlePasswordChange() {
     emit('password-change');
