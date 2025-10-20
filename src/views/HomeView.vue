@@ -448,6 +448,7 @@ onBeforeUnmount(() => {
             :searchValue="searchValue"
             :showSearch="showSearchForActiveCard"
             :activeCard="activeCardName"
+            :sidebarOpen="sidebarOpen"
           />
 
           <div class="flex flex-col md:flex-row md:space-x-4">
