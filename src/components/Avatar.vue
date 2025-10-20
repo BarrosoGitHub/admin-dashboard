@@ -18,14 +18,13 @@
     </svg>
   </div>
   <!-- Dropdown menu -->
-  <div
-      ref="dropdownRef"
-      id="userDropdown"
-      :class="[
-        'z-170 absolute right-8 top-20 mt-2 bg-modal-color divide-y divide-neutral-700 rounded-lg shadow-sm w-44 border border-color shadow-xl',
-        showDropdown ? '' : 'hidden'
-      ]"
-    >
+  <Transition name="dropdown-fade">
+    <div
+        v-if="showDropdown"
+        ref="dropdownRef"
+        id="userDropdown"
+        class="z-170 absolute right-8 top-20 mt-2 bg-modal-color divide-y divide-neutral-700 rounded-lg shadow-sm w-44 border border-color shadow-xl"
+      >
     <div class="px-4 py-3 text-sm text-gray-900 dark:text-white">
       <div>Username [PH]</div>
     </div>
@@ -82,6 +81,7 @@
       >
     </div>
   </div>
+  </Transition>
 </template>
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
@@ -188,5 +188,36 @@ defineExpose({ toggleDropdown });
   background-color: #ffffff; /* White ball for light mode */
   border-color: #d1d5db; /* Light gray border for light mode */
   transition: all 0.3s ease;
+}
+
+/* Dropdown transition animations */
+.dropdown-fade-enter-active {
+  animation: dropdown-fade-in 0.2s ease-out;
+}
+
+.dropdown-fade-leave-active {
+  animation: dropdown-fade-out 0.15s ease-in;
+}
+
+@keyframes dropdown-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes dropdown-fade-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
 }
 </style>
