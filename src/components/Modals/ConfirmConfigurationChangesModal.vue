@@ -124,26 +124,39 @@ function computeDiff(obj1, obj2) {
           const item2 = val2[i];
           
           if (isPlainObject(item1) && isPlainObject(item2)) {
-            // Compare properties within array objects
-            const itemKeys = new Set([...Object.keys(item1), ...Object.keys(item2)]);
-            for (const itemKey of itemKeys) {
-              const subVal1 = item1[itemKey];
-              const subVal2 = item2[itemKey];
-              const propertyPath = `${key}[${i}].${itemKey}`;
-              
-              // Handle arrays within objects (like AllowedAcquirerIds)
-              if (Array.isArray(subVal1) && Array.isArray(subVal2)) {
-                if (!arraysEqual(subVal1, subVal2)) {
+            // Check if the objects are actually different before comparing properties
+            if (JSON.stringify(item1) !== JSON.stringify(item2)) {
+              // Compare properties within array objects
+              const itemKeys = new Set([...Object.keys(item1), ...Object.keys(item2)]);
+              for (const itemKey of itemKeys) {
+                const subVal1 = item1[itemKey];
+                const subVal2 = item2[itemKey];
+                const propertyPath = `${key}[${i}].${itemKey}`;
+                
+                // Handle nested objects (like RegisteredProducts)
+                if (isPlainObject(subVal1) && isPlainObject(subVal2)) {
+                  // Only add diff if the nested objects are actually different
+                  if (JSON.stringify(subVal1) !== JSON.stringify(subVal2)) {
+                    diffs[propertyPath] = {
+                      old: JSON.stringify(subVal1),
+                      new: JSON.stringify(subVal2),
+                    };
+                  }
+                }
+                // Handle arrays within objects (like AllowedAcquirerIds)
+                else if (Array.isArray(subVal1) && Array.isArray(subVal2)) {
+                  if (!arraysEqual(subVal1, subVal2)) {
+                    diffs[propertyPath] = {
+                      old: formatValueForDisplay(propertyPath, subVal1),
+                      new: formatValueForDisplay(propertyPath, subVal2),
+                    };
+                  }
+                } else if (subVal1 !== subVal2) {
                   diffs[propertyPath] = {
-                    old: formatValueForDisplay(propertyPath, subVal1),
-                    new: formatValueForDisplay(propertyPath, subVal2),
+                    old: formatValueForDisplay(propertyPath, subVal1) ?? "N/A",
+                    new: formatValueForDisplay(propertyPath, subVal2) ?? "N/A",
                   };
                 }
-              } else if (subVal1 !== subVal2) {
-                diffs[propertyPath] = {
-                  old: formatValueForDisplay(propertyPath, subVal1) ?? "N/A",
-                  new: formatValueForDisplay(propertyPath, subVal2) ?? "N/A",
-                };
               }
             }
           } else if (Array.isArray(item1) && Array.isArray(item2)) {
@@ -170,25 +183,28 @@ function computeDiff(obj1, obj2) {
         new: formatValueForDisplay(key, val2) ?? "N/A",
       };
     } else if (isPlainObject(val1) && isPlainObject(val2)) {
-      const subkeys = new Set([...Object.keys(val1), ...Object.keys(val2)]);
-      for (const subkey of subkeys) {
-        const subVal1 = val1[subkey];
-        const subVal2 = val2[subkey];
-        const propertyPath = `${key}.${subkey}`;
-        
-        // Handle arrays within objects
-        if (Array.isArray(subVal1) && Array.isArray(subVal2)) {
-          if (!arraysEqual(subVal1, subVal2)) {
+      // Check if objects are actually different before diving into properties
+      if (JSON.stringify(val1) !== JSON.stringify(val2)) {
+        const subkeys = new Set([...Object.keys(val1), ...Object.keys(val2)]);
+        for (const subkey of subkeys) {
+          const subVal1 = val1[subkey];
+          const subVal2 = val2[subkey];
+          const propertyPath = `${key}.${subkey}`;
+          
+          // Handle arrays within objects
+          if (Array.isArray(subVal1) && Array.isArray(subVal2)) {
+            if (!arraysEqual(subVal1, subVal2)) {
+              diffs[propertyPath] = {
+                old: formatValueForDisplay(propertyPath, subVal1),
+                new: formatValueForDisplay(propertyPath, subVal2),
+              };
+            }
+          } else if (subVal1 !== subVal2) {
             diffs[propertyPath] = {
-              old: formatValueForDisplay(propertyPath, subVal1),
-              new: formatValueForDisplay(propertyPath, subVal2),
+              old: formatValueForDisplay(propertyPath, subVal1) ?? "N/A",
+              new: formatValueForDisplay(propertyPath, subVal2) ?? "N/A",
             };
           }
-        } else if (subVal1 !== subVal2) {
-          diffs[propertyPath] = {
-            old: formatValueForDisplay(propertyPath, subVal1) ?? "N/A",
-            new: formatValueForDisplay(propertyPath, subVal2) ?? "N/A",
-          };
         }
       }
     } else if (val1 !== val2) {

@@ -1,0 +1,19 @@
+# x86/amd64 variant of the project's Dockerfile
+# Build with: docker build -f Dockerfile.x86 -t optconfigurator:amd64 .
+# Run with: docker run -p 8081:8081 optconfigurator:amd64
+
+FROM --platform=linux/amd64 node:20-alpine
+
+WORKDIR /app
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+RUN npm run build
+RUN npm install -g serve
+
+EXPOSE 8081
+
+CMD ["serve", "-s", "dist", "-l", "8081"]

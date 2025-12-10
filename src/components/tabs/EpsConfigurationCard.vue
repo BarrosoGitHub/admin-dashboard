@@ -43,54 +43,144 @@ const props = defineProps({
 
 const localData = ref(JSON.parse(JSON.stringify(props.data)));
 const schema = ref(null);
-const dynamicEnums = ref({});
-const enumsLoading = ref(false);
+const schemaEnums = ref({});
 
-// Fetch schema and enums on component mount
+// Fetch schema on component mount
 onMounted(async () => {
   try {
     const apiBaseUrl = getApiBaseUrl();
     const token = localStorage.getItem('jwt');
-    enumsLoading.value = true;
     
-    // Fetch schema and enums in parallel
-    const [schemaResponse, enumsResponse] = await Promise.all([
-      fetch(`${apiBaseUrl}/eps-configuration/schema`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {}
-      }),
-      fetch(`${apiBaseUrl}/eps-configuration/enums`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {}
-      })
-    ]);
+    // Fetch schema
+    const schemaResponse = await fetch(`${apiBaseUrl}/eps-configuration/schema`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
     
     if (schemaResponse.ok) {
       schema.value = await schemaResponse.json();
       console.log('Schema loaded successfully:', schema.value);
+      
+      // Extract enums from schema
+      extractEnumsFromSchema();
     } else {
       console.error('Failed to fetch schema:', schemaResponse.status, schemaResponse.statusText);
     }
-    
-    if (enumsResponse.ok) {
-      dynamicEnums.value = await enumsResponse.json();
-      console.log('Enums loaded successfully:', dynamicEnums.value);
-    } else {
-      console.error('Failed to fetch enums:', enumsResponse.status, enumsResponse.statusText);
-      // If enums endpoint doesn't exist yet, just log and continue
-      console.info('Enums endpoint not available, using static enums only');
-    }
   } catch (error) {
-    console.error('Failed to fetch schema or enums:', error);
-    console.info('Falling back to static enums only');
-  } finally {
-    enumsLoading.value = false;
+    console.error('Failed to fetch schema:', error);
   }
 });
+
+// Extract enums from schema based on the pattern: {type: enum (Value1, Value2, Value3)}
+function extractEnumsFromSchema() {
+  if (!schema.value) return;
+  
+  schemaEnums.value = {};
+  
+  // Process each section in the schema
+  Object.entries(schema.value).forEach(([sectionKey, sectionValue]) => {
+    if (Array.isArray(sectionValue) && sectionValue.length > 0) {
+      // Process array items (like RegisteredTerminals, Acquirers, etc.)
+      const template = sectionValue[0];
+      if (typeof template === 'object' && template !== null) {
+        processObjectForEnums(template, sectionKey);
+      }
+    } else if (typeof sectionValue === 'object' && sectionValue !== null) {
+      // Process general properties
+      processObjectForEnums(sectionValue, sectionKey);
+    }
+  });
+  
+  console.log('Extracted enums from schema:', schemaEnums.value);
+}
+
+// Helper function to process an object and extract enum properties
+function processObjectForEnums(obj, prefix = '') {
+  Object.entries(obj).forEach(([key, value]) => {
+    // Check if this property is an enum by looking for the pattern in the value
+    if (typeof value === 'string') {
+      const enumMatch = value.match(/^\s*enum\s*\((.*?)\)\s*$/i);
+      if (enumMatch) {
+        // Extract enum values from the pattern "enum (Value1, Value2, Value3)"
+        // Support multiple separators: comma, slash, pipe
+        const enumString = enumMatch[1];
+        let enumValues;
+        
+        // Check which separator is used
+        if (enumString.includes(',')) {
+          enumValues = enumString.split(',').map(v => v.trim()).filter(v => v);
+        } else if (enumString.includes('/')) {
+          enumValues = enumString.split('/').map(v => v.trim()).filter(v => v);
+        } else if (enumString.includes('|')) {
+          enumValues = enumString.split('|').map(v => v.trim()).filter(v => v);
+        } else {
+          // Single value or space-separated
+          enumValues = enumString.split(/\s+/).map(v => v.trim()).filter(v => v);
+        }
+        
+        // Store with both the section prefix and the property key
+        const fullKey = prefix ? `${prefix}.${key}` : key;
+
+        const topLevel = (fullKey.split('.')[0] || '').toLowerCase();
+        if (topLevel === 'acquirers' && key.toLowerCase() === 'type') {
+          console.log(`Skipping enum registration for ${fullKey} (explicitly not an enum)`);
+        } else {
+          schemaEnums.value[fullKey] = enumValues;
+          schemaEnums.value[key] = enumValues; // Also store without prefix for easier lookup
+          console.log(`Found enum for ${fullKey}:`, enumValues);
+        }
+      }
+    } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      // Check if this is a dictionary pattern like { "string": "enum (...)" }
+      // This means the VALUES in the dictionary are enums, not the keys
+      const dictEntries = Object.entries(value);
+      if (dictEntries.length === 1) {
+        const [dictKey, dictValue] = dictEntries[0];
+        if (typeof dictValue === 'string') {
+          const enumMatch = dictValue.match(/^\s*enum\s*\((.*?)\)\s*$/i);
+          if (enumMatch) {
+            // This is a dictionary with enum values
+            const enumString = enumMatch[1];
+            let enumValues;
+            
+            if (enumString.includes(',')) {
+              enumValues = enumString.split(',').map(v => v.trim()).filter(v => v);
+            } else if (enumString.includes('/')) {
+              enumValues = enumString.split('/').map(v => v.trim()).filter(v => v);
+            } else if (enumString.includes('|')) {
+              enumValues = enumString.split('|').map(v => v.trim()).filter(v => v);
+            } else {
+              enumValues = enumString.split(/\s+/).map(v => v.trim()).filter(v => v);
+            }
+            
+            // Store as "dictionaryName.value" to indicate the values are enums
+            const fullKey = prefix ? `${prefix}.${key}` : key;
+            const valueKey = `${fullKey}.value`;
+            schemaEnums.value[valueKey] = enumValues;
+            console.log(`Found dictionary value enum for ${valueKey}:`, enumValues);
+            return; // Don't process further
+          }
+        }
+      }
+      
+      // Recursively process nested objects
+      const nestedPrefix = prefix ? `${prefix}.${key}` : key;
+      processObjectForEnums(value, nestedPrefix);
+    } else if (Array.isArray(value) && value.length > 0) {
+      // Process array items (for nested structures like pointOfPayments)
+      const arrayPrefix = prefix ? `${prefix}.${key}` : key;
+      if (typeof value[0] === 'object' && value[0] !== null) {
+        processObjectForEnums(value[0], arrayPrefix);
+      }
+    }
+  });
+}
 
 // Group properties into general and list sections
 const transformedData = computed(() => {
   const general = {};
   const lists = {};
   for (const [key, value] of Object.entries(localData.value)) {
+
     if (Array.isArray(value)) {
       lists[key] = value;
     } else {
@@ -107,9 +197,7 @@ const transformedData = computed(() => {
 
 const activeTab = ref("General");
 const activeSubTab = ref(null);
-// Collapsed state for array-based tabs
 const collapsedTabs = ref(new Set());
-// Toggle state for showing array properties in sub-tab view
 const showArrayProperties = ref(false);
 
 const emit = defineEmits(["update"]);
@@ -192,59 +280,71 @@ function formatLabel(key) {
     .replace(/^./, (str) => str.toUpperCase());
 }
 
-// Enhanced function to get enum options - prioritizes dynamic enums over static ones
+// Get enum options from schema for a specific property
 function getEnumOptionsForProperty(tab, prop) {
-  // First try dynamic enums
-  if (dynamicEnums.value && !enumsLoading.value) {
-    // Check if there's a direct match for the property
-    if (dynamicEnums.value[prop]) {
-      return formatEnumOptions(dynamicEnums.value[prop]);
+  // If this is Acquirers.type explicitly, do not treat it as an enum
+  // (user requested that acquirers type are NOT an enum)
+  try {
+    if (tab && typeof tab === 'string' && tab.toLowerCase() === 'acquirers' && prop && prop.toLowerCase() === 'type') {
+      // Return fallback (no enum) immediately
+      return null;
+    }
+  } catch (e) {
+    // ignore and continue
+  }
+  // Try to find enum in schema
+  if (schemaEnums.value) {
+    // Try with tab prefix first (more specific paths take priority)
+    // e.g., "RegisteredTerminals.pointOfPayments.type"
+    const tabPropKey = `${tab}.${prop}`;
+    if (schemaEnums.value[tabPropKey]) {
+      console.log(`Found enum for ${tabPropKey}:`, schemaEnums.value[tabPropKey]);
+      return formatEnumOptions(schemaEnums.value[tabPropKey]);
     }
     
-    // Check if there's a tab-specific enum
-    if (dynamicEnums.value[tab] && dynamicEnums.value[tab][prop]) {
-      return formatEnumOptions(dynamicEnums.value[tab][prop]);
+    // Try camelCase tab prefix
+    const camelTab = tab.charAt(0).toLowerCase() + tab.slice(1);
+    const camelTabPropKey = `${camelTab}.${prop}`;
+    if (schemaEnums.value[camelTabPropKey]) {
+      console.log(`Found enum for ${camelTabPropKey}:`, schemaEnums.value[camelTabPropKey]);
+      return formatEnumOptions(schemaEnums.value[camelTabPropKey]);
     }
     
-    // Check with case-insensitive matching
-    const tabKey = Object.keys(dynamicEnums.value).find(
-      k => k.toLowerCase() === tab.toLowerCase()
-    );
-    if (tabKey && typeof dynamicEnums.value[tabKey] === "object" && dynamicEnums.value[tabKey][prop]) {
-      return formatEnumOptions(dynamicEnums.value[tabKey][prop]);
-    }
-    
-    // Check for partial property name matches (useful for common patterns)
-    const enumKey = Object.keys(dynamicEnums.value).find(key => {
-      // Try exact match first
-      if (key === prop) return true;
-      
-      // Try case-insensitive match
-      if (key.toLowerCase() === prop.toLowerCase()) return true;
-      
-      // Try partial matches for common patterns
+    // Look for nested paths that match the current context
+    // e.g., if we're in RegisteredTerminals and looking for "type",
+    // check for "registeredTerminals.pointOfPayments.type"
+    const matchingKeys = Object.keys(schemaEnums.value).filter(key => {
+      // Check if the key contains the tab name and ends with the property
       const keyLower = key.toLowerCase();
+      const tabLower = tab.toLowerCase();
       const propLower = prop.toLowerCase();
-      
-      // Check if property name contains the enum key or vice versa
-      if (keyLower.includes(propLower) || propLower.includes(keyLower)) return true;
-      
-      // Check for common suffixes/prefixes
-      if (keyLower.endsWith('type') && propLower.includes('type')) return true;
-      if (keyLower.endsWith('mode') && propLower.includes('mode')) return true;
-      if (keyLower.endsWith('language') && propLower.includes('language')) return true;
-      if (keyLower.endsWith('identifier') && propLower.includes('identifier')) return true;
-      
-      return false;
+      return keyLower.includes(tabLower) && keyLower.endsWith(`.${propLower}`);
     });
     
+    if (matchingKeys.length > 0) {
+      // Prefer the longest match (most specific path)
+      const bestMatch = matchingKeys.sort((a, b) => b.length - a.length)[0];
+      console.log(`Found enum via nested path for ${prop} in ${tab}: ${bestMatch}`, schemaEnums.value[bestMatch]);
+      return formatEnumOptions(schemaEnums.value[bestMatch]);
+    }
+    
+    // Try direct property match (least specific, last resort)
+    if (schemaEnums.value[prop]) {
+      console.log(`Found enum for ${prop} (direct):`, schemaEnums.value[prop]);
+      return formatEnumOptions(schemaEnums.value[prop]);
+    }
+    
+    // Try case-insensitive match
+    const enumKey = Object.keys(schemaEnums.value).find(
+      key => key.toLowerCase() === prop.toLowerCase()
+    );
     if (enumKey) {
-      console.log(`Found enum match: ${prop} -> ${enumKey}`, dynamicEnums.value[enumKey]);
-      return formatEnumOptions(dynamicEnums.value[enumKey]);
+      console.log(`Found enum for ${prop} (case-insensitive):`, schemaEnums.value[enumKey]);
+      return formatEnumOptions(schemaEnums.value[enumKey]);
     }
   }
   
-  // Fallback to static enums
+  // Fallback to static enums if available
   return getEnumOptions(tab, prop);
 }
 
@@ -257,17 +357,18 @@ function formatEnumOptions(enumData) {
     return enumData;
   }
   
+  // If it's an array of strings (from schema enum pattern), convert to { value, label } format
+  // Use the index as the value (0, 1, 2...) since the backend uses numeric enum values
+  if (Array.isArray(enumData) && enumData.length > 0 && typeof enumData[0] === 'string') {
+    return enumData.map((item, index) => ({ value: index, label: item }));
+  }
+  
   // Handle API format with { Value, Name } properties (from your backend)
   if (Array.isArray(enumData) && enumData.length > 0 && typeof enumData[0] === 'object' && 'Value' in enumData[0] && 'Name' in enumData[0]) {
     return enumData.map(item => ({ 
       value: item.Value, 
       label: item.Name 
     }));
-  }
-  
-  // If it's an array of strings, convert to { value, label } format
-  if (Array.isArray(enumData) && enumData.length > 0 && typeof enumData[0] === 'string') {
-    return enumData.map((item, index) => ({ value: index, label: item }));
   }
   
   // If it's an object with key-value pairs, convert to { value, label } format
@@ -314,7 +415,6 @@ const iconMap = {
   RegisteredTerminals: DeviceTabletIcon,
   Acquirers: CreditCardIcon,
   Languages: GlobeAltIcon,
-  Messages: QrCodeIcon,
   EpsClientConfiguration: QrCodeIcon,
   PinpadConfiguration: CreditCardIcon,
   FdcConfiguration: Cog6ToothIcon,
@@ -337,13 +437,16 @@ const iconMap = {
 }
 
 function nonBooleanFields(obj) {
-  return Object.fromEntries(Object.entries(obj).filter(([k, v]) => typeof v !== 'boolean' && !Array.isArray(v)));
+  return Object.fromEntries(Object.entries(obj).filter(([k, v]) => typeof v !== 'boolean' && !Array.isArray(v) && !(typeof v === 'object' && v !== null)));
 }
 function booleanFields(obj) {
   return Object.fromEntries(Object.entries(obj).filter(([k, v]) => typeof v === 'boolean'));
 }
 function arrayFields(obj) {
   return Object.fromEntries(Object.entries(obj).filter(([k, v]) => Array.isArray(v)));
+}
+function dictionaryFields(obj) {
+  return Object.fromEntries(Object.entries(obj).filter(([k, v]) => typeof v === 'object' && v !== null && !Array.isArray(v)));
 }
 
 // Function to create a new object based on schema
@@ -506,11 +609,20 @@ function createObjectFromTemplate(template) {
     if (Array.isArray(value)) {
       // Create empty array for arrays
       newObj[key] = [];
+      console.log(`Creating empty array for property: ${key}`);
     } else if (typeof value === 'object' && value !== null) {
       // For objects, recursively create the structure
       newObj[key] = createObjectFromTemplate(value);
     } else if (typeof value === 'string') {
-      newObj[key] = '';
+      // Check if this is an enum pattern string, use empty string as default
+      const enumMatch = value.match(/^\s*enum\s*\((.*?)\)\s*$/i);
+      if (enumMatch) {
+        // For enum properties, default to 0 (first enum value)
+        newObj[key] = 0;
+        console.log(`Setting enum property ${key} to default value 0`);
+      } else {
+        newObj[key] = '';
+      }
     } else if (typeof value === 'number') {
       newObj[key] = 0;
     } else if (typeof value === 'boolean') {
@@ -914,6 +1026,148 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
     console.log('Updated dictionary key:', oldKey, '->', newKey);
   }
 }
+
+// Functions for dictionary operations in basic properties (not nested in arrays)
+function addDictionaryEntryToBasicProp(tabKey, subTabIndex, dictKey) {
+  if (!localData.value[tabKey] || !localData.value[tabKey][subTabIndex]) {
+    console.warn(`Invalid path for dictionary: ${tabKey}[${subTabIndex}].${dictKey}`);
+    return;
+  }
+  
+  const dictionary = localData.value[tabKey][subTabIndex][dictKey];
+  if (typeof dictionary !== 'object' || Array.isArray(dictionary)) {
+    console.warn('Target is not a dictionary object');
+    return;
+  }
+  
+  // Prompt user for new key
+  const newKey = prompt('Enter key for new entry:');
+  if (newKey && newKey.trim() && !dictionary.hasOwnProperty(newKey)) {
+    // Default to 0 for enum-based values (like registeredProducts)
+    dictionary[newKey] = 0;
+    console.log('Added new dictionary entry:', newKey);
+  } else if (dictionary.hasOwnProperty(newKey)) {
+    alert('Key already exists!');
+  }
+}
+
+function deleteDictionaryEntryFromBasicProp(tabKey, subTabIndex, dictKey, entryKey) {
+  if (!localData.value[tabKey] || !localData.value[tabKey][subTabIndex]) {
+    console.warn(`Invalid path for dictionary: ${tabKey}[${subTabIndex}].${dictKey}`);
+    return;
+  }
+  
+  const dictionary = localData.value[tabKey][subTabIndex][dictKey];
+  if (typeof dictionary !== 'object' || Array.isArray(dictionary)) {
+    console.warn('Target is not a dictionary object');
+    return;
+  }
+  
+  if (confirm(`Are you sure you want to delete the entry "${entryKey}"?`)) {
+    delete dictionary[entryKey];
+    console.log('Deleted dictionary entry:', entryKey);
+  }
+}
+
+function updateDictionaryKeyInBasicProp(tabKey, subTabIndex, dictKey, oldKey, newKey) {
+  if (!localData.value[tabKey] || !localData.value[tabKey][subTabIndex]) {
+    console.warn(`Invalid path for dictionary: ${tabKey}[${subTabIndex}].${dictKey}`);
+    return;
+  }
+  
+  const dictionary = localData.value[tabKey][subTabIndex][dictKey];
+  if (typeof dictionary !== 'object' || Array.isArray(dictionary)) {
+    console.warn('Target is not a dictionary object');
+    return;
+  }
+  
+  // If key hasn't changed, do nothing
+  if (oldKey === newKey) return;
+  
+  // Check if new key already exists
+  if (newKey && newKey.trim() && dictionary.hasOwnProperty(newKey)) {
+    alert('Key already exists!');
+    return;
+  }
+  
+  // If new key is valid, update the dictionary
+  if (newKey && newKey.trim()) {
+    const value = dictionary[oldKey];
+    delete dictionary[oldKey];
+    dictionary[newKey] = value;
+    console.log('Updated dictionary key:', oldKey, '->', newKey);
+  }
+}
+
+// Get enum options for dictionary values (e.g., registeredProducts values are fuel type enums)
+function getEnumOptionsForDictionaryValue(tab, dictKey) {
+  // For registeredProducts, the value is an enum defined in the schema
+  // Schema pattern: "registeredProducts": { "string": "enum (None, Petrol, Diesel, LPG)" }
+  // This means the VALUES in the dictionary are enums
+  
+  if (!schemaEnums.value) return null;
+  
+  // Try to find enum for the dictionary value pattern
+  // Look for entries like "registeredProducts.value" or similar
+  const dictValueKey = `${dictKey}.value`;
+  if (schemaEnums.value[dictValueKey]) {
+    return formatEnumOptions(schemaEnums.value[dictValueKey]);
+  }
+  
+  // Try tab-specific lookup
+  const tabDictValueKey = `${tab}.${dictKey}.value`;
+  if (schemaEnums.value[tabDictValueKey]) {
+    return formatEnumOptions(schemaEnums.value[tabDictValueKey]);
+  }
+  
+  // Try camelCase variations
+  const camelTab = tab.charAt(0).toLowerCase() + tab.slice(1);
+  const camelDictValueKey = `${camelTab}.${dictKey}.value`;
+  if (schemaEnums.value[camelDictValueKey]) {
+    return formatEnumOptions(schemaEnums.value[camelDictValueKey]);
+  }
+  
+  return null;
+}
+
+// Get enum options for nested dictionary values (e.g., RebateLabel inside IssuerIdentifierRangeList)
+function getEnumOptionsForNestedDictionaryValue(tab, arrayKey, dictKey) {
+  // For RebateLabel inside IssuerIdentifierRangeList, we need to look for:
+  // "Acquirers.IssuerIdentifierRangeList.RebateLabel.value" or similar patterns
+  
+  if (!schemaEnums.value) return null;
+  
+  // Try full path with array key
+  const fullPath = `${tab}.${arrayKey}.${dictKey}.value`;
+  if (schemaEnums.value[fullPath]) {
+    console.log(`Found nested dictionary enum for ${fullPath}:`, schemaEnums.value[fullPath]);
+    return formatEnumOptions(schemaEnums.value[fullPath]);
+  }
+  
+  // Try without tab prefix
+  const arrayDictPath = `${arrayKey}.${dictKey}.value`;
+  if (schemaEnums.value[arrayDictPath]) {
+    console.log(`Found nested dictionary enum for ${arrayDictPath}:`, schemaEnums.value[arrayDictPath]);
+    return formatEnumOptions(schemaEnums.value[arrayDictPath]);
+  }
+  
+  // Try camelCase variations
+  const camelTab = tab.charAt(0).toLowerCase() + tab.slice(1);
+  const camelFullPath = `${camelTab}.${arrayKey}.${dictKey}.value`;
+  if (schemaEnums.value[camelFullPath]) {
+    console.log(`Found nested dictionary enum for ${camelFullPath}:`, schemaEnums.value[camelFullPath]);
+    return formatEnumOptions(schemaEnums.value[camelFullPath]);
+  }
+  
+  // Try just dictionary key
+  const dictValueKey = `${dictKey}.value`;
+  if (schemaEnums.value[dictValueKey]) {
+    console.log(`Found nested dictionary enum for ${dictValueKey}:`, schemaEnums.value[dictValueKey]);
+    return formatEnumOptions(schemaEnums.value[dictValueKey]);
+  }
+  
+  return null;
+}
 </script>
 
 <template>
@@ -1172,7 +1426,7 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                                         <!-- Non-boolean and object fields first -->
                                         <template v-for="(elValue, elKey) in element" :key="`non-bool-${elKey}`">
                                             <div v-if="typeof elValue === 'object' && elValue !== null">
-                                                <details class="mb-2">
+                                                <details class="mb-2" open>
                                                     <summary class="font-semibold cursor-pointer">{{ formatLabel(elKey) }}</summary>
                                                      <div class="mt-2">
                                                         <!-- Check if it's a dictionary-like object (has string keys) -->
@@ -1201,6 +1455,8 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                                                                               :label="'Value'"
                                                                               :placeholder="String(dictValue)"
                                                                               v-model="localData[activeTab][activeSubTab][arrKey][idx][elKey][dictKey]"
+                                                                              :type="getEnumOptionsForNestedDictionaryValue(activeTab, arrKey, elKey) ? 'select' : 'text'"
+                                                                              :options="getEnumOptionsForNestedDictionaryValue(activeTab, arrKey, elKey) || undefined"
                                                                               class="w-full"
                                                                           />
                                                                       </div>
@@ -1344,13 +1600,72 @@ function updateDictionaryKey(tabKey, subTabIndex, arrayKey, itemIndex, dictKey, 
                             </details>
                           </template>
                         </template>
+                        
+                        <!-- Dictionary fields (like registeredProducts) in More Properties section -->
+                        <template v-if="Object.keys(dictionaryFields(filteredData[activeTab][activeSubTab])).length">
+                          <template
+                            v-for="(dictValue, dictKey) in dictionaryFields(filteredData[activeTab][activeSubTab])"
+                            :key="`dict-${dictKey}`"
+                          >
+                            <details class="my-2">
+                              <summary class="font-semibold text-gray-900 dark:text-white cursor-pointer">
+                                {{ formatLabel(dictKey) }} ({{ Object.keys(dictValue || {}).length }} items)
+                              </summary>
+                              <div class="mt-3 space-y-2">
+                                <div class="flex justify-end mb-2">
+                                  <button
+                                    @click="addDictionaryEntryToBasicProp(activeTab, activeSubTab, dictKey)"
+                                    class="flex items-center justify-center w-6 h-6 text-color-secondary bg-gray-100 dark:bg-gray-700 hover:text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-200 rounded transition-colors"
+                                    title="Add Entry"
+                                  >
+                                    <PlusIcon class="w-4 h-4" />
+                                  </button>
+                                </div>
+                                <div v-if="Object.keys(dictValue || {}).length === 0" class="text-gray-500 dark:text-gray-400 italic text-center py-2">
+                                  No entries
+                                </div>
+                                <transition-group name="item-fade" tag="div" class="space-y-2">
+                                  <div 
+                                    v-for="(entryValue, entryKey) in dictValue" 
+                                    :key="`dict-entry-${dictKey}-${entryKey}`" 
+                                    class="flex items-center space-x-2 border border-gray-200 dark:border-neutral-700 rounded p-2"
+                                  >
+                                    <InputTransparent
+                                      label="Key"
+                                      :placeholder="String(entryKey)"
+                                      :modelValue="String(entryKey)"
+                                      @update:modelValue="(newKey) => updateDictionaryKeyInBasicProp(activeTab, activeSubTab, dictKey, entryKey, newKey)"
+                                      type="text"
+                                      class="flex-1"
+                                    />
+                                    <InputTransparent
+                                      label="Value"
+                                      :placeholder="String(entryValue)"
+                                      v-model="localData[activeTab][activeSubTab][dictKey][entryKey]"
+                                      :type="getEnumOptionsForDictionaryValue(activeTab, dictKey) ? 'select' : 'text'"
+                                      :options="getEnumOptionsForDictionaryValue(activeTab, dictKey) || undefined"
+                                      class="flex-1"
+                                    />
+                                    <button
+                                      @click="deleteDictionaryEntryFromBasicProp(activeTab, activeSubTab, dictKey, entryKey)"
+                                      class="p-1 text-color-secondary hover:text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                                      title="Delete entry"
+                                    >
+                                      <TrashIcon class="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                </transition-group>
+                              </div>
+                            </details>
+                          </template>
+                        </template>
                       </div>
                     </transition>
 
                   </div>
                   
                   <!-- More Properties toggle button at the bottom -->
-                  <div v-if="Object.keys(arrayFields(filteredData[activeTab][activeSubTab])).length > 0" class="flex justify-center mt-10">
+                  <div v-if="Object.keys(arrayFields(filteredData[activeTab][activeSubTab])).length > 0 || Object.keys(dictionaryFields(filteredData[activeTab][activeSubTab])).length > 0" class="flex justify-center mt-10">
                     <button
                       @click="toggleArrayProperties"
                       class="flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg transition-colors"
