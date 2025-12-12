@@ -12,7 +12,7 @@ pipeline {
             [key: 'DATE', value: 'date'],
             [key: 'PROJECTNAME', value: 'repository.project.name'],
             [key: 'REPO', value: 'repository.name'],
-            [key: 'REFID', value: 'changes[0].ref.id'],
+            [key: 'REFID', value: 'push.changes[0].new.links.self.href', regexpFilter: '^.*(?=refs\\/tags\\/)'],                 
             [key: 'REPONAME', value: 'repository.slug'],
             [key: 'PROJKEY', value: 'repository.project.key']
        ],
