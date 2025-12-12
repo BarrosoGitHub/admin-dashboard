@@ -40,11 +40,8 @@ pipeline {
     NUGET_URL='http://172.16.50.65:8081/repository/nuget/index.json'
     ERROR_MSG="\nFormato de TAGNAME inválido: ${TAGNAME}. \nFormatos validos de TAGs. \nEx: 1.0.0.0, 1.0.0.0-fuel, 1.0.0.0-dev, 1.0.0.0-qa \n"
     DOCKER_BASE='docker buildx build --sbom=false --provenance=false --push '
-    DOCKER_FILE=' -f Dockerfile '
-    DOCKER_NEXUS_PROD="  -t ${env.NEXUS_URL}${env.NEXUS_PORT_PROD}/${REPONAME}:${TAGNAME} "
-    DOCKER_NEXUS_DEV="  -t ${env.NEXUS_URL}${env.NEXUS_PORT_DEV}/${REPONAME}:${TAGNAME} "
-    DOCKER_NEXUS_QA="  -t ${env.NEXUS_URL}${env.NEXUS_PORT_QA}/${REPONAME}:${TAGNAME} "
-    DOCKER_AWS=" -t ${env.AWS_ECR_URL}/${REPONAME}:${TAGNAME} "
+    DOCKER_FILE_ARM=' -f Dockerfile '
+    DOCKER_FILE_AMD64=' -f Dockerfile.amd64 '
   }	  
   stages {
     stage('Push Docker Images to Nexus Registry and AWS ECR') {
@@ -58,39 +55,40 @@ pipeline {
           
           env.DOCKER_VERSAO=" --build-arg 'versao=${branchName}-${TAGNAME}'"         
 
-          // Use Dockerfile.x86 when tag ends with -x86, otherwise use default Dockerfile
-          if (TAGNAME ==~ /.*-x86$/) {
-            env.DOCKER_FILE = ' -f Dockerfile.x86 '
-          } else {
-            env.DOCKER_FILE = ' -f Dockerfile '
-          }
-
           withCredentials([usernamePassword(credentialsId: 'nexus_3_docker', passwordVariable: 'pass', usernameVariable: 'user')]) { 
-              // Validação e determinação do ambiente com base no TAGNAME          
+              // Validação e determinação do ambiente com base no TAGNAME
+              def nexusPort = ''
+              def pushToAws = false
+
               if (TAGNAME ==~ /^\d+\.\d+\.\d+\.\d+-dev$/) {
-                sh """
-                  docker login -u $user -p $pass ${env.NEXUS_PROTOCOL}${env.NEXUS_URL}${env.NEXUS_PORT_DEV}/repository/docker-private/
-                  ${env.DOCKER_BASE} ${env.DOCKER_VERSAO} ${env.DOCKER_FILE} ${env.DOCKER_NEXUS_DEV} .
-                """						
-              } else if (TAGNAME ==~ /^\d+\.\d+\.\d+\.\d+-qa$/) {						
-                sh """
-                  docker login -u $user -p $pass ${env.NEXUS_PROTOCOL}${env.NEXUS_URL}${env.NEXUS_PORT_QA}/repository/docker-private/
-                  ${env.DOCKER_BASE} ${env.DOCKER_VERSAO} ${env.DOCKER_FILE} ${env.DOCKER_NEXUS_QA}  ${env.DOCKER_AWS} .
-                """						
-              } else if (TAGNAME ==~ /^\d+\.\d+\.\d+\.\d+$/) {						 
-                sh """
-                  docker login -u $user -p $pass ${env.NEXUS_PROTOCOL}${env.NEXUS_URL}${env.NEXUS_PORT_PROD}/repository/docker-private/
-                  ${env.DOCKER_BASE} ${env.DOCKER_VERSAO} ${env.DOCKER_FILE} ${env.DOCKER_NEXUS_PROD} ${env.DOCKER_AWS} .
-                """
-              } else if (TAGNAME ==~ /^\d+\.\d+\.\d+\.\d+-[a-zA-Z]+$/) {            
-                sh """ 
-                  docker login -u $user -p $pass ${env.NEXUS_PROTOCOL}${env.NEXUS_URL}${env.NEXUS_PORT_PROD}/repository/docker-private/ 
-                  ${env.DOCKER_BASE} ${env.DOCKER_VERSAO} ${env.DOCKER_FILE} ${env.DOCKER_NEXUS_PROD} ${env.DOCKER_AWS} .
-                """						
-              } 
-              else {
-               error "${env.ERROR_MSG}"						
+                nexusPort = env.NEXUS_PORT_DEV
+              } else if (TAGNAME ==~ /^\d+\.\d+\.\d+\.\d+-qa$/) {
+                nexusPort = env.NEXUS_PORT_QA
+                pushToAws = true
+              } else if (TAGNAME ==~ /^\d+\.\d+\.\d+\.\d+$/ || TAGNAME ==~ /^\d+\.\d+\.\d+\.\d+-[a-zA-Z]+$/) {
+                nexusPort = env.NEXUS_PORT_PROD
+                pushToAws = true
+              } else {
+                error "${env.ERROR_MSG}"
               }
+
+              def nexusRegistry = "${env.NEXUS_URL}${nexusPort}"
+              def dockerLoginUrl = "${env.NEXUS_PROTOCOL}${env.NEXUS_URL}${nexusPort}/repository/docker-private/"
+              def awsTagArm = pushToAws ? " -t ${env.AWS_ECR_URL}/${REPONAME}:${TAGNAME}-arm64" : ''
+              def awsTagAmd64 = pushToAws ? " -t ${env.AWS_ECR_URL}/${REPONAME}:${TAGNAME}-amd64" : ''
+
+              // Build/push ARM64 image
+              sh """
+                docker login -u $user -p $pass ${dockerLoginUrl}
+                ${env.DOCKER_BASE} ${env.DOCKER_VERSAO} ${env.DOCKER_FILE_ARM} \
+                  -t ${nexusRegistry}/${REPONAME}:${TAGNAME}-arm64${awsTagArm} .
+              """
+
+              // Build/push AMD64 image
+              sh """
+                ${env.DOCKER_BASE} ${env.DOCKER_VERSAO} ${env.DOCKER_FILE_AMD64} \
+                  -t ${nexusRegistry}/${REPONAME}:${TAGNAME}-amd64${awsTagAmd64} .
+              """
           }
         }
       }
