@@ -4,13 +4,12 @@ pipeline {
     triggers {
     GenericTrigger(
        genericVariables: [
-            [key: 'ADDTYPE', value: 'changes[0].type'],
-            [key: 'TAGTYPE', value: 'changes[0].ref.type'],
-            [key: 'TAGNAME', value: 'changes[0].ref.displayId'],
-            [key: 'AUTOR', value: 'actor.name'],
-            [key: 'AUTOREMAIL', value: 'actor.emailAddress'],
-            [key: 'DATE', value: 'date'],
-            [key: 'PROJECTNAME', value: 'repository.project.name'],
+            [key: 'ADDTYPE', value: 'push.changes[0].new.target.type'],
+                [key: 'TAGTYPE', value: 'push.changes[0].new.type'],
+                [key: 'TAGNAME', value: 'push.changes[0].new.name'],
+                [key: 'AUTOR', value: 'push.changes[0].new.target.author.raw'],                 
+                [key: 'DATE', value: 'push.changes[0].new.target.date'],
+                [key: 'PROJECTNAME', value: 'repository.project.name'],
             [key: 'REPO', value: 'repository.name'],
             [key: 'REFID', value: 'push.changes[0].new.links.self.href', regexpFilter: '^.*(?=refs\\/tags\\/)'],                 
             [key: 'REPONAME', value: 'repository.slug'],
@@ -23,7 +22,7 @@ pipeline {
        printPostContent: true,
        silentResponse: true,
        regexpFilterText: '$TAGTYPE#$ADDTYPE',
-       regexpFilterExpression: 'TAG#ADD'
+       regexpFilterExpression: 'tag#commit'
     )
   }  	
     options {
