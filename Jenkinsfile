@@ -52,19 +52,19 @@ pipeline {
           def commitHash = (gitOutput =~ /detached at ([a-f0-9]{7,40})/)[0][1]
           def branchName = sh(script: "git branch -r --contains ${commitHash} | grep -oE '[^/]+\$'", returnStdout: true).trim() 
           
-          env.DOCKER_VERSAO=" --build-arg 'versao=${branchName}-${TAGNAME}'"         
+          env.DOCKER_VERSAO=" --build-arg 'versao=${branchName}-${env.TAGNAME}'"         
 
           withCredentials([usernamePassword(credentialsId: 'nexus_3_docker', passwordVariable: 'pass', usernameVariable: 'user')]) { 
               // Validação e determinação do ambiente com base no TAGNAME
               def nexusPort = ''
               def pushToAws = false
 
-              if (TAGNAME ==~ /^\d+\.\d+\.\d+\.\d+-dev$/) {
+              if (env.TAGNAME ==~ /^\d+\.\d+\.\d+\.\d+-dev$/) {
                 nexusPort = env.NEXUS_PORT_DEV
-              } else if (TAGNAME ==~ /^\d+\.\d+\.\d+\.\d+-qa$/) {
+              } else if (env.TAGNAME ==~ /^\d+\.\d+\.\d+\.\d+-qa$/) {
                 nexusPort = env.NEXUS_PORT_QA
                 pushToAws = true
-              } else if (TAGNAME ==~ /^\d+\.\d+\.\d+\.\d+$/ || TAGNAME ==~ /^\d+\.\d+\.\d+\.\d+-[a-zA-Z]+$/) {
+              } else if (env.TAGNAME ==~ /^\d+\.\d+\.\d+\.\d+$/ || env.TAGNAME ==~ /^\d+\.\d+\.\d+\.\d+-[a-zA-Z]+$/) {
                 nexusPort = env.NEXUS_PORT_PROD
                 pushToAws = true
               } else {
@@ -73,20 +73,20 @@ pipeline {
 
               def nexusRegistry = "${env.NEXUS_URL}${nexusPort}"
               def dockerLoginUrl = "${env.NEXUS_PROTOCOL}${env.NEXUS_URL}${nexusPort}/repository/docker-private/"
-              def awsTagArm = pushToAws ? " -t ${env.AWS_ECR_URL}/${REPONAME}:${TAGNAME}-arm64" : ''
-              def awsTagAmd64 = pushToAws ? " -t ${env.AWS_ECR_URL}/${REPONAME}:${TAGNAME}-amd64" : ''
+              def awsTagArm = pushToAws ? " -t ${env.AWS_ECR_URL}/${env.REPONAME}:${env.TAGNAME}-arm64" : ''
+              def awsTagAmd64 = pushToAws ? " -t ${env.AWS_ECR_URL}/${env.REPONAME}:${env.TAGNAME}-amd64" : ''
 
               // Build/push ARM64 image
               sh """
                 docker login -u $user -p $pass ${dockerLoginUrl}
                 ${env.DOCKER_BASE} ${env.DOCKER_VERSAO} ${env.DOCKER_FILE_ARM} \
-                  -t ${nexusRegistry}/${REPONAME}:${TAGNAME}-arm64${awsTagArm} .
+                  -t ${nexusRegistry}/${env.REPONAME}:${env.TAGNAME}-arm64${awsTagArm} .
               """
 
               // Build/push AMD64 image
               sh """
                 ${env.DOCKER_BASE} ${env.DOCKER_VERSAO} ${env.DOCKER_FILE_AMD64} \
-                  -t ${nexusRegistry}/${REPONAME}:${TAGNAME}-amd64${awsTagAmd64} .
+                  -t ${nexusRegistry}/${env.REPONAME}:${env.TAGNAME}-amd64${awsTagAmd64} .
               """
           }
         }
