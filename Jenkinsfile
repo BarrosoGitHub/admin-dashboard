@@ -12,7 +12,7 @@ pipeline {
                 [key: 'PROJECTNAME', value: 'repository.project.name'],
             [key: 'REPO', value: 'repository.name'],
             [key: 'REFID', value: 'push.changes[0].new.links.self.href', regexpFilter: '^.*(?=refs\\/tags\\/)'],                 
-            [key: 'REPONAME', value: 'repository.slug'],
+            [key: 'REPONAME', value: 'repository.name'],
             [key: 'PROJKEY', value: 'repository.project.key']
        ],
        causeString: 'Generic Cause',
