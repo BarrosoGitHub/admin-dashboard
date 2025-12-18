@@ -1,16 +1,18 @@
 <template>
   <button
     type="button"
-    :disabled="disabled || isLoading || showTick"
+    :disabled="disabled || isLoading || showTick || showError"
     :class="[
       'text-white font-medium rounded-3xl text-sm py-2.5 me-2 mb-2 focus:ring-4 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center h-[44px] transition-all duration-500',
       showTick 
         ? 'tick-button-color w-[45px]' 
+        : showError
+        ? 'error-button-color w-[45px]'
         : 'bg-blue-700 hover:bg-blue-800 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 w-[120px]'
     ]"
     @click="$emit('confirm')"
   >
-    <span v-if="!showTick && !isLoading">{{ label }}</span>
+    <span v-if="!showTick && !showError && !isLoading">{{ label }}</span>
     <span v-if="isLoading" class="loader"></span>
     <svg
       v-if="showTick"
@@ -27,6 +29,21 @@
         d="M5 13l4 4L19 7"
       />
     </svg>
+    <svg
+      v-if="showError"
+      class="w-6 h-6 text-white"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="3"
+      viewBox="0 0 24 24"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        :class="{ 'cross-animate': showError }"
+        d="M6 18L18 6M6 6l12 12"
+      />
+    </svg>
   </button>
 </template>
 
@@ -37,6 +54,7 @@ const props = defineProps({
   label: { type: String, default: "Confirm" },
   isLoading: { type: Boolean, default: false },
   showTick: { type: Boolean, default: false },
+  showError: { type: Boolean, default: false },
   disabled: { type: Boolean, default: false },
 });
 defineEmits(["confirm"]);
@@ -72,5 +90,25 @@ defineEmits(["confirm"]);
   stroke-dashoffset: 24;
   animation: tick-draw 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   stroke: var(--tick-stroke-color, #22c55e); /* fallback to green-500 */
+}
+
+.cross-animate {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: cross-draw 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  stroke: var(--error-stroke-color, #ffffff); /* white color */
+}
+
+@keyframes cross-draw {
+  0% {
+    stroke-dashoffset: 24;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.error-button-color {
+  background-color: #dc2626; /* red-600 */
 }
 </style>

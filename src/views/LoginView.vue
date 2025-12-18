@@ -10,13 +10,11 @@
       >
         <!-- Login instructions -->
         <div class="mb-15 mt-2 flex flex-col items-center gap-1">
-          <div class="text-4xl font-bold text-neutral-100 whitespace-nowrap">Enter your credentials</div>
-          <div class="text-md text-neutral-300 whitespace-nowrap mt-3">username : password</div>
+          <div class="text-4xl font-bold text-neutral-100 whitespace-nowrap">{{ typedText }}<span class="typing-cursor" v-if="isTyping">|</span></div>
         </div>
         <form class="space-y-10" @submit.prevent="handleLogin" @keydown.enter="handleLogin">
-          <div v-if="error" class="text-red-500 text-sm">{{ error }}</div>
           <div 
-            class="input-field-container"
+            class="input-field-container input-grow"
             :class="{ 'input-slide-down': loginShowTick }"
           >
             <input
@@ -24,14 +22,16 @@
               name="username"
               id="username"
               v-model="username"
-              class="text-gray-900 text-sm block w-full p-2.5 pl-5 bg-transparent border-0 border-b-2 border-gray-400 focus:border-blue-500 outline-none shadow-none rounded-none transition-colors duration-200 dark:placeholder-gray-400 dark:text-white autofill:shadow-none autofill:bg-transparent autofill:border-b-2 autofill:border-gray-400"
-              placeholder="Username"
+              class="text-gray-300 text-sm block w-full p-2.5 pl-5 bg-transparent border-0 border-b-2 border-gray-400 focus:border-blue-500 outline-none shadow-none rounded-none transition-colors duration-200 dark:placeholder-gray-400 dark:text-white autofill:shadow-none autofill:bg-transparent autofill:border-b-2 autofill:border-gray-400"
+              placeholder="Please Input Username"
               required
+              @input="userInteracted = true"
+              @focus="userInteracted = true"
               @keydown.enter="handleLogin"
             />
           </div>
           <div 
-            class="input-field-container"
+            class="input-field-container input-grow input-grow-delay"
             :class="{ 'input-slide-down': loginShowTick }"
           >
             <input
@@ -39,9 +39,11 @@
               name="password"
               id="password"
               v-model="password"
-              placeholder="••••••••"
-              class="text-gray-900 text-sm block w-full p-2.5 pl-5 bg-transparent border-0 border-b-2 border-gray-400 focus:border-blue-500 outline-none shadow-none rounded-none transition-colors duration-200 dark:placeholder-gray-400 dark:text-white autofill:shadow-none autofill:bg-transparent autofill:border-b-2 autofill:border-gray-400"
+              placeholder="Please Input Password"
+              class="text-gray-300 text-sm block w-full p-2.5 pl-5 bg-transparent border-0 border-b-2 border-gray-400 focus:border-blue-500 outline-none shadow-none rounded-none transition-colors duration-200 dark:placeholder-gray-400 dark:text-white autofill:shadow-none autofill:bg-transparent autofill:border-b-2 autofill:border-gray-400"
               required
+              @input="userInteracted = true"
+              @focus="userInteracted = true"
               @keydown.enter="handleLogin"
             />
           </div>
@@ -53,7 +55,8 @@
               :label="'Authenticate'"
               :isLoading="loginLoading"
               :showTick="loginShowTick"
-              :disabled="!username || !password || loginLoading"
+              :showError="loginShowError"
+              :disabled="!username || !password || !userInteracted || loginLoading"
               @confirm="handleLogin"
             />
           </div>
@@ -91,6 +94,10 @@ const modalVisible = ref(false);
 const modalFadingOut = ref(false);
 const loginLoading = ref(false);
 const loginShowTick = ref(false);
+const loginShowError = ref(false);
+const typedText = ref('');
+const isTyping = ref(true);
+const userInteracted = ref(false); // Track if user has actually typed
 
 const anchorPosX = 0.9; // Anchor at 90% of the screen width
 const anchorPosY = 0.5; // Anchor at 50% of the screen height
@@ -112,7 +119,9 @@ let animationId = null;
 let ctx, width, height, points, target, animateHeader = true;
 let fadeRadiusAnim = 0; // For animated fade radius
 let fadeRadiusStartTime = null;
+let cachedScaleFactor = 1; // Cache diagonal scale factor for performance
 const FADE_RADIUS_ANIM_DURATION = 700; // ms
+const REFERENCE_DIAGONAL = Math.sqrt(1920 * 1920 + 1080 * 1080); // Pre-calculate reference
 
 function getDistance(p1, p2) {
   return Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2);
@@ -172,13 +181,17 @@ function shiftPoint(p) {
 function initHeader() {
   width = window.innerWidth;
   height = window.innerHeight;
+  // Cache scale factor calculation for performance
+  const currentDiagonal = Math.sqrt(width * width + height * height);
+  cachedScaleFactor = currentDiagonal / REFERENCE_DIAGONAL;
   // Anchor at x=90% and y=50% of the screen on init
   target = { x: width * anchorPosX, y: height * anchorPosY };
   headerBgCanvas.value.width = width;
   headerBgCanvas.value.height = height;
   points = [];
-  // Use global settings for spacing
-  const spacing = width / DOTS_PER_ROW * DOT_SPACING_FACTOR;
+  // Calculate dots per row based on screen width for responsive density
+  const dotsPerRow = Math.max(1, Math.floor(DOTS_PER_ROW * (width / 1920)));
+  const spacing = width / dotsPerRow * DOT_SPACING_FACTOR;
   for (let x = 0; x < width; x += spacing) {
     for (let y = 0; y < height; y += spacing) {
       let px = x + Math.random() * spacing;
@@ -238,9 +251,11 @@ function animate(now) {
     grad.addColorStop(1, '#272727');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, width, height);
+    // Use cached scale factor for better performance
+    const scaledFadeRadius = FADE_RADIUS * cachedScaleFactor/3;
+    const activeDistance = 720000 * DOT_SPACING_FACTOR * (scaledFadeRadius * fadeRadiusAnim);
     for (let i in points) {
       const dist = Math.abs(getDistance(target, points[i]));
-      const activeDistance = 720000 * DOT_SPACING_FACTOR * fadeRadiusAnim;
       const fade = Math.max(0, 1 - dist / activeDistance);
       points[i].active = 0.3 * Math.pow(fade, 1.5);
       points[i].circle.active = 0.6 * Math.pow(fade, 1.5);
@@ -273,6 +288,8 @@ function scrollCheck() {
 function resize() {
   width = window.innerWidth;
   height = window.innerHeight;
+  target.x = width * anchorPosX;
+  target.y = height * anchorPosY;
   headerBgCanvas.value.width = width;
   headerBgCanvas.value.height = height;
   initHeader();
@@ -291,6 +308,11 @@ function removeListeners() {
 }
 
 onMounted(() => {
+  // Typing effect for credentials text
+  setTimeout(() => {
+    startTypingEffect('Enter your credentials');
+  }, 300);
+  
   if (headerBgCanvas.value) {
     ctx = headerBgCanvas.value.getContext('2d');
     initHeader();
@@ -308,6 +330,44 @@ onBeforeUnmount(() => {
   if (animationId) cancelAnimationFrame(animationId);
   removeListeners();
 });
+
+// Typing effect function
+function startTypingEffect(text, callback) {
+  typedText.value = '';
+  isTyping.value = true;
+  let charIndex = 0;
+  const typeSpeed = 25; // Even faster typing speed
+  
+  const typeText = () => {
+    if (charIndex < text.length) {
+      typedText.value = text.substring(0, charIndex + 1);
+      charIndex++;
+      setTimeout(typeText, typeSpeed);
+    } else {
+      isTyping.value = false;
+      if (callback) callback();
+    }
+  };
+  
+  typeText();
+}
+
+// Delete effect function (backspace animation)
+function startDeleteEffect(callback) {
+  isTyping.value = true;
+  const deleteSpeed = 1; // Even faster delete speed
+  
+  const deleteText = () => {
+    if (typedText.value.length > 0) {
+      typedText.value = typedText.value.substring(0, typedText.value.length - 1);
+      setTimeout(deleteText, deleteSpeed);
+    } else {
+      if (callback) callback();
+    }
+  };
+  
+  deleteText();
+}
 
 // --- JWT login logic ---
 async function handleLogin() {
@@ -334,6 +394,14 @@ async function handleLogin() {
       console.log('Login successful!');
       loginLoading.value = false;
       loginShowTick.value = true;
+      
+      // Delete current text, then type "Authenticated successfully"
+      setTimeout(() => {
+        startDeleteEffect(() => {
+          startTypingEffect('Authenticated successfully');
+        });
+      }, 100);
+      
       setTimeout(() => {
         modalFadingOut.value = true;
         // Animate the background anchor moving off-screen to the right for fade-out effect
@@ -352,18 +420,44 @@ async function handleLogin() {
         setTimeout(() => {
           router.push('/home');
         }, 350); // match fade duration
-      }, 900); // Wait for tick animation
+      }, 1800); // Wait longer for typing animation to complete
     } else {
       error.value = 'Token validation failed.';
       localStorage.removeItem('jwt');
       loginLoading.value = false;
       loginShowTick.value = false;
+      loginShowError.value = true;
+      
+      // Show "Login failed" then revert back to "Enter your credentials"
+      startDeleteEffect(() => {
+        startTypingEffect('Login failed', () => {
+          setTimeout(() => {
+            loginShowError.value = false;
+            startDeleteEffect(() => {
+              startTypingEffect('Enter your credentials');
+            });
+          }, 1500);
+        });
+      });
     }
   } catch (err) {
     error.value = err.response?.data?.message || 'Login failed';
     localStorage.removeItem('jwt');
     loginLoading.value = false;
     loginShowTick.value = false;
+    loginShowError.value = true;
+    
+    // Show "Login failed" then revert back to "Enter your credentials"
+    startDeleteEffect(() => {
+      startTypingEffect('Login failed', () => {
+        setTimeout(() => {
+          loginShowError.value = false;
+          startDeleteEffect(() => {
+            startTypingEffect('Enter your credentials');
+          });
+        }, 1500);
+      });
+    });
   }
 }
 </script>
@@ -430,13 +524,46 @@ input:-webkit-autofill:active {
   transition: opacity 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.35s cubic-bezier(0.4,0,0.2,1);
 }
 
+.typing-cursor {
+  animation: blink 1s infinite;
+  color: #248437;
+  margin-left: 2px;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
 .input-field-container {
-  transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.4s cubic-bezier(0.4,0,0.2,1);
+  transition: transform 0.4s cubic-bezier(0.9,0,0.2,0.01), opacity 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+
+.input-grow {
+  animation: growWidth 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  transform: scaleX(0);
+  transform-origin: center;
+}
+
+.input-grow-delay {
+  animation-delay: 0.15s;
+}
+
+@keyframes growWidth {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
 }
 
 .input-slide-down {
-  transform: translateY(60px);
-  opacity: 0;
+  transform: translateY(60px) !important;
+  opacity: 0 !important;
+  animation: none !important;
 }
 
 .button-container {
