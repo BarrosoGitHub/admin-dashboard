@@ -8,7 +8,6 @@
         class="w-full max-w-lg p-4 rounded-lg sm:p-6 md:p-8 modal-fadein "
         :class="{ 'modal-fadein-active': modalVisible, 'modal-fadeout': modalFadingOut }"
       >
-        <!-- Login instructions -->
         <div class="mb-15 mt-2 flex flex-col items-center gap-1">
           <div class="text-4xl font-bold text-neutral-100 whitespace-nowrap">{{ typedText }}<span class="typing-cursor" v-if="isTyping">|</span></div>
         </div>
@@ -66,10 +65,14 @@
     </div>
     <!-- Petrotec Icon at the bottom center -->
     <div class="flex justify-center items-end" style="position: absolute; left: 0; right: 0; bottom: 40px; width: 100%;">
-      <img
-        :src="petrotecIcon"
-        alt="Petrotec Icon"
-        class="h-16 w-auto"
+      <Vue3Lottie
+        :animationData="petrotecAnimation"
+        :height="135"
+        :width="135"
+        :loop="false"
+        :autoPlay="true"
+        :background-color="'transparent'"
+        style="background: transparent;"
       />
     </div>
   </div>
@@ -77,7 +80,8 @@
 
 <script setup>
 import { onMounted, onBeforeUnmount, ref } from 'vue';
-import petrotecIcon from '@/assets/Petrotec-icon.png';
+import { Vue3Lottie } from 'vue3-lottie';
+import petrotecAnimation from '@/assets/Logo-Petrotec-animated.json';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 import { API_BASE_URL } from '@/apiConfig.js';
