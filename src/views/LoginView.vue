@@ -1,6 +1,10 @@
 <template>
   <div class="min-h-screen w-full flex items-center justify-center relative">
     <canvas ref="headerBgCanvas" class="absolute inset-0 w-full h-full z-0"></canvas>
+    <!-- Initial full blur that fades out -->
+    <div class="absolute inset-0 z-0 backdrop-blur-[50px] initial-blur-fadeout"></div>
+    <!-- Progressive blur overlay from right to left -->
+    <div class="absolute inset-0 z-0 backdrop-blur-[2.5px]" style="mask-image: linear-gradient(to left, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 15%, rgba(0,0,0,1) 50%); -webkit-mask-image: linear-gradient(to left, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 15%, rgba(0,0,0,1) 50%);"></div>
     <div
       class="absolute inset-0 flex items-center justify-center z-20"
     >
@@ -140,7 +144,9 @@ function Circle(pos, rad, color) {
     if (!this.active) return;
     ctx.beginPath();
     ctx.arc(this.pos.x, this.pos.y, this.radius, 0, 2 * Math.PI, false);
-    ctx.fillStyle = `rgba(36,132,55,${this.active})`;
+    // Apply depth-based opacity: closer points are more visible
+    const depthOpacity = this.active * (0.5 + 0.5 * this.pos.z);
+    ctx.fillStyle = `rgba(36,132,55,${depthOpacity})`;
     ctx.fill();
   };
 }
@@ -151,7 +157,10 @@ function drawLines(p) {
     ctx.beginPath();
     ctx.moveTo(p.x, p.y);
     ctx.lineTo(p.closest[i].x, p.closest[i].y);
-    ctx.strokeStyle = `rgba(36,132,55,${p.active})`;
+    // Average the z-depth of both connected points for line opacity
+    const avgZ = (p.z + p.closest[i].z) / 2;
+    const depthOpacity = p.active * (0.5 + 0.5 * avgZ);
+    ctx.strokeStyle = `rgba(36,132,55,${depthOpacity})`;
     ctx.stroke();
   }
 }
@@ -161,8 +170,10 @@ function shiftPoint(p) {
   const duration = 3500 + 2500 * Math.random(); // 3.5s to 6s
   const startX = p.x;
   const startY = p.y;
-  const endX = p.originX - 50 + Math.random() * 100;
-  const endY = p.originY - 50 + Math.random() * 100;
+  // Parallax: closer points (higher z) move more
+  const moveRange = 100 * p.z;
+  const endX = p.originX - moveRange/2 + Math.random() * moveRange;
+  const endY = p.originY - moveRange/2 + Math.random() * moveRange;
   const startTime = performance.now();
 
   function animateShift(now) {
@@ -200,7 +211,8 @@ function initHeader() {
     for (let y = 0; y < height; y += spacing) {
       let px = x + Math.random() * spacing;
       let py = y + Math.random() * spacing;
-      let p = { x: px, originX: px, y: py, originY: py };
+      let pz = 0.4 + Math.random() * 0.6; // z-depth from 0.4 (far) to 1.0 (close)
+      let p = { x: px, originX: px, y: py, originY: py, z: pz };
       points.push(p);
     }
   }
@@ -234,7 +246,9 @@ function initHeader() {
   }
   // Assign a circle to each point
   for (let i in points) {
-    let c = new Circle(points[i], DOT_SIZE_MIN + Math.random() * (DOT_SIZE_MAX - DOT_SIZE_MIN), 'rgba(156,217,249,0.3)');
+    const baseSize = DOT_SIZE_MIN + Math.random() * (DOT_SIZE_MAX - DOT_SIZE_MIN);
+    const scaledSize = baseSize * points[i].z; // Scale size by z-depth
+    let c = new Circle(points[i], scaledSize, 'rgba(156,217,249,0.3)');
     points[i].circle = c;
   }
   // Start shifting points
@@ -537,6 +551,21 @@ input:-webkit-autofill:active {
 @keyframes blink {
   0%, 50% { opacity: 1; }
   51%, 100% { opacity: 0; }
+}
+
+.initial-blur-fadeout {
+  animation: blurFadeOut 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes blurFadeOut {
+  0% {
+    opacity: 1;
+    backdrop-filter: blur(50px);
+  }
+  100% {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
 }
 
 .input-field-container {

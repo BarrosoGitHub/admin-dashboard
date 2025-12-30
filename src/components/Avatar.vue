@@ -33,7 +33,7 @@
           v-if="showDropdown"
           ref="dropdownRef"
           id="userDropdown"
-          class="z-170 absolute right-0 top-16 bg-modal-color divide-y divide-neutral-700 rounded-lg shadow-sm w-48 border border-color shadow-xl"
+          class="z-170 absolute right-0 top-16 bg-modal-color divide-y divide-neutral-700 rounded-lg shadow-sm w-64 border border-color shadow-xl"
         >
     <div class="px-4 py-3 text-sm text-gray-900 dark:text-white">
       <div>Username [PH]</div>
@@ -82,6 +82,29 @@
         </div>
       </div>
     </div>
+    <div class="py-2 px-4">
+      <div class="flex items-center justify-between">
+        <span class="text-sm text-gray-700 dark:text-gray-200">Tech Mode</span>
+        <div class="flex items-center space-x-2">
+          <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+          </svg>
+          <label class="inline-flex items-center cursor-pointer">
+            <input type="checkbox" class="sr-only peer" v-model="isTechMode" @change="toggleTechMode">
+            <div
+              :class="[
+                'relative w-11 h-6 rounded-full peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full after:content-[\'\'] after:absolute after:top-[2px] after:start-[2px] after:rounded-full after:h-5 after:w-5 after:border transition-all duration-200',
+                isTechMode ? 'tech-toggle-on tech-ball-on' : 'tech-toggle-off tech-ball-off'
+              ]"
+              style="border: 0px solid var(--toggle-border);"
+            ></div>
+          </label>
+          <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
     <div class="py-1">
       <a
         href="#"
@@ -97,12 +120,14 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
+import { API_BASE_URL } from "../apiConfig";
 
 const emit = defineEmits(['password-change']);
 
 const showDropdown = ref(false);
 const router = useRouter();
 const isDarkMode = ref(true); // Default to dark mode since the app appears to be dark themed
+const isTechMode = ref(false); // OPT Tech Mode toggle
 const dropdownRef = ref(null);
 const avatarRef = ref(null);
 const avatarContainerRef = ref(null);
@@ -132,6 +157,52 @@ function toggleTheme() {
   console.log('Theme toggled to:', isDarkMode.value ? 'Dark' : 'Light');
 }
 
+async function toggleTechMode() {
+  try {
+    const token = localStorage.getItem('jwt');
+    const response = await fetch(`${API_BASE_URL}/opt-configuration/toggle-tech-mode`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (response.ok) {
+      const success = await response.json();
+      console.log('Tech mode toggled:', isTechMode.value ? 'Enabled' : 'Disabled');
+    } else {
+      // Revert the toggle if the API call failed
+      isTechMode.value = !isTechMode.value;
+      console.error('Failed to toggle tech mode');
+    }
+  } catch (error) {
+    // Revert the toggle if there was an error
+    isTechMode.value = !isTechMode.value;
+    console.error('Error toggling tech mode:', error);
+  }
+}
+
+async function fetchTechModeState() {
+  try {
+    const token = localStorage.getItem('jwt');
+    const response = await fetch(`${API_BASE_URL}/opt-configuration/is-tech-mode-enabled`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (response.ok) {
+      isTechMode.value = await response.json();
+      console.log('Tech mode state:', isTechMode.value ? 'Enabled' : 'Disabled');
+    }
+  } catch (error) {
+    console.error('Error fetching tech mode state:', error);
+  }
+}
+
 onMounted(() => {
   // Initialize dark mode from localStorage or default to true
   const savedDarkMode = localStorage.getItem('darkMode');
@@ -150,6 +221,9 @@ onMounted(() => {
   } else {
     htmlElement.classList.remove('dark');
   }
+
+  // Fetch tech mode state from API
+  fetchTechModeState();
 });
 
 onUnmounted(() => {
@@ -220,5 +294,27 @@ defineExpose({ toggleDropdown });
     opacity: 0;
     transform: translateY(-10px) scale(0.95);
   }
+}
+
+.tech-toggle-on {
+  background-color: #6b7280; /* Gray-500 - matching dark mode toggle */
+  transition: background-color 0.3s ease;
+}
+
+.tech-toggle-off {
+  background-color: #f3f4f6; /* Gray-100 - matching light mode toggle */
+  transition: background-color 0.3s ease;
+}
+
+.tech-ball-on::after {
+  background-color: #ffffff; /* White ball when enabled */
+  border-color: #d1d5db;
+  transition: all 0.3s ease;
+}
+
+.tech-ball-off::after {
+  background-color: #5c5c5c; /* Dark gray ball when disabled */
+  border-color: #747474;
+  transition: all 0.3s ease;
 }
 </style>

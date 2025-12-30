@@ -1,9 +1,9 @@
 function getApiBaseUrl() {
   const { protocol, hostname, port } = window.location;
   // localhost for dev mode - direct backend connection
-  // if (hostname === 'localhost' || hostname === '127.0.0.1') {
-  //   return `${protocol}//localhost:5087`;
-  // }
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return `${protocol}//localhost:5087`;
+  }
   // Production mode - use nginx reverse proxy with port from current URL
   const portPart = port ? `:${port}` : '';
   return `${protocol}//${hostname}${portPart}/api`;
