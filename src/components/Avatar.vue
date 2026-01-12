@@ -115,12 +115,14 @@
     </div>
       </div>
     </Transition>
+    <TechModeConfirmationModal ref="techModeConfirmationModal" />
   </div>
 </template>
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { API_BASE_URL } from "../apiConfig";
+import TechModeConfirmationModal from "./Modals/TechModeConfirmationModal.vue";
 
 const emit = defineEmits(['password-change']);
 
@@ -131,6 +133,7 @@ const isTechMode = ref(false); // OPT Tech Mode toggle
 const dropdownRef = ref(null);
 const avatarRef = ref(null);
 const avatarContainerRef = ref(null);
+const techModeConfirmationModal = ref(null);
 
 function toggleDropdown() {
   showDropdown.value = !showDropdown.value;
@@ -158,7 +161,13 @@ function toggleTheme() {
 }
 
 async function toggleTechMode() {
+  const targetState = isTechMode.value;
+  
   try {
+    // Show confirmation modal
+    await techModeConfirmationModal.value.open(targetState);
+    
+    // User confirmed, proceed with API call
     const token = localStorage.getItem('jwt');
     const response = await fetch(`${API_BASE_URL}/opt-configuration/toggle-tech-mode`, {
       method: 'POST',
@@ -171,15 +180,22 @@ async function toggleTechMode() {
     if (response.ok) {
       const success = await response.json();
       console.log('Tech mode toggled:', isTechMode.value ? 'Enabled' : 'Disabled');
+      
+      // Start monitoring system reboot
+      techModeConfirmationModal.value.startRebootMonitoring();
     } else {
       // Revert the toggle if the API call failed
       isTechMode.value = !isTechMode.value;
+      techModeConfirmationModal.value.setError();
       console.error('Failed to toggle tech mode');
     }
   } catch (error) {
-    // Revert the toggle if there was an error
+    // User cancelled or there was an error - revert the toggle
     isTechMode.value = !isTechMode.value;
-    console.error('Error toggling tech mode:', error);
+    if (error !== false) {
+      // Only log if it's an actual error, not a user cancellation
+      console.error('Error toggling tech mode:', error);
+    }
   }
 }
 

@@ -138,12 +138,20 @@ function getDistance(p1, p2) {
 function Circle(pos, rad, color) {
   this.pos = pos;
   this.radius = rad;
+  this.baseRadius = rad; // Store base radius for pulse animation
   this.color = color;
   this.active = 0;
+  // Pulse animation properties
+  this.pulsePhase = Math.random() * Math.PI * 2; // Random starting phase
+  this.pulseAmount = 0.15 + Math.random() * 0.5; // Random pulse intensity (15%-65%)
   this.draw = function () {
     if (!this.active) return;
+    // Calculate pulsing radius based on movement velocity
+    const velocityFactor = Math.min(1, this.pos.velocity / 2); // Normalize velocity
+    const pulse = Math.sin(this.pulsePhase) * velocityFactor;
+    const currentRadius = this.baseRadius * (1 + pulse * this.pulseAmount);
     ctx.beginPath();
-    ctx.arc(this.pos.x, this.pos.y, this.radius, 0, 2 * Math.PI, false);
+    ctx.arc(this.pos.x, this.pos.y, currentRadius, 0, 2 * Math.PI, false);
     // Apply depth-based opacity: closer points are more visible
     const depthOpacity = this.active * (0.5 + 0.5 * this.pos.z);
     ctx.fillStyle = `rgba(36,132,55,${depthOpacity})`;
@@ -212,7 +220,7 @@ function initHeader() {
       let px = x + Math.random() * spacing;
       let py = y + Math.random() * spacing;
       let pz = 0.4 + Math.random() * 0.6; // z-depth from 0.4 (far) to 1.0 (close)
-      let p = { x: px, originX: px, y: py, originY: py, z: pz };
+      let p = { x: px, originX: px, y: py, originY: py, z: pz, prevX: px, prevY: py, velocity: 0 };
       points.push(p);
     }
   }
@@ -273,6 +281,20 @@ function animate(now) {
     const scaledFadeRadius = FADE_RADIUS * cachedScaleFactor/3;
     const activeDistance = 720000 * DOT_SPACING_FACTOR * (scaledFadeRadius * fadeRadiusAnim);
     for (let i in points) {
+      // Calculate velocity based on position change
+      const dx = points[i].x - points[i].prevX;
+      const dy = points[i].y - points[i].prevY;
+      points[i].velocity = Math.sqrt(dx * dx + dy * dy);
+      
+      // Update pulse phase based on velocity (faster movement = faster pulse)
+      if (points[i].velocity > 0.01) {
+        points[i].circle.pulsePhase += points[i].velocity * 0.1;
+      }
+      
+      // Store current position for next frame
+      points[i].prevX = points[i].x;
+      points[i].prevY = points[i].y;
+      
       const dist = Math.abs(getDistance(target, points[i]));
       const fade = Math.max(0, 1 - dist / activeDistance);
       points[i].active = 0.3 * Math.pow(fade, 1.5);
