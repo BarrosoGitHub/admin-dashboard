@@ -77,19 +77,14 @@
       <div class="flex flex-col items-center relative z-[2]">
         <Vue3Lottie
           :animationData="petrotecAnimation"
-          :height="150"
-          :width="150"
+          :height="650"
+          :width="650"
           :loop="true"
           :autoPlay="true"
-          :direction="'alternate'"
-          :speed="0.3"
+          :speed="1.0"
           :background-color="'transparent'"
-          class="mb-6"
           style="background: transparent;"
         />
-        <h2 class="text-3xl font-bold text-white mb-2">
-          {{ typedText }}<span class="typing-cursor" v-if="isTyping">|</span>
-        </h2>
       </div>
     </div>
   </transition>
@@ -98,7 +93,7 @@
 <script setup>
 import { defineEmits, ref, onMounted, onBeforeUnmount, watch } from "vue";
 import { Vue3Lottie } from 'vue3-lottie';
-import petrotecAnimation from '@/assets/Logo-Petrotec-animated.json';
+import petrotecAnimation from '@/assets/Petrotec-Loading.json';
 import { API_BASE_URL } from "../../apiConfig";
 import ButtonConfirmation from './ButtonConfirmation.vue';
 
@@ -109,8 +104,6 @@ const showTick = ref(false);
 const showError = ref(false);
 const isRebooting = ref(false);
 const rebootBgCanvas = ref(null);
-const typedText = ref('');
-const isTyping = ref(true);
 
 const emit = defineEmits(["confirmed", "cancelled", "systemOnline"]);
 
@@ -388,82 +381,13 @@ function cleanupAnimation() {
   animateHeader = false;
 }
 
-// Typing effect functions
-let typingInterval = null;
-
-function startTypingEffect(text, callback) {
-  typedText.value = '';
-  isTyping.value = true;
-  let charIndex = 0;
-  const typeSpeed = 50;
-  
-  const typeText = () => {
-    if (charIndex < text.length) {
-      typedText.value = text.substring(0, charIndex + 1);
-      charIndex++;
-      setTimeout(typeText, typeSpeed);
-    } else {
-      isTyping.value = false;
-      if (callback) callback();
-    }
-  };
-  
-  typeText();
-}
-
-function startDeleteEffect(callback) {
-  isTyping.value = true;
-  const deleteSpeed = 20;
-  
-  const deleteText = () => {
-    if (typedText.value.length > 0) {
-      typedText.value = typedText.value.substring(0, typedText.value.length - 1);
-      setTimeout(deleteText, deleteSpeed);
-    } else {
-      isTyping.value = false;
-      if (callback) callback();
-    }
-  };
-  
-  deleteText();
-}
-
-function startAlternatingText() {
-  const messages = ['System Rebooting', 'Please wait...'];
-  let currentIndex = 0;
-  
-  const showNextMessage = () => {
-    startTypingEffect(messages[currentIndex], () => {
-      setTimeout(() => {
-        startDeleteEffect(() => {
-          currentIndex = (currentIndex + 1) % messages.length;
-          if (isRebooting.value) {
-            setTimeout(showNextMessage, 300);
-          }
-        });
-      }, 2000);
-    });
-  };
-  
-  showNextMessage();
-}
-
-function stopAlternatingText() {
-  if (typingInterval) {
-    clearInterval(typingInterval);
-    typingInterval = null;
-  }
-}
-
 watch(isRebooting, (newVal) => {
   if (newVal) {
     setTimeout(() => {
       initRebootAnimation();
-      startAlternatingText();
     }, 100);
   } else {
     cleanupAnimation();
-    stopAlternatingText();
   }
 });
 
@@ -531,17 +455,5 @@ defineExpose({ open, setSuccess, setError, startRebootMonitoring, stopRebootMoni
 /* Canvas blur effect */
 .canvas-blur {
   filter: blur(4px);
-}
-
-/* Typing cursor animation */
-.typing-cursor {
-  animation: blink 1s infinite;
-  color: #22c55e;
-  margin-left: 2px;
-}
-
-@keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
 }
 </style>
