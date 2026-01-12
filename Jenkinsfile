@@ -80,13 +80,15 @@ pipeline {
               sh """
                 docker login -u $user -p $pass ${dockerLoginUrl}
                 ${env.DOCKER_BASE} ${env.DOCKER_VERSAO} ${env.DOCKER_FILE_ARM} \
-                  -t ${nexusRegistry}/${env.REPONAME}:${env.TAGNAME}-arm64${awsTagArm} .
+                  --output type=image,name=${nexusRegistry}/${env.REPONAME}:${env.TAGNAME}-arm64,push=true,registry.insecure=true \
+                  ${awsTagArm != '' ? awsTagArm : ''} .
               """
 
               // Build/push AMD64 image
               sh """
                 ${env.DOCKER_BASE} ${env.DOCKER_VERSAO} ${env.DOCKER_FILE_AMD64} \
-                  -t ${nexusRegistry}/${env.REPONAME}:${env.TAGNAME}-amd64${awsTagAmd64} .
+                  --output type=image,name=${nexusRegistry}/${env.REPONAME}:${env.TAGNAME}-amd64,push=true,registry.insecure=true \
+                  ${awsTagAmd64 != '' ? awsTagAmd64 : ''} .
               """
           }
         }
