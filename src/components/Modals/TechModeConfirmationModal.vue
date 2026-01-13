@@ -77,11 +77,11 @@
       <div class="flex flex-col items-center relative z-[2]">
         <Vue3Lottie
           :animationData="petrotecAnimation"
-          :height="650"
-          :width="650"
+          :height="450"
+          :width="450"
           :loop="true"
           :autoPlay="true"
-          :speed="1.0"
+          :speed="1.1"
           :background-color="'transparent'"
           style="background: transparent;"
         />
