@@ -81,7 +81,7 @@
           :width="animationSize"
           :loop="true"
           :autoPlay="true"
-          :speed="1.1"
+          :speed="1.3"
           :background-color="'transparent'"
           style="background: transparent;"
         />

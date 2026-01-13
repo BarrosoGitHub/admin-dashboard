@@ -4,7 +4,6 @@
     class="relative"
     @mouseenter="showDropdown = true"
     @mouseleave="showDropdown = false"
-    @click="handleAvatarClick"
   >
     <div
       ref="avatarRef"
@@ -198,11 +197,6 @@ async function toggleTechMode() {
       console.error('Error toggling tech mode:', error);
     }
   }
-}
-
-function handleAvatarClick() {
-  // Refresh tech mode state whenever avatar is clicked
-  fetchTechModeState();
 }
 
 async function fetchTechModeState() {
