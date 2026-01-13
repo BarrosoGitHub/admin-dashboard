@@ -64,7 +64,7 @@
   </transition>
   
   <!-- Rebooting Overlay -->
-  <transition name="fade">
+  <transition name="reboot-fade">
     <div
       v-if="isRebooting"
       class="fixed top-0 right-0 left-0 z-[9999] flex flex-col justify-center items-center w-full h-full"
@@ -74,11 +74,11 @@
       <canvas ref="rebootBgCanvas" class="absolute inset-0 w-full h-full z-[1] canvas-blur"></canvas>
       
       <!-- Content -->
-      <div class="flex flex-col items-center relative z-[2]">
+      <div class="flex flex-col items-center relative z-[2] reboot-content">
         <Vue3Lottie
           :animationData="petrotecAnimation"
-          :height="450"
-          :width="450"
+          :height="animationSize"
+          :width="animationSize"
           :loop="true"
           :autoPlay="true"
           :speed="1.1"
@@ -104,6 +104,7 @@ const showTick = ref(false);
 const showError = ref(false);
 const isRebooting = ref(false);
 const rebootBgCanvas = ref(null);
+const animationSize = ref(350);
 
 const emit = defineEmits(["confirmed", "cancelled", "systemOnline"]);
 
@@ -277,6 +278,11 @@ function initRebootAnimation() {
   
   width = window.innerWidth;
   height = window.innerHeight;
+  
+  // Calculate animation size based on window dimensions (25% of smaller dimension)
+  const minDimension = Math.min(width, height);
+  animationSize.value = Math.max(200, Math.min(500, minDimension * 0.25));
+  
   target = { x: width * 0.5, y: height * 0.5 };
   rebootBgCanvas.value.width = width;
   rebootBgCanvas.value.height = height;
@@ -450,6 +456,62 @@ defineExpose({ open, setSuccess, setError, startRebootMonitoring, stopRebootMoni
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* Reboot screen smooth transitions */
+.reboot-fade-enter-active {
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.reboot-fade-leave-active {
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.reboot-fade-enter-from {
+  opacity: 0;
+}
+
+.reboot-fade-enter-to {
+  opacity: 1;
+}
+
+.reboot-fade-leave-from {
+  opacity: 1;
+}
+
+.reboot-fade-leave-to {
+  opacity: 0;
+}
+
+/* Content animation */
+.reboot-fade-enter-active .reboot-content {
+  animation: reboot-scale-in 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.reboot-fade-leave-active .reboot-content {
+  animation: reboot-scale-out 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes reboot-scale-in {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes reboot-scale-out {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.8);
+    opacity: 0;
+  }
 }
 
 /* Canvas blur effect */
