@@ -93,7 +93,7 @@
 <script setup>
 import { defineEmits, ref, onMounted, onBeforeUnmount, watch } from "vue";
 import { Vue3Lottie } from 'vue3-lottie';
-import petrotecAnimation from '@/assets/Petrotec-Loading.json';
+import petrotecAnimation from '@/assets/Petrotec-loading.json';
 import { API_BASE_URL } from "../../apiConfig";
 import ButtonConfirmation from './ButtonConfirmation.vue';
 
