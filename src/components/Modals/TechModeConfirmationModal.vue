@@ -6,7 +6,9 @@
       style="pointer-events: auto"
     >
       <div class="relative p-4 w-full max-w-md max-h-full">
-        <div class="relative bg-white rounded-lg shadow-sm bg-modal-color border border-color">
+        <div
+          class="relative bg-white rounded-lg shadow-sm bg-modal-color border border-color"
+        >
           <button
             type="button"
             class="absolute top-2 right-2 text-gray-400 hover:text-gray-700 dark:hover:text-white text-xl font-bold focus:outline-none"
@@ -34,7 +36,7 @@
               <h3 class="text-lg font-bold">Confirm Tech Mode Change</h3>
             </div>
             <p class="mb-4">
-              {{ enabling ? 'Enabling' : 'Disabling' }} Tech Mode will reboot the system. 
+              {{ enabling ? "Enabling" : "Disabling" }} Tech Mode will reboot the system.
               This action will interrupt any ongoing operations.
             </p>
             <p class="text-yellow-600 dark:text-yellow-400 font-semibold mb-4">
@@ -62,7 +64,7 @@
       </div>
     </div>
   </transition>
-  
+
   <!-- Rebooting Overlay -->
   <transition name="reboot-fade">
     <div
@@ -71,8 +73,11 @@
       style="pointer-events: auto"
     >
       <!-- Animated dots background -->
-      <canvas ref="rebootBgCanvas" class="absolute inset-0 w-full h-full z-[1] canvas-blur"></canvas>
-      
+      <canvas
+        ref="rebootBgCanvas"
+        class="absolute inset-0 w-full h-full z-[1] canvas-blur"
+      ></canvas>
+
       <!-- Content -->
       <div class="flex flex-col items-center relative z-[2] reboot-content">
         <Vue3Lottie
@@ -83,7 +88,7 @@
           :autoPlay="true"
           :speed="1.3"
           :background-color="'transparent'"
-          style="background: transparent;"
+          style="background: transparent"
         />
       </div>
     </div>
@@ -92,10 +97,10 @@
 
 <script setup>
 import { defineEmits, ref, onMounted, onBeforeUnmount, watch } from "vue";
-import { Vue3Lottie } from 'vue3-lottie';
-import petrotecAnimation from '@/assets/Petrotec-loading.json';
+import { Vue3Lottie } from "vue3-lottie";
+import petrotecAnimation from "@/assets/Petrotec-loading.json";
 import { API_BASE_URL } from "../../apiConfig";
-import ButtonConfirmation from './ButtonConfirmation.vue';
+import ButtonConfirmation from "./ButtonConfirmation.vue";
 
 const show = ref(false);
 const enabling = ref(false);
@@ -118,7 +123,7 @@ function open(isEnabling) {
   isLoading.value = false;
   showTick.value = false;
   showError.value = false;
-  
+
   return new Promise((resolve, reject) => {
     resolveCallback = resolve;
     rejectCallback = reject;
@@ -163,33 +168,33 @@ function setError() {
 function startRebootMonitoring() {
   // Close the confirmation modal
   show.value = false;
-  
+
   // Show rebooting overlay
   isRebooting.value = true;
-  
+
   // Start checking if system is alive every second
   checkAliveInterval = setInterval(async () => {
     try {
-      const token = localStorage.getItem('jwt');
+      const token = localStorage.getItem("jwt");
       const response = await fetch(`${API_BASE_URL}/info/services/isalive`, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       });
-      
+
       if (response.ok) {
         // System is back online
         clearInterval(checkAliveInterval);
         checkAliveInterval = null;
         isRebooting.value = false;
         emit("systemOnline");
-        console.log('System is back online');
+        console.log("System is back online");
       }
     } catch (error) {
       // System is still rebooting, continue checking
-      console.log('System still rebooting...');
+      console.log("System still rebooting...");
     }
   }, 1000); // Check every 1 second
 }
@@ -204,7 +209,12 @@ function stopRebootMonitoring() {
 
 // Animation variables
 let animationId = null;
-let ctx, width, height, points, target, animateHeader = true;
+let ctx,
+  width,
+  height,
+  points,
+  target,
+  animateHeader = true;
 const DOTS_PER_ROW = 20;
 const DOT_SIZE_MIN = 2;
 const DOT_SIZE_MAX = 4;
@@ -253,13 +263,16 @@ function shiftPoint(p) {
   const startX = p.x;
   const startY = p.y;
   const moveRange = 100 * p.z;
-  const endX = p.originX - moveRange/2 + Math.random() * moveRange;
-  const endY = p.originY - moveRange/2 + Math.random() * moveRange;
+  const endX = p.originX - moveRange / 2 + Math.random() * moveRange;
+  const endY = p.originY - moveRange / 2 + Math.random() * moveRange;
   const startTime = performance.now();
 
   function animateShift(now) {
     const t = Math.min(1, (now - startTime) / duration);
-    const ease = t < 0.5 ? (1 - Math.sqrt(1 - (2 * t) * (2 * t))) / 2 : (Math.sqrt(1 - Math.pow(-2 * t + 2, 2)) + 1) / 2;
+    const ease =
+      t < 0.5
+        ? (1 - Math.sqrt(1 - 2 * t * (2 * t))) / 2
+        : (Math.sqrt(1 - Math.pow(-2 * t + 2, 2)) + 1) / 2;
     p.x = startX + (endX - startX) * ease;
     p.y = startY + (endY - startY) * ease;
     if (t < 1 && isRebooting.value) {
@@ -275,33 +288,42 @@ function shiftPoint(p) {
 
 function initRebootAnimation() {
   if (!rebootBgCanvas.value) return;
-  
+
   width = window.innerWidth;
   height = window.innerHeight;
-  
+
   // Calculate animation size based on window dimensions (25% of smaller dimension)
   const minDimension = Math.min(width, height);
   animationSize.value = Math.max(200, Math.min(500, minDimension * 0.25));
-  
+
   target = { x: width * 0.5, y: height * 0.5 };
   rebootBgCanvas.value.width = width;
   rebootBgCanvas.value.height = height;
-  ctx = rebootBgCanvas.value.getContext('2d');
+  ctx = rebootBgCanvas.value.getContext("2d");
   points = [];
-  
+
   const dotsPerRow = Math.max(1, Math.floor(DOTS_PER_ROW * (width / 1920)));
-  const spacing = width / dotsPerRow * DOT_SPACING_FACTOR;
-  
+  const spacing = (width / dotsPerRow) * DOT_SPACING_FACTOR;
+
   for (let x = 0; x < width; x += spacing) {
     for (let y = 0; y < height; y += spacing) {
       let px = x + Math.random() * spacing;
       let py = y + Math.random() * spacing;
       let pz = 0.4 + Math.random() * 0.6;
-      let p = { x: px, originX: px, y: py, originY: py, z: pz, prevX: px, prevY: py, velocity: 0 };
+      let p = {
+        x: px,
+        originX: px,
+        y: py,
+        originY: py,
+        z: pz,
+        prevX: px,
+        prevY: py,
+        velocity: 0,
+      };
       points.push(p);
     }
   }
-  
+
   for (let i = 0; i < points.length; i++) {
     let closest = [];
     let p1 = points[i];
@@ -329,45 +351,45 @@ function initRebootAnimation() {
     }
     p1.closest = closest;
   }
-  
+
   for (let i in points) {
     const baseSize = DOT_SIZE_MIN + Math.random() * (DOT_SIZE_MAX - DOT_SIZE_MIN);
     const scaledSize = baseSize * points[i].z;
     let c = new Circle(points[i], scaledSize);
     points[i].circle = c;
   }
-  
+
   for (let i in points) {
     shiftPoint(points[i]);
   }
-  
+
   animate();
 }
 
 function animate() {
   if (!isRebooting.value || !ctx) return;
-  
+
   ctx.clearRect(0, 0, width, height);
   const grad = ctx.createLinearGradient(0, 0, width, height);
-  grad.addColorStop(0, '#1a1a1a');
-  grad.addColorStop(1, '#252525');
+  grad.addColorStop(0, "#1a1a1a");
+  grad.addColorStop(1, "#252525");
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, width, height);
-  
+
   const activeDistance = 720000 * DOT_SPACING_FACTOR * FADE_RADIUS;
-  
+
   for (let i in points) {
     const dx = points[i].x - points[i].prevX;
     const dy = points[i].y - points[i].prevY;
     points[i].velocity = Math.sqrt(dx * dx + dy * dy);
-    
+
     if (points[i].velocity > 0.01) {
       points[i].circle.pulsePhase += points[i].velocity * 0.1;
     }
-    
+
     points[i].prevX = points[i].x;
     points[i].prevY = points[i].y;
-    
+
     const dist = Math.abs(getDistance(target, points[i]));
     const fade = Math.max(0, 1 - dist / activeDistance);
     points[i].active = 0.3 * Math.pow(fade, 1.5);
@@ -375,7 +397,7 @@ function animate() {
     drawLines(points[i]);
     points[i].circle.draw();
   }
-  
+
   animationId = requestAnimationFrame(animate);
 }
 
