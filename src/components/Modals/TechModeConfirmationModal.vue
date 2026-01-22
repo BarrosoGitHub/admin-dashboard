@@ -39,13 +39,13 @@
               {{ enabling ? "Enabling" : "Disabling" }} Tech Mode will reboot the system.
               This action will interrupt any ongoing operations.
             </p>
-            <p class="text-yellow-600 dark:text-yellow-400 font-semibold mb-4">
+            <p class="text-black-600 dark:text-white-400 font-semibold mb-4">
               Are you sure you want to continue?
             </p>
             <div class="mt-6 flex flex-row justify-end gap-2">
               <button
                 type="button"
-                class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+                class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded-3xl focus:outline-none focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed h-[44px] flex items-center justify-center"
                 @click="cancel"
                 :disabled="isLoading"
               >

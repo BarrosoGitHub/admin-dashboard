@@ -1,13 +1,16 @@
 <template>
-  <div class="status-element-card h-[160px] py-5 my-4 rounded-2xl shadow-inner bg-modal-color border border-color justify-between shadow-md transition-all duration-300"
-  :class="[
+  <div 
+    ref="cardElement"
+    class="status-element-card h-[160px] py-5 my-4 rounded-2xl shadow-inner bg-modal-color border border-color justify-between shadow-md transition-all duration-300"
+    :class="[
         hovering ? 'shadow-lg' : 'shadow-sm', 
         hovering
               ? 'px-4 max-w-[375px]  z-50'
               : 'px-6 flex flex-row w-[375px]'
       ]"
       @mouseenter="onMouseEnter"
-      @mouseleave="hovering = false">
+      @mouseleave="handleMouseLeave"
+      @mousemove="handleMouseMove">
     <div class="flex items-center ">
       <component :is="iconComponent" class="w- h-7 text-color opacity-80 mr-3" />
       <span class="text-lg text-color font-semibold">{{ title }}</span>
@@ -123,6 +126,8 @@ const props = defineProps({
   },
 });
 const hovering = ref(false);
+const cardElement = ref(null);
+
 const radius = computed(() => (props.size - props.stroke) / 2);
 const circumference = computed(() => 2 * Math.PI * radius.value);
 const progressOffset = computed(() => {
@@ -154,6 +159,38 @@ function onMouseEnter() {
     hovering.value = true;
   }
 }
+
+function handleMouseMove(e) {
+  if (!cardElement.value) return;
+  
+  const rect = cardElement.value.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  
+  const centerX = rect.width / 2;
+  const centerY = rect.height / 2;
+  
+  // Normalize to -1 to 1 range
+  const normalizedX = (x - centerX) / centerX;
+  const normalizedY = (y - centerY) / centerY;
+  
+  // Apply dampening to reduce extreme rotations at edges
+  const dampenedX = Math.sign(normalizedX) * Math.pow(Math.abs(normalizedX), 0.7);
+  const dampenedY = Math.sign(normalizedY) * Math.pow(Math.abs(normalizedY), 0.7);
+  
+  const rotateX = dampenedY * -2; // Max 2 degrees tilt
+  const rotateY = dampenedX * 2;
+  
+  cardElement.value.style.transition = 'transform 0.1s ease-out';
+  cardElement.value.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+}
+
+function handleMouseLeave() {
+  hovering.value = false;
+  if (!cardElement.value) return;
+  cardElement.value.style.transition = 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
+  cardElement.value.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)';
+}
 </script>
 
 <style scoped>
@@ -179,6 +216,7 @@ function onMouseEnter() {
   transition: height 0.7s cubic-bezier(0.4,0,0.2,1);
 }
 .status-element-card {
-  transition: box-shadow 0.3s cubic-bezier(0.4,0,0.2,1), padding 0.3s cubic-bezier(0.4,0,0.2,1), max-width 0.3s cubic-bezier(0.4,0,0.2,1), width 0.3s cubic-bezier(0.4,0,0.2,1);
+  transition: box-shadow 0.3s cubic-bezier(0.4,0,0.2,1), padding 0.3s cubic-bezier(0.4,0,0.2,1), max-width 0.3s cubic-bezier(0.4,0,0.2,1), width 0.3s cubic-bezier(0.4,0,0.2,1), transform 0.2s ease-out;
+  transform-style: preserve-3d;
 }
 </style>

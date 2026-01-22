@@ -1,6 +1,7 @@
 <template>
   <div>
     <div
+      ref="cardElement"
       class="bg-modal-color-gradient rounded-2xl flex flex-col transition-all duration-300 overflow-hidden m-4 p-4 border border-color group relative appinfocard-anim"
       :class="[
         hovering ? 'shadow-lg' : 'shadow-sm',
@@ -12,7 +13,8 @@
       ]"
       :style="smallVersion ? (hovering ? 'height: 200px;' : 'height: 160px;') : ''"
       @mouseenter="hovering = true"
-      @mouseleave="hovering = false"
+      @mouseleave="handleMouseLeave"
+      @mousemove="handleMouseMove"
     >
       <div
         class="w-full flex items-center justify-between cursor-pointer select-none mb-3 "
@@ -149,6 +151,39 @@ const props = defineProps({
 });
 
 const hovering = ref(false);
+const cardElement = ref(null);
+
+function handleMouseMove(e) {
+  if (!cardElement.value || props.smallVersion) return;
+  
+  const rect = cardElement.value.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  
+  const centerX = rect.width / 2;
+  const centerY = rect.height / 2;
+  
+  // Normalize to -1 to 1 range
+  const normalizedX = (x - centerX) / centerX;
+  const normalizedY = (y - centerY) / centerY;
+  
+  // Apply dampening to reduce extreme rotations at edges
+  const dampenedX = Math.sign(normalizedX) * Math.pow(Math.abs(normalizedX), 0.4);
+  const dampenedY = Math.sign(normalizedY) * Math.pow(Math.abs(normalizedY), 0.4);
+  
+  const rotateX = dampenedY * -15;
+  const rotateY = dampenedX * 15;
+  
+  cardElement.value.style.transition = 'transform 0.2s ease-out';
+  cardElement.value.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+}
+
+function handleMouseLeave() {
+  hovering.value = false;
+  if (!cardElement.value || props.smallVersion) return;
+  cardElement.value.style.transition = 'transform 1.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+  cardElement.value.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)';
+}
 
 function formatDate(date) {
   if (!date) return "";
@@ -165,6 +200,7 @@ function formatDate(date) {
   box-shadow: 0 2px 12px 0 rgba(0,0,0,0.06);
 }
 .appinfocard-anim {
-  transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s, background 0.3s, min-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s, background 0.3s, min-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s ease-out;
+  transform-style: preserve-3d;
 }
 </style>
