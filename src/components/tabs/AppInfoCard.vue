@@ -7,8 +7,8 @@
         hovering ? 'shadow-lg' : 'shadow-sm',
         smallVersion
           ? (hovering
-              ? 'min-w-[350px] min-h-[120px] max-w-xs scale-100 z-50'
-              : 'min-w-[350px] min-h-[60px] max-w-xs scale-100')
+              ? 'min-w-[350px] min-h-[120px] max-w-xs z-50'
+              : 'min-w-[350px] min-h-[60px] max-w-xs')
           : 'max-w-[320px] min-h-[240px]'
       ]"
       :style="smallVersion ? (hovering ? 'height: 200px;' : 'height: 160px;') : ''"
@@ -241,11 +241,11 @@ function handleMouseMove(e) {
   const normalizedY = -(y - centerY) / centerY;
   
   // Apply dampening to reduce extreme rotations at edges
-  const dampenedX = Math.sign(normalizedX) * Math.pow(Math.abs(normalizedX), 0.4);
-  const dampenedY = Math.sign(normalizedY) * Math.pow(Math.abs(normalizedY), 0.4);
+  const dampenedX = Math.sign(normalizedX) * Math.pow(Math.abs(normalizedX), 0.1);
+  const dampenedY = Math.sign(normalizedY) * Math.pow(Math.abs(normalizedY), 0.1);
   
-  const rotateX = dampenedY * -15;
-  const rotateY = dampenedX * 15;
+  const rotateX = dampenedY * 10;
+  const rotateY = dampenedX * -10;
   
   // Calculate gradient angle based on mouse position (135deg base + offset)
   const gradientAngle = 135 + (normalizedX * -3) + (normalizedY * 1);
@@ -259,9 +259,10 @@ function handleMouseMove(e) {
     animateGradientStop();
   }
   
-  // Update transform only here, background is updated by animateGradientStop
-  cardElement.value.style.transition = 'transform 0.2s ease-out';
-  cardElement.value.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+  // Update transform with scale for hover effect
+  const scale = 1.02;
+  cardElement.value.style.transition = 'transform 0.35s cubic-bezier(0.34, .56, 0.64, 1)';
+  cardElement.value.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${scale})`;
 }
 
 function handleMouseLeave() {
@@ -277,8 +278,8 @@ function handleMouseLeave() {
     animateGradientStop();
   }
   
-  cardElement.value.style.transition = 'transform 1.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
-  cardElement.value.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)';
+  cardElement.value.style.transition = 'transform 0.75s cubic-bezier(0.34, 2.56, 0.64, 1)';
+  cardElement.value.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)';
 }
 
 function formatDate(date) {
@@ -296,7 +297,7 @@ function formatDate(date) {
   box-shadow: 0 2px 12px 0 rgba(0,0,0,0.06);
 }
 .appinfocard-anim {
-  transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s, background 0.3s, min-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s ease-out;
+  transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s, background 0.3s, min-height 0.35s cubic-bezier(0.4, , 0.2, 1);
   transform-style: preserve-3d;
   will-change: transform, background;
 }

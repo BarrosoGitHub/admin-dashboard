@@ -18,7 +18,41 @@
       <span class="text-lg text-color font-semibold">{{ title }}</span>
     </div>
     <div class="flex items-center py-2">
-      <div v-if="hovering" class="my-2 grid grid-cols-2 mr-4 gap-x-2 gap-y-2">
+      <svg v-if="!hovering" :width="size" :height="size" :viewBox="`0 0 ${size} ${size}`" class="progress-circle mr-2">
+        <circle
+          :cx="size/2"
+          :cy="size/2"
+          :r="radius"
+          fill="none"
+          stroke="#475569"
+          :stroke-width="stroke"
+          :style="{ opacity: 0.18 }"
+        />
+        <circle
+          :cx="size/2"
+          :cy="size/2"
+          :r="radius"
+          fill="none"
+          :stroke="progressColor"
+          :stroke-width="stroke"
+          :stroke-dasharray="circumference"
+          :stroke-dashoffset="progressOffset"
+          stroke-linecap="round"
+          style="transition: stroke-dashoffset 1.5s cubic-bezier(0.4,0,0.2,1), stroke 1.5s cubic-bezier(0.4,0,0.2,1);"
+        />
+        <text
+          :x="size/2"
+          :y="size/2 + 7"
+          text-anchor="middle"
+          fill="currentColor"
+          font-size="18"
+          font-family="monospace"
+          class="text-color-secondary"
+        >
+          {{ props.mainValue }}
+        </text>
+      </svg>
+      <div v-else class="my-2 grid grid-cols-2 mr-4 gap-x-2 gap-y-2">
         <template v-if="Array.isArray(props.secondaryValues)">
           <div v-for="(val, idx) in props.secondaryValues" :key="idx" class="">
             <HorizontalProgressBar
@@ -215,8 +249,8 @@ function handleMouseMove(e) {
   const rotateX = dampenedY * -8; // Max 2 degrees tilt
   const rotateY = dampenedX * 6;
   
-  // Adjust gradient color stop based on mouse position (60-80% range)
-  targetGradientStop.value = 70 + (normalizedX * -9) + (normalizedY * 1);
+  // Adjust gradient color stop based on mouse position (reduced range for subtle effect)
+  targetGradientStop.value = 65 + (normalizedX * -3) + (normalizedY * 0.5);
   
   // Start animation loop if not already running
   if (!isAnimating.value) {
