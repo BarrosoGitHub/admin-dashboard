@@ -1,7 +1,7 @@
 <template>
   <div 
     ref="cardElement"
-    class="status-element-card h-[160px] py-5 my-4 rounded-2xl shadow-inner bg-modal-color border border-color justify-between shadow-md transition-all duration-300"
+    class="status-element-card h-[160px] py-5 my-4 rounded-2xl shadow-inner bg-modal-color-gradient border border-color justify-between shadow-md transition-all duration-300"
     :class="[
         hovering ? 'shadow-lg' : 'shadow-sm', 
         hovering
@@ -73,7 +73,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import HorizontalProgressBar from './HorizontalProgressBar.vue';
 import {
   TagIcon,
@@ -129,6 +129,9 @@ const props = defineProps({
 });
 const hovering = ref(false);
 const cardElement = ref(null);
+const currentGradientStop = ref(60); // Track current gradient stop for smooth lagging
+const targetGradientStop = ref(60);
+const isAnimating = ref(false); // Track if animation is active
 
 const radius = computed(() => (props.size - props.stroke) / 2);
 const circumference = computed(() => 2 * Math.PI * radius.value);
@@ -155,6 +158,69 @@ const iconComponent = computed(() => {
   if (key.includes('warn')) return ExclamationTriangleIcon;
   return TagIcon;
 });
+
+// Watch for dark mode changes
+function updateCardBackground() {
+  if (!cardElement.value) return;
+  
+  const isDark = document.documentElement.classList.contains('dark');
+  const baseColor = isDark ? '#363636' : '#FFFFFF';
+  const accentColor = isDark ? '#333333' : '#f3f3f3';
+  cardElement.value.style.background = `linear-gradient(135deg, ${baseColor} 0%, ${baseColor} 60%, ${accentColor} 60%, ${accentColor} 100%)`;
+}
+
+let darkModeObserver;
+let gradientAnimationFrame;
+
+onMounted(() => {
+  // Observe dark mode class changes
+  darkModeObserver = new MutationObserver(() => {
+    updateCardBackground();
+  });
+  
+  darkModeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class']
+  });
+});
+
+onUnmounted(() => {
+  if (darkModeObserver) {
+    darkModeObserver.disconnect();
+  }
+  if (gradientAnimationFrame) {
+    cancelAnimationFrame(gradientAnimationFrame);
+  }
+});
+
+// Smooth gradient stop animation with lag
+function animateGradientStop() {
+  // Lerp towards target with lag factor (0.15 = slower, 0.3 = faster)
+  const lagFactor = 0.15;
+  const diff = targetGradientStop.value - currentGradientStop.value;
+  
+  // Only update if difference is significant (optimization)
+  if (Math.abs(diff) > 0.01) {
+    currentGradientStop.value += diff * lagFactor;
+    
+    // Update background continuously with current gradient stop
+    if (cardElement.value) {
+      const isDark = document.documentElement.classList.contains('dark');
+      const baseColor = isDark ? '#363636' : '#FFFFFF';
+      const accentColor = isDark ? '#333333' : '#f3f3f3';
+      
+      cardElement.value.style.background = `linear-gradient(135deg, ${baseColor} 0%, ${baseColor} ${currentGradientStop.value}%, ${accentColor} ${currentGradientStop.value}%, ${accentColor} 100%)`;
+    }
+    
+    if (isAnimating.value) {
+      gradientAnimationFrame = requestAnimationFrame(animateGradientStop);
+    }
+  } else {
+    // Snap to target when close enough
+    currentGradientStop.value = targetGradientStop.value;
+    isAnimating.value = false;
+  }
+}
 
 function onMouseEnter() {
   if (props.secondaryValues && Array.isArray(props.secondaryValues) && props.secondaryValues.length > 0) {
@@ -183,6 +249,15 @@ function handleMouseMove(e) {
   const rotateX = dampenedY * -8; // Max 2 degrees tilt
   const rotateY = dampenedX * 6;
   
+  // Adjust gradient color stop based on mouse position (60-80% range)
+  targetGradientStop.value = 70 + (normalizedX * -9) + (normalizedY * 1);
+  
+  // Start animation loop if not already running
+  if (!isAnimating.value) {
+    isAnimating.value = true;
+    animateGradientStop();
+  }
+  
   cardElement.value.style.transition = 'transform 0.1s ease-out';
   cardElement.value.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
 }
@@ -190,6 +265,16 @@ function handleMouseMove(e) {
 function handleMouseLeave() {
   hovering.value = false;
   if (!cardElement.value) return;
+  
+  // Reset target gradient stop (will animate smoothly via animateGradientStop)
+  targetGradientStop.value = 60;
+  
+  // Start animation loop if not already running
+  if (!isAnimating.value) {
+    isAnimating.value = true;
+    animateGradientStop();
+  }
+  
   cardElement.value.style.transition = 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
   cardElement.value.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)';
 }
@@ -220,5 +305,6 @@ function handleMouseLeave() {
 .status-element-card {
   transition: box-shadow 0.3s cubic-bezier(0.4,0,0.2,1), padding 0.3s cubic-bezier(0.4,0,0.2,1), max-width 0.3s cubic-bezier(0.4,0,0.2,1), width 0.3s cubic-bezier(0.4,0,0.2,1), transform 0.2s ease-out;
   transform-style: preserve-3d;
+  will-change: transform, background;
 }
 </style>

@@ -159,6 +159,9 @@ const props = defineProps({
 
 const hovering = ref(false);
 const cardElement = ref(null);
+const currentGradientStop = ref(60); // Track current gradient stop for smooth lagging
+const targetGradientStop = ref(60);
+const isAnimating = ref(false); // Track if animation is active
 
 // Watch for dark mode changes
 function updateCardBackground() {
@@ -171,6 +174,8 @@ function updateCardBackground() {
 }
 
 let darkModeObserver;
+let gradientAnimationFrame;
+
 onMounted(() => {
   // Observe dark mode class changes
   darkModeObserver = new MutationObserver(() => {
@@ -187,7 +192,39 @@ onUnmounted(() => {
   if (darkModeObserver) {
     darkModeObserver.disconnect();
   }
+  if (gradientAnimationFrame) {
+    cancelAnimationFrame(gradientAnimationFrame);
+  }
 });
+
+// Smooth gradient stop animation with lag
+function animateGradientStop() {
+  // Lerp towards target with lag factor (0.15 = slower, 0.3 = faster)
+  const lagFactor = 0.15;
+  const diff = targetGradientStop.value - currentGradientStop.value;
+  
+  // Only update if difference is significant (optimization)
+  if (Math.abs(diff) > 0.01) {
+    currentGradientStop.value += diff * lagFactor;
+    
+    // Update background continuously with current gradient stop
+    if (cardElement.value && !props.smallVersion) {
+      const isDark = document.documentElement.classList.contains('dark');
+      const baseColor = isDark ? '#363636' : '#FFFFFF';
+      const accentColor = isDark ? '#333333' : '#f3f3f3';
+      
+      cardElement.value.style.background = `linear-gradient(135deg, ${baseColor} 0%, ${baseColor} ${currentGradientStop.value}%, ${accentColor} ${currentGradientStop.value}%, ${accentColor} 100%)`;
+    }
+    
+    if (isAnimating.value) {
+      gradientAnimationFrame = requestAnimationFrame(animateGradientStop);
+    }
+  } else {
+    // Snap to target when close enough
+    currentGradientStop.value = targetGradientStop.value;
+    isAnimating.value = false;
+  }
+}
 
 function handleMouseMove(e) {
   if (!cardElement.value || props.smallVersion) return;
@@ -214,29 +251,34 @@ function handleMouseMove(e) {
   const gradientAngle = 135 + (normalizedX * -3) + (normalizedY * 1);
   
   // Adjust gradient color stop based on mouse position (60-80% range)
-  const gradientStop = 70 + (normalizedX * -9) + (normalizedY * 1);
+  targetGradientStop.value = 70 + (normalizedX * -9) + (normalizedY * 1);
   
-  // Update gradient dynamically
-  const isDark = document.documentElement.classList.contains('dark');
-  const baseColor = isDark ? '#363636' : '#FFFFFF';
-  const accentColor = isDark ? '#333333' : '#f3f3f3';
+  // Start animation loop if not already running
+  if (!isAnimating.value) {
+    isAnimating.value = true;
+    animateGradientStop();
+  }
   
+  // Update transform only here, background is updated by animateGradientStop
   cardElement.value.style.transition = 'transform 0.2s ease-out';
   cardElement.value.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-  cardElement.value.style.background = `linear-gradient(${gradientAngle}deg, ${baseColor} 0%, ${baseColor} ${gradientStop}%, ${accentColor} ${gradientStop}%, ${accentColor} 100%)`;
 }
 
 function handleMouseLeave() {
   hovering.value = false;
   if (!cardElement.value || props.smallVersion) return;
-  cardElement.value.style.transition = 'transform 1.5s cubic-bezier(0.34, 1.56, 0.64, 1), background 1.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
-  cardElement.value.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)';
   
-  // Reset background to default
-  const isDark = document.documentElement.classList.contains('dark');
-  const baseColor = isDark ? '#363636' : '#FFFFFF';
-  const accentColor = isDark ? '#333333' : '#f3f3f3';
-  cardElement.value.style.background = `linear-gradient(135deg, ${baseColor} 0%, ${baseColor} 60%, ${accentColor} 60%, ${accentColor} 100%)`;
+  // Reset target gradient stop (will animate smoothly via animateGradientStop)
+  targetGradientStop.value = 60;
+  
+  // Start animation loop if not already running
+  if (!isAnimating.value) {
+    isAnimating.value = true;
+    animateGradientStop();
+  }
+  
+  cardElement.value.style.transition = 'transform 1.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+  cardElement.value.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)';
 }
 
 function formatDate(date) {
@@ -256,5 +298,6 @@ function formatDate(date) {
 .appinfocard-anim {
   transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s, background 0.3s, min-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s ease-out;
   transform-style: preserve-3d;
+  will-change: transform, background;
 }
 </style>

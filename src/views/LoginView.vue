@@ -68,7 +68,12 @@
       </div>
     </div>
     <!-- Petrotec Icon at the bottom center -->
-    <div class="flex justify-center items-end" style="position: absolute; left: 0; right: 0; bottom: 40px; width: 100%;">
+    <div 
+      ref="petrotecIcon"
+      class="flex justify-center items-end petrotec-icon-container" 
+      :class="{ 'petrotec-slide-down': petrotecAnimating }"
+      style="position: absolute; left: 0; right: 0; bottom: 40px; width: 100%;"
+    >
       <Vue3Lottie
         :animationData="petrotecAnimation"
         :height="135"
@@ -93,6 +98,7 @@ import ButtonConfirmation from '@/components/Modals/ButtonConfirmation.vue';
 
 const fadeIn = ref(false);
 const headerBgCanvas = ref(null);
+const petrotecIcon = ref(null);
 
 const username = ref('');
 const password = ref('');
@@ -103,6 +109,7 @@ const modalFadingOut = ref(false);
 const loginLoading = ref(false);
 const loginShowTick = ref(false);
 const loginShowError = ref(false);
+const petrotecAnimating = ref(false);
 const typedText = ref('');
 const isTyping = ref(true);
 const userInteracted = ref(false); // Track if user has actually typed
@@ -434,6 +441,7 @@ async function handleLogin() {
       console.log('Login successful!');
       loginLoading.value = false;
       loginShowTick.value = true;
+      petrotecAnimating.value = true; // Trigger Petrotec icon animation
       
       // Delete current text, then type "Authenticated successfully"
       setTimeout(() => {
@@ -619,6 +627,15 @@ input:-webkit-autofill:active {
   transform: translateY(60px) !important;
   opacity: 0 !important;
   animation: none !important;
+}
+
+.petrotec-icon-container {
+  transition: transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.petrotec-slide-down {
+  transform: translateY(200px) !important;
+  opacity: 0 !important;
 }
 
 .button-container {
