@@ -12,7 +12,9 @@
       @mouseleave="handleMouseLeave"
       @mousemove="handleMouseMove">
     <div class="flex items-center ">
-      <component :is="iconComponent" class="w- h-7 text-color opacity-80 mr-3" />
+      <div class="p-4 -m-4">
+        <component :is="iconComponent" class="w- h-7 text-color opacity-80 mr-3 transition-transform duration-200 hover:scale-110" />
+      </div>
       <span class="text-lg text-color font-semibold">{{ title }}</span>
     </div>
     <div class="flex items-center py-2">
@@ -171,15 +173,15 @@ function handleMouseMove(e) {
   const centerY = rect.height / 2;
   
   // Normalize to -1 to 1 range
-  const normalizedX = (x - centerX) / centerX;
-  const normalizedY = (y - centerY) / centerY;
+  const normalizedX = -(x - centerX) / centerX;
+  const normalizedY = -(y - centerY) / centerY;
   
   // Apply dampening to reduce extreme rotations at edges
   const dampenedX = Math.sign(normalizedX) * Math.pow(Math.abs(normalizedX), 0.7);
   const dampenedY = Math.sign(normalizedY) * Math.pow(Math.abs(normalizedY), 0.7);
   
-  const rotateX = dampenedY * -2; // Max 2 degrees tilt
-  const rotateY = dampenedX * 2;
+  const rotateX = dampenedY * -8; // Max 2 degrees tilt
+  const rotateY = dampenedX * 6;
   
   cardElement.value.style.transition = 'transform 0.1s ease-out';
   cardElement.value.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;

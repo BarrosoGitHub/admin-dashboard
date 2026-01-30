@@ -63,7 +63,9 @@
               :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-gray-400'"
               style="min-height:48px;"
             >
-              <component :is="iconMap.Hash" class="w-6 h-6" :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-color'" />
+              <div class="p-4 -m-4">
+                <component :is="iconMap.Hash" class="w-6 h-6 transition-transform duration-200 hover:scale-125" :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-color'" />
+              </div>
             </span>
             <span class="font-semibold break-all text-xs flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
               :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-color'"
@@ -76,7 +78,9 @@
               :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-gray-400'"
               style="min-height:48px;"
             >
-              <component :is="iconMap.Version" class="w-6 h-6" :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-color'" />
+              <div class="p-4 -m-4">
+                <component :is="iconMap.Version" class="w-6 h-6 transition-transform duration-200 hover:scale-125" :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-color'" />
+              </div>
             </span>
             <span class="font-semibold break-all text-xs flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
               :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-color'"
@@ -89,7 +93,9 @@
               :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-gray-400'"
               style="min-height:48px;"
             >
-              <component :is="iconMap.StartUpTime" class="w-6 h-6" :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-color'" />
+              <div class="p-4 -m-4">
+                <component :is="iconMap.StartUpTime" class="w-6 h-6 transition-transform duration-200 hover:scale-125" :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-color'" />
+              </div>
             </span>
             <span class="font-semibold break-all text-xs flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
               :class="info.Status === 'Stopped' ? 'text-neutral-500' : 'text-color'"
@@ -113,10 +119,11 @@
           hovering ? 'opacity-0 translate-y-1' : 'opacity-100',
           info.Status === 'Stopped' ? 'text-neutral-500' : 'text-color'
         ]"
-        style="pointer-events: none;"
       >
-        <CheckCircleIcon v-if="info.Status === 'Healthy'" class="h-10 w-10" />
-        <ExclamationTriangleIcon v-else class="h-10 w-10" />
+        <div class="p-4 -m-4">
+          <CheckCircleIcon v-if="info.Status === 'Healthy'" class="h-10 w-10 transition-transform duration-200 hover:scale-110" />
+          <ExclamationTriangleIcon v-else class="h-10 w-10 transition-transform duration-200 hover:scale-110" />
+        </div>
       </span>
     </div>
   </div>
@@ -124,7 +131,7 @@
 </template>
 
 <script setup>
-import { defineProps, ref } from "vue";
+import { defineProps, ref, onMounted, onUnmounted } from "vue";
 import {
   TagIcon,
   ClockIcon,
@@ -153,6 +160,35 @@ const props = defineProps({
 const hovering = ref(false);
 const cardElement = ref(null);
 
+// Watch for dark mode changes
+function updateCardBackground() {
+  if (!cardElement.value || props.smallVersion) return;
+  
+  const isDark = document.documentElement.classList.contains('dark');
+  const baseColor = isDark ? '#363636' : '#FFFFFF';
+  const accentColor = isDark ? '#333333' : '#f3f3f3';
+  cardElement.value.style.background = `linear-gradient(135deg, ${baseColor} 0%, ${baseColor} 60%, ${accentColor} 60%, ${accentColor} 100%)`;
+}
+
+let darkModeObserver;
+onMounted(() => {
+  // Observe dark mode class changes
+  darkModeObserver = new MutationObserver(() => {
+    updateCardBackground();
+  });
+  
+  darkModeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class']
+  });
+});
+
+onUnmounted(() => {
+  if (darkModeObserver) {
+    darkModeObserver.disconnect();
+  }
+});
+
 function handleMouseMove(e) {
   if (!cardElement.value || props.smallVersion) return;
   
@@ -164,8 +200,8 @@ function handleMouseMove(e) {
   const centerY = rect.height / 2;
   
   // Normalize to -1 to 1 range
-  const normalizedX = (x - centerX) / centerX;
-  const normalizedY = (y - centerY) / centerY;
+  const normalizedX = -(x - centerX) / centerX;
+  const normalizedY = -(y - centerY) / centerY;
   
   // Apply dampening to reduce extreme rotations at edges
   const dampenedX = Math.sign(normalizedX) * Math.pow(Math.abs(normalizedX), 0.4);
@@ -174,15 +210,33 @@ function handleMouseMove(e) {
   const rotateX = dampenedY * -15;
   const rotateY = dampenedX * 15;
   
+  // Calculate gradient angle based on mouse position (135deg base + offset)
+  const gradientAngle = 135 + (normalizedX * -3) + (normalizedY * 1);
+  
+  // Adjust gradient color stop based on mouse position (60-80% range)
+  const gradientStop = 70 + (normalizedX * -9) + (normalizedY * 1);
+  
+  // Update gradient dynamically
+  const isDark = document.documentElement.classList.contains('dark');
+  const baseColor = isDark ? '#363636' : '#FFFFFF';
+  const accentColor = isDark ? '#333333' : '#f3f3f3';
+  
   cardElement.value.style.transition = 'transform 0.2s ease-out';
   cardElement.value.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+  cardElement.value.style.background = `linear-gradient(${gradientAngle}deg, ${baseColor} 0%, ${baseColor} ${gradientStop}%, ${accentColor} ${gradientStop}%, ${accentColor} 100%)`;
 }
 
 function handleMouseLeave() {
   hovering.value = false;
   if (!cardElement.value || props.smallVersion) return;
-  cardElement.value.style.transition = 'transform 1.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+  cardElement.value.style.transition = 'transform 1.5s cubic-bezier(0.34, 1.56, 0.64, 1), background 1.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
   cardElement.value.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)';
+  
+  // Reset background to default
+  const isDark = document.documentElement.classList.contains('dark');
+  const baseColor = isDark ? '#363636' : '#FFFFFF';
+  const accentColor = isDark ? '#333333' : '#f3f3f3';
+  cardElement.value.style.background = `linear-gradient(135deg, ${baseColor} 0%, ${baseColor} 60%, ${accentColor} 60%, ${accentColor} 100%)`;
 }
 
 function formatDate(date) {
