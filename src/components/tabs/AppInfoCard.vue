@@ -271,8 +271,7 @@ function handleMouseLeave() {
   
   // Reset target gradient stop (will animate smoothly via animateGradientStop)
   targetGradientStop.value = 60;
-  
-  // Start animation loop if not already running
+
   if (!isAnimating.value) {
     isAnimating.value = true;
     animateGradientStop();
