@@ -85,6 +85,8 @@
 
 .bg-modal-color-gradient {
   background: var(--modal-color-gradient);
+  position: relative;
+  z-index: 10;
 }
 
 .bg-modal-color-gradient:hover {
@@ -109,13 +111,15 @@
 
 
 .custom-shape-divider-bottom-1750243590 {
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
   overflow: hidden;
   line-height: 0;
   transform: rotate(180deg);
+  z-index: 0;
+  pointer-events: none;
 }
 
 .custom-shape-divider-bottom-1750243590 svg {
