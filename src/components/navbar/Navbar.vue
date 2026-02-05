@@ -22,13 +22,9 @@
     }
   });
   
-  const emit = defineEmits(['sidebar-toggle', 'password-change', 'search-update']);
+  const emit = defineEmits(['sidebar-toggle', 'search-update']);
   
   const isHovered = ref(false);
-  
-  function handlePasswordChange() {
-    emit('password-change');
-  }
   
   function handleSearchUpdate(value) {
     emit('search-update', value);
@@ -113,7 +109,7 @@
               :placeholder="`Search in ${activeCard}...`"
             />
           </div>
-          <Avatar @password-change="handlePasswordChange" />
+          <Avatar />
         </div>
       </div>
 

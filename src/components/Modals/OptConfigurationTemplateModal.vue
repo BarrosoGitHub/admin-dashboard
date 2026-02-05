@@ -409,7 +409,6 @@ const iconMap = {
   FdcConfiguration: Cog6ToothIcon,
   DisplayConfiguration: DeviceTabletIcon,
   PrinterConfiguration: PrinterIcon,
-  EpsClientConfiguration: QrCodeIcon,
   ViaVerdeConfiguration: GlobeAltIcon,
   RemoteServicesConfiguration: ServerStackIcon,
   GalpConfiguration: CurrencyEuroIcon,

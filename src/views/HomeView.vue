@@ -1,20 +1,13 @@
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount, computed } from "vue";
 import Sidebar from "../components/sidebar/Sidebar.vue";
-import ConfigurationModal from "../components/Modals/OptConfigurationModal.vue";
 import Navbar from "../components/navbar/Navbar.vue";
-import ConfigurationCard from "../components/tabs/OptConfigurationCard.vue";
-import UserInterfaceCard from "../components/tabs/UserInterfaceCard.vue";
 import ConfirmationToast from "../components/toasts/ConfirmationToast.vue";
 import ConfirmConfigurationChanges from "../components/Modals/ConfirmConfigurationChangesModal.vue";
-import OptConfigurationTemplateModal from "../components/Modals/OptConfigurationTemplateModal.vue";
-import EpsConfigurationTemplateModal from "../components/Modals/EpsConfigurationTemplateModal.vue";
 import PasswordChangeModal from "../components/Modals/PasswordChangeModal.vue";
 import AppInfoCard from "../components/tabs/AppInfoCard.vue";
-import NetworkConfigurationCard from "../components/tabs/NetworkConfigurationCard.vue";
 import StatusElementCard from "../components/tabs/StatusElementCard.vue";
-import EpsConfigurationModal from "@/components/Modals/EpsConfigurationModal.vue";
-import EpsConfigurationCard from "../components/tabs/EpsConfigurationCard.vue";
+import PortfolioCard from "../components/tabs/PortfolioCard.vue";
 import { API_BASE_URL, WS_BASE_URL } from '@/apiConfig.js';
 const diagnostics = ref({
   cpuTemp: 0,
@@ -53,52 +46,31 @@ let ws = null;
 
 // --- Modal state management ---
 const activeModal = ref(null);
-const showOPTConfiguration = ref(false);
-const showUserInterfaceConfig = ref(false);
 const showAppInfoCard = ref(false);
-const showNetworkConfiguration = ref(false);
-const showConfigModal = ref(false);
-const showEpsConfigModal = ref(false);
-const showOPTConfigurationTemplate = ref(false);
-const showEPSConfigurationTemplate = ref(false);
 const showPasswordChangeModal = ref(false);
-const showEpsConfiguration = ref(false);
+const showPortfolio = ref(false);
 
 // --- Data refs ---
-const optConfiguration = ref(null);
-const newOptConfiguration = ref(null);
-const userInterfaceConfig = ref(null);
-const newUserInterfaceConfig = ref(null);
 const appInfoData = ref([]);
-const networkConfiguration = ref({});
-const templateData = ref({});
-const epsTemplateData = ref({});
-const epsConfiguration = ref(null);
-const newEpsConfiguration = ref(null);
 
 
 // --- Component refs ---
 const sidebarOpen = ref(false);
 const toastRef = ref(null);
-const diffModalRef = ref(null);
-const uiDiffModalRef = ref(null);
-const epsDiffModalRef = ref(null);
 
 // --- Search functionality ---
 const searchValue = ref("");
 const activeCardName = computed(() => {
   switch (activeModal.value) {
-    case 'opt': return 'OPT Configuration';
-    case 'ui': return 'User Interface';
-    case 'network': return 'Network Configuration';
     case 'appInfo': return 'App Information';
+    case 'portfolio': return 'Portfolio';
     default: return '';
   }
 });
 
 const showSearchForActiveCard = computed(() => {
   // Only show search for cards that have searchable content
-  return activeModal.value === 'opt' || activeModal.value === 'ui' || activeModal.value === 'appInfo';
+  return activeModal.value === 'appInfo';
 });
 
 function handleSearchUpdate(value) {
@@ -112,30 +84,11 @@ watch(activeModal, (newModal, oldModal) => {
   }
 });
 
-// --- Stepper configuration ---
-const stepperSteps = [
-  {
-    label: "Add Configuration",
-    completed: true,
-    description: "Fill in the configuration details to get started.",
-  },
-  {
-    label: "Template Details",
-    completed: false,
-    description: "Review and complete the template details before saving.",
-  },
-];
-const currentStep = ref(0);
-
 // --- Persistence helpers ---
 function persistModalState() {
   const state = {
     activeModal: activeModal.value,
-    showOPTConfiguration: showOPTConfiguration.value,
-    showUserInterfaceConfig: showUserInterfaceConfig.value,
     showAppInfoCard: showAppInfoCard.value,
-    optConfiguration: optConfiguration.value,
-    userInterfaceConfig: userInterfaceConfig.value,
     appInfoData: appInfoData.value,
   };
   localStorage.setItem("modalState", JSON.stringify(state));
@@ -147,11 +100,7 @@ function restoreModalState() {
   try {
     const state = JSON.parse(stateStr);
     activeModal.value = state.activeModal;
-    showOPTConfiguration.value = state.showOPTConfiguration;
-    showUserInterfaceConfig.value = state.showUserInterfaceConfig;
     showAppInfoCard.value = state.showAppInfoCard;
-    optConfiguration.value = state.optConfiguration;
-    userInterfaceConfig.value = state.userInterfaceConfig;
     appInfoData.value = state.appInfoData;
   } catch {}
 }
@@ -160,135 +109,33 @@ function restoreModalState() {
 watch(
   [
     activeModal,
-    showOPTConfiguration,
-    showUserInterfaceConfig,
     showAppInfoCard,
-    optConfiguration,
-    userInterfaceConfig,
     appInfoData,
   ],
   persistModalState,
   { deep: true }
 );
 
-function openConfigModal() {
-  showConfigModal.value = true;
-}
 
-function openEpsConfigModal() {
-  showEpsConfigModal.value = true;
-}
-
-function handleConfigSubmitted(responseData) {
-  templateData.value = responseData;
-  showOPTConfigurationTemplate.value = true;
-}
-
-function handleEpsConfigSubmitted(responseData) {
-  epsTemplateData.value = responseData;
-  showEPSConfigurationTemplate.value = true;
-}
-
-function showOPTConfigAddedToast() {
-  toastRef.value?.showConfirmationToast("Configuration successfully added!", true);
-}
-
-function handleOptConfiguration(data) {
-  optConfiguration.value = data;
-  activeModal.value = "opt";
-  showUserInterfaceConfig.value = false;
-  showAppInfoCard.value = false;
-  showOPTConfiguration.value = true;
-}
-
-function handleUserInterfaceConfig(data) {
-  userInterfaceConfig.value = data;
-  activeModal.value = "ui";
-  showOPTConfiguration.value = false;
-  showAppInfoCard.value = false;
-  showUserInterfaceConfig.value = true;
-}
-
-function handleNetworkConfiguration(data) {
-  // Map backend fields to frontend expected fields
-  networkConfiguration.value = {
-    ipv4: data.IPAddress || '',
-    netmask: data.SubnetMask || '',
-    gateway: data.DefaultGateway || '',
-    dhcpActive: !!data.IsDhcpEnabled,
-    ntpAddress: data.NtpAddress || '',
-    ntpActive: data.NtpActive ?? null // can be true, false, or null
-  };
-  activeModal.value = "network";
-  showNetworkConfiguration.value = true;
-  showOPTConfiguration.value = false;
-  showUserInterfaceConfig.value = false;
-  showAppInfoCard.value = false;
-}
-
-function handleUpdateConfiguration(data) {
-  newOptConfiguration.value = data;
-  diffModalRef.value?.showDiff(
-    optConfiguration.value,
-    newOptConfiguration.value.config,
-    "opt"
-  );
-  showOPTConfiguration.value = true;
-}
-
-function handleUpdateUserInterfaceConfig(data) {
-  newUserInterfaceConfig.value = data;
-  uiDiffModalRef.value?.showDiff(
-    userInterfaceConfig.value,
-    newUserInterfaceConfig.value.config,
-    "ui"
-  );
-  showUserInterfaceConfig.value = true;
-}
-
-function handleEpsConfiguration(data) {
-  epsConfiguration.value = data;
-  activeModal.value = "eps";
-  showEpsConfiguration.value = true;
-  showUserInterfaceConfig.value = false;
-  showAppInfoCard.value = false;
-  showOPTConfiguration.value = false;
-}
-
-function handleUpdateEpsConfiguration(data) {
-  newEpsConfiguration.value = data;
-  epsDiffModalRef.value?.showDiff(
-    epsConfiguration.value,
-    newEpsConfiguration.value.config,
-    "eps"
-  );
-  showEpsConfiguration.value = true;
-}
-
-watch(showConfigModal, (val) => {
-  if (val) currentStep.value = 0;
-});
-watch(showOPTConfigurationTemplate, (val) => {
-  if (val) currentStep.value = 1;
-});
 
 function handleDashboard(data) {
   appInfoData.value = Array.isArray(data) ? data : [data];
   activeModal.value = "appInfo";
-  showOPTConfiguration.value = false;
-  showUserInterfaceConfig.value = false;
   showAppInfoCard.value = true;
+  showPortfolio.value = false;
+}
+
+function handlePortfolio() {
+  activeModal.value = "portfolio";
+  showAppInfoCard.value = false;
+  showPortfolio.value = true;
 }
 
 function resetAllModals() {
   activeModal.value = null;
-  showOPTConfiguration.value = false;
-  showUserInterfaceConfig.value = false;
   showAppInfoCard.value = false;
-  showNetworkConfiguration.value = false;
   showPasswordChangeModal.value = false;
-  optConfiguration.value = null;
-  userInterfaceConfig.value = null;
+  showPortfolio.value = false;
   appInfoData.value = [];
 }
 
@@ -298,10 +145,6 @@ function handlePasswordChange() {
 
 function handlePasswordChangeSuccess() {
   toastRef.value?.showConfirmationToast("Password changed successfully!", true);
-}
-
-function handleNetworkResponse(response) {
-  toastRef.value?.showConfirmationToast(response.message, response.success);
 }
 
 // Listen for logout event (dispatched from Avatar.vue)
@@ -319,12 +162,9 @@ onMounted(() => {
   if (localStorage.getItem("showDashboardOnHome") === "true") {
     localStorage.removeItem("showDashboardOnHome");
     // Fetch dashboard data (same as handleDashboardClick in Sidebar)
-    const token = localStorage.getItem("jwt");
     import("axios").then(({ default: axios }) => {
       axios
-        .get(`${API_BASE_URL}/info/services`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        })
+        .get(`${API_BASE_URL}/info/services`)
         .then((response) => {
           handleDashboard(response.data);
         })
@@ -425,15 +265,10 @@ onBeforeUnmount(() => {
   
     <Sidebar
       :show="sidebarOpen"
-      @show-opt-configuration-modal="openConfigModal"
-      @show-eps-configuration-modal="openEpsConfigModal"
       @sidebar-toggle="sidebarOpen = $event"
-      @opt-configuration="handleOptConfiguration"
-      @eps-configuration="handleEpsConfiguration"
-      @user-interface-configuration="handleUserInterfaceConfig"
       @dashboard="handleDashboard"
-      @network-configuration="handleNetworkConfiguration"
       @password-change="handlePasswordChange"
+      @portfolio="handlePortfolio"
     />
     
     <div :class="sidebarClasses">
@@ -454,61 +289,14 @@ onBeforeUnmount(() => {
           <div class="flex flex-col md:flex-row md:space-x-4">
           
             <div class="flex-1">
-              <ConfigurationModal
-                :show="showConfigModal"
-                @close="showConfigModal = false"
-                @submitted="handleConfigSubmitted"
-              />
-              <OptConfigurationTemplateModal
-                :show="showOPTConfigurationTemplate"
-                :data="templateData || {}"
-                @submit="showOPTConfigurationTemplate = false"
-              />
-              <EpsConfigurationModal
-                :show="showEpsConfigModal"
-                @close="showEpsConfigModal = false"
-                @submitted="handleEpsConfigSubmitted"
-              />
               <PasswordChangeModal
                 :show="showPasswordChangeModal"
                 @close="showPasswordChangeModal = false"
                 @success="handlePasswordChangeSuccess"
               />
-              <EpsConfigurationTemplateModal
-                :show="showEPSConfigurationTemplate"
-                :data="epsTemplateData || {}"
-                @submit="showEPSConfigurationTemplate = false"
-              />
               <transition :key="activeModal" mode="out-in">
-                <template v-if="activeModal === 'opt' && showOPTConfiguration">
-                  <ConfigurationCard
-                    :show="showOPTConfiguration"
-                    :data="optConfiguration || {}"
-                    :searchValue="searchValue"
-                    @update="handleUpdateConfiguration"
-                  />
-                </template>
-                <template v-else-if="activeModal === 'eps' && showEpsConfiguration">
-                  <EpsConfigurationCard
-                    :show="showEpsConfiguration"
-                    :data="epsConfiguration || {}"
-                    :searchValue="searchValue"
-                    @update="handleUpdateEpsConfiguration"
-                  />
-                </template>
-                <template v-else-if="activeModal === 'ui' && showUserInterfaceConfig">
-                  <UserInterfaceCard
-                    :show="showUserInterfaceConfig"
-                    :data="userInterfaceConfig || {}"
-                    :searchValue="searchValue"
-                    @update="handleUpdateUserInterfaceConfig"
-                  />
-                </template>
-                <template v-else-if="activeModal === 'network' && showNetworkConfiguration">
-                  <NetworkConfigurationCard
-                    :modelValue="networkConfiguration"
-                    @response="handleNetworkResponse"
-                  />
+                <template v-if="activeModal === 'portfolio' && showPortfolio">
+                  <PortfolioCard />
                 </template>
               </transition>
             </div>
@@ -603,15 +391,6 @@ onBeforeUnmount(() => {
 
   <ConfirmConfigurationChanges
     ref="diffModalRef"
-    @on-updated-data="handleOptConfiguration"
-  />
-  <ConfirmConfigurationChanges
-    ref="uiDiffModalRef"
-    @on-updated-data="handleUserInterfaceConfig"
-  />
-  <ConfirmConfigurationChanges
-    ref="epsDiffModalRef"
-    @on-updated-data="handleEpsConfiguration"
   />
   <ConfirmationToast ref="toastRef" />
 </template>

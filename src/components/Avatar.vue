@@ -45,14 +45,6 @@
       <li>
         <a
           href="#"
-          @click.prevent="handleChangePassword"
-          class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-          >Change Password</a
-        >
-      </li>
-      <li>
-        <a
-          href="#"
           class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
           >Settings</a
         >
@@ -105,14 +97,6 @@
         </div>
       </div>
     </div>
-    <div class="py-1">
-      <a
-        href="#"
-        @click.prevent="handleSignOut"
-        class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 dark:text-red-400 dark:hover:text-red-300 transition-colors"
-        >Sign out</a
-      >
-    </div>
       </div>
     </Transition>
     <TechModeConfirmationModal ref="techModeConfirmationModal" />
@@ -120,14 +104,10 @@
 </template>
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
-import { useRouter } from "vue-router";
 import { API_BASE_URL } from "../apiConfig";
 import TechModeConfirmationModal from "./Modals/TechModeConfirmationModal.vue";
 
-const emit = defineEmits(['password-change']);
-
 const showDropdown = ref(false);
-const router = useRouter();
 const isDarkMode = ref(true); // Default to dark mode since the app appears to be dark themed
 const isTechMode = ref(false); // OPT Tech Mode toggle
 const dropdownRef = ref(null);
@@ -137,11 +117,6 @@ const techModeConfirmationModal = ref(null);
 
 function toggleDropdown() {
   showDropdown.value = !showDropdown.value;
-}
-
-function handleChangePassword() {
-  showDropdown.value = false; // Close dropdown
-  emit('password-change');
 }
 
 function toggleTheme() {
@@ -168,12 +143,10 @@ async function toggleTechMode() {
     await techModeConfirmationModal.value.open(targetState);
     
     // User confirmed, proceed with API call
-    const token = localStorage.getItem('jwt');
     const response = await fetch(`${API_BASE_URL}/opt-configuration/toggle-tech-mode`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Content-Type': 'application/json'
       }
     });
     
@@ -201,12 +174,10 @@ async function toggleTechMode() {
 
 async function fetchTechModeState() {
   try {
-    const token = localStorage.getItem('jwt');
     const response = await fetch(`${API_BASE_URL}/opt-configuration/is-tech-mode-enabled`, {
       method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Content-Type': 'application/json'
       }
     });
     
@@ -245,15 +216,6 @@ onMounted(() => {
 onUnmounted(() => {
   // No cleanup needed
 });
-
-async function handleSignOut() {
-  const event = new CustomEvent('sidebar-close');
-  window.dispatchEvent(event);
-  setTimeout(() => {
-    localStorage.removeItem('jwt');
-    router.push('/login');
-  }, 300); // Match sidebar close animation duration
-}
 
 defineExpose({ toggleDropdown });
 </script>

@@ -175,13 +175,11 @@ function startRebootMonitoring() {
   // Start checking if system is alive every second
   checkAliveInterval = setInterval(async () => {
     try {
-      const token = localStorage.getItem("jwt");
       const response = await fetch(`${API_BASE_URL}/info/services/isalive`, {
         method: "GET",
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+          "Content-Type": "application/json"
+        }
       });
 
       if (response.ok) {

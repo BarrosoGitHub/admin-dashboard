@@ -73,26 +73,16 @@ onMounted(async () => {
     const apiBaseUrl = getApiBaseUrl();
     const token = localStorage.getItem('jwt');
     
-    // Try to fetch enums from both endpoints
-    const [optEnumsResponse, epsEnumsResponse] = await Promise.all([
-      fetch(`${apiBaseUrl}/opt-configuration/enums`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {}
-      }).catch(() => null),
-      fetch(`${apiBaseUrl}/eps-configuration/enums`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {}
-      }).catch(() => null)
-    ]);
+    // Try to fetch enums from opt endpoint
+    const optEnumsResponse = await fetch(`${apiBaseUrl}/opt-configuration/enums`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    }).catch(() => null);
     
     const allEnums = {};
     
     if (optEnumsResponse && optEnumsResponse.ok) {
       const optEnums = await optEnumsResponse.json();
       Object.assign(allEnums, optEnums);
-    }
-    
-    if (epsEnumsResponse && epsEnumsResponse.ok) {
-      const epsEnums = await epsEnumsResponse.json();
-      Object.assign(allEnums, epsEnums);
     }
     
     dynamicEnums.value = allEnums;
@@ -372,8 +362,6 @@ async function confirm() {
   let url = `${API_BASE_URL}/opt-configuration`;
   if (showDiff.type === 'ui') {
     url = `${API_BASE_URL}/configuration/ui`;
-  } else if (showDiff.type === 'eps') {
-    url = `${API_BASE_URL}/eps-configuration`;
   }
 
   try {

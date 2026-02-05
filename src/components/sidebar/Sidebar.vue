@@ -34,66 +34,15 @@
             <span class="ms-3">Dashboard</span>
           </a>
         </li>
-        <!-- Multilevel Configuration -->
+        <!-- Portfolio Section -->
         <li>
-          <button
-            type="button"
-            class="flex items-center w-full p-2 text-base transition duration-75 rounded-lg group hover:bg-gray-100 text-color dark:hover:bg-gray-700"
-            @click="toggleConfigDropdown"
-            aria-controls="dropdown-config"
-            :aria-expanded="configDropdownOpen.toString()"
-          >
-            <svg class="shrink-0 w-5 h-5 transition duration-75 group-hover:text-color dark:group-hover:text-white" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.01c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.01 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.01 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0-2.572 1.01c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0-2.573-1.01c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0-1.01-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.01-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.246.07 2.573-1.01z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+          <a href="#" class="flex items-center p-2 text-color rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 group" @click.prevent="handlePortfolioClick">
+            <svg class="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-color dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+              <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path>
             </svg>
-            <span class="flex-1 ms-3 text-left whitespace-nowrap">Configuration</span>
-            <svg class="w-3 h-3 transition-transform" :class="configDropdownOpen ? 'rotate-180' : ''" fill="none" viewBox="0 0 10 6">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
-            </svg>
-          </button>
-          <ul
-            id="dropdown-config"
-            class="py-2 space-y-2 transition-all duration-300 overflow"
-            :class="configDropdownOpen ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'"
-          >
-            <li v-if="optConfigAvailable">
-              <a
-                href="#"
-                class="flex items-center w-full p-2 text-color transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:hover:bg-gray-700"
-                @click.prevent="fetchOptConfiguration"
-              >
-                OPT Configuration
-              </a>
-            </li>
-            <li v-if="epsConfigAvailable">
-              <a
-                href="#"
-                class="flex items-center w-full p-2 text-color transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:hover:bg-gray-700"
-                @click.prevent="fetchEpsConfiguration"
-              >
-                EPS Configuration
-              </a>
-            </li>
-            <li v-if="optConfigAvailable">
-              <a
-                href="#"
-                class="flex items-center w-full p-2 text-color transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:hover:bg-gray-700"
-                @click.prevent="fetchUserInterfaceConfiguration"
-              >
-                User Interface
-              </a>
-            </li>
-            <li v-if="optConfigAvailable">
-              <a
-                href="#"
-                class="flex items-center w-full p-2 text-color transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:hover:bg-gray-700"
-                @click.prevent="fetchNetworkConfiguration"
-              >
-                Network
-              </a>
-            </li>
-          </ul>
+            <span class="ms-3">Portfolio</span>
+          </a>
         </li>
       </ul>
     </div>
@@ -118,24 +67,13 @@ const props = defineProps({
   }
 });
 const emit = defineEmits([
-  'show-configuration-modal',
-  'show-eps-configuration-modal',
   'sidebar-toggle',
-  'opt-configuration',
-  'eps-configuration',
-  'user-interface-configuration',
   'dashboard',
-  'network-configuration',
-  'password-change'
+  'portfolio'
 ]);
 
 const showSidebar = ref(props.show);
-const configDropdownOpen = ref(false);
 const boardType = ref('');
-
-function toggleConfigDropdown() {
-  configDropdownOpen.value = !configDropdownOpen.value;
-}
 
 watch(
   () => props.show,
@@ -148,74 +86,8 @@ watch(showSidebar, (val) => {
   emit('sidebar-toggle', val);
 });
 
-function fetchOptConfiguration() {
-  const token = localStorage.getItem('jwt');
-  axios.get(`${API_BASE_URL}/opt-configuration`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {}
-  })
-    .then(response => {
-      emit('opt-configuration', response.data);
-    })
-    .catch(error => {
-      if (error.response && error.response.status === 404) {
-        emit('show-opt-configuration-modal');
-      }
-    });
-}
-
-function fetchEpsConfiguration() {
-  const token = localStorage.getItem('jwt');
-  axios.get(`${API_BASE_URL}/eps-configuration`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {}
-  })
-    .then(response => {
-      emit('eps-configuration', response.data);
-    })
-    .catch(error => {
-      if (error.response && error.response.status === 404) {
-        emit('show-eps-configuration-modal');
-      }
-    });
-}
-
-function fetchUserInterfaceConfiguration() {
-  const token = localStorage.getItem('jwt');
-  axios.get(`${API_BASE_URL}/configuration/ui`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {}
-  })
-    .then(response => {
-      emit('user-interface-configuration', response.data);
-    })
-    .catch(error => {
-    });
-}
-
-
-function fetchNetworkConfiguration() {
-  const token = localStorage.getItem('jwt');
-  axios.get(`${API_BASE_URL}/configuration/network`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {}
-  })
-    .then(response => {
-      emit('network-configuration', response.data);
-    })
-    .catch(error => {
-      emit('network-configuration', {
-        dhcpActive: false,
-        ntpActive: false,
-        ipv4: '',
-        netmask: '',
-        gateway: '',
-        ntpAddress: ''
-      });
-    });
-}
-
 function handleDashboardClick() {
-  const token = localStorage.getItem('jwt');
-  axios.get(`${API_BASE_URL}/info/services`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {}
-  })
+  axios.get(`${API_BASE_URL}/info/services`)
     .then(response => {
       emit('dashboard', response.data);
     })
@@ -224,53 +96,17 @@ function handleDashboardClick() {
     });
 }
 
-const optConfigAvailable = ref(false);
-
-function checkOptConfigAvailable() {
-  const token = localStorage.getItem('jwt');
-  axios.get(`${API_BASE_URL}/opt-configuration/is-available`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {}
-  })
-    .then(response => {
-      // If API returns true or 200, show the menu item
-      optConfigAvailable.value = response.data === true || response.data?.available === true;
-    })
-    .catch(error => {
-      // Hide if 404 or any error
-      optConfigAvailable.value = false;
-    });
+function handlePortfolioClick() {
+  emit('portfolio');
 }
-
-const epsConfigAvailable = ref(false);
-
-function checkEpsConfigAvailable() {
-  const token = localStorage.getItem('jwt');
-  axios.get(`${API_BASE_URL}/eps-configuration/is-available`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {}
-  })
-    .then(response => {
-      // If API returns true or 200, show the menu item
-      epsConfigAvailable.value = response.data === true || response.data?.available === true;
-    })
-    .catch(error => {
-      // Hide if 404 or any error
-      epsConfigAvailable.value = false;
-    });
-}
-
 
 onMounted(() => {
-  checkOptConfigAvailable();
-  checkEpsConfigAvailable();
 
   window.addEventListener('sidebar-close', () => {
     showSidebar.value = false;
   });
-  // Fetch board type for footer with Authorization
-  const token = localStorage.getItem('jwt');
-  axios.get(`${API_BASE_URL}/info/services/boardtype`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {}
-  }).then(res => {
+  // Fetch board type for footer
+  axios.get(`${API_BASE_URL}/info/services/boardtype`).then(res => {
     boardType.value = res.data?.boardType || res.data || 'Unknown';
   }).catch(() => {
     boardType.value = 'Unknown';

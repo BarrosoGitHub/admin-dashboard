@@ -313,13 +313,9 @@ async function handleSubmit() {
   showTick.value = false;
 
   try {
-    const token = localStorage.getItem('jwt');
-    
     await axios.post(`${API_BASE_URL}/auth/change-password`, {
       currentPassword: form.value.currentPassword,
       newPassword: form.value.newPassword
-    }, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {}
     });
 
     isLoading.value = false;
