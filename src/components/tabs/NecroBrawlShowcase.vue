@@ -14,25 +14,125 @@
       </button>
     </div>
 
-    <!-- Game Description Section -->
-    <div class="bg-modal-color-gradient rounded-2xl shadow-sm border border-color p-8 transition-all duration-300 hover:shadow-lg">
-      <div class="flex items-start gap-4 mb-6">
-        <div class="p-3 bg-gradient-to-br from-orange-400 to-red-600 rounded-full">
-          <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M10 3.5a1.5 1.5 0 013 0V4a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-.5a1.5 1.5 0 000 3h.5a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-.5a1.5 1.5 0 00-3 0v.5a1 1 0 01-1 1H6a1 1 0 01-1-1v-3a1 1 0 00-1-1h-.5a1.5 1.5 0 010-3H4a1 1 0 001-1V6a1 1 0 011-1h3a1 1 0 001-1v-.5z"></path>
-          </svg>
+    <!-- Game Description & Screenshots Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- About the Game -->
+      <div class="bg-modal-color-gradient rounded-2xl shadow-sm border border-color p-8 transition-all duration-300 hover:shadow-lg">
+        <div class="flex items-start gap-4 mb-6">
+          <div class="p-3 bg-gradient-to-br from-orange-400 to-red-600 rounded-full">
+            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10 3.5a1.5 1.5 0 013 0V4a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-.5a1.5 1.5 0 000 3h.5a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-.5a1.5 1.5 0 00-3 0v.5a1 1 0 01-1 1H6a1 1 0 01-1-1v-3a1 1 0 00-1-1h-.5a1.5 1.5 0 010-3H4a1 1 0 001-1V6a1 1 0 011-1h3a1 1 0 001-1v-.5z"></path>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-2xl font-bold text-color mb-4">About the Game</h3>
+          </div>
         </div>
-        <div>
-          <h3 class="text-2xl font-bold text-color mb-4">About the Game</h3>
-          <p class="text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
-            I'm proud to present my latest game in development, <span class="font-semibold text-orange-500">Necro Brawl</span>. 
-            Initially conceived as a final coursework project to be developed in two and a half months, it recently garnered 
-            praise for its unique style and addictive gameplay at <span class="font-semibold">Games Expo Edinburgh</span>.
-          </p>
-          <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
-            In Necro Brawl, players are stranded in a stadium during a zombie apocalypse and must use a basketball to fend off the undead. 
-            Performing tricks increases the style/bounce meter, allowing the ball to target more zombies with each shot.
-          </p>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
+          I'm proud to present my latest game in development, <span class="font-semibold text-orange-500">Necro Brawl</span>. 
+          Initially conceived as a final coursework project to be developed in two and a half months, it recently garnered 
+          praise for its unique style and addictive gameplay at <span class="font-semibold">Games Expo Edinburgh</span>.
+        </p>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
+          In Necro Brawl, players are stranded in a stadium during a zombie apocalypse and must use a basketball to fend off the undead. 
+          Performing tricks increases the style/bounce meter, allowing the ball to target more zombies with each shot.
+        </p>
+      </div>
+
+      <!-- Game Screenshots Carousel -->
+      <div class="bg-modal-color-gradient rounded-2xl shadow-sm border border-color p-8 transition-all duration-300 hover:shadow-lg">
+        <h3 class="text-2xl font-bold text-color mb-6 flex items-center gap-2">
+          <svg class="w-7 h-7 text-pink-500" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
+          </svg>
+          Screenshots
+        </h3>
+        
+        <!-- Carousel Container -->
+        <div class="relative rounded-xl overflow-hidden border-2 border-purple-500/20">
+          <!-- Slides -->
+          <div class="relative h-[400px] w-full">
+            <transition name="fade" mode="out-in">
+              <div
+                v-if="currentSlide === 0"
+                key="slide-0"
+                class="absolute inset-0 w-full h-full"
+              >
+                <img 
+                  src="@/assets/necro-brawl/necro-brawl-image-1.jpg" 
+                  alt="Game Controls & Mechanics"
+                  class="w-full h-full object-cover object-center"
+                />
+                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+                  <p class="text-white text-xl font-semibold" style="text-shadow: 0px 0px 2px #000">Game Controls & Mechanics</p>
+                </div>
+              </div>
+              <div
+                v-else-if="currentSlide === 1"
+                key="slide-1"
+                class="absolute inset-0 w-full h-full"
+              >
+                <img 
+                  src="@/assets/necro-brawl/necro-brawl-image-2.jpg" 
+                  alt="Gameplay Action"
+                  class="w-full h-full object-cover object-center"
+                />
+                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+                  <p class="text-white text-xl font-semibold" style="text-shadow: 0px 0px 2px #000">Gameplay Action</p>
+                </div>
+              </div>
+              <div
+                v-else
+                key="slide-2"
+                class="absolute inset-0 w-full h-full"
+              >
+                <img 
+                  src="@/assets/necro-brawl/necro-brawl-image-3.jpg" 
+                  alt="Stadium Arena"
+                  class="w-full h-full object-cover object-center"
+                />
+                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+                  <p class="text-white text-xl font-semibold" style="text-shadow: 0px 0px 2px #000">Stadium Arena</p>
+                </div>
+              </div>
+            </transition>
+          </div>
+
+          <!-- Navigation Buttons -->
+          <button
+            @click="prevSlide"
+            class="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 hover:scale-110 backdrop-blur-sm"
+            aria-label="Previous slide"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <button
+            @click="nextSlide"
+            class="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 hover:scale-110 backdrop-blur-sm"
+            aria-label="Next slide"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </button>
+
+          <!-- Indicators -->
+          <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+            <button
+              v-for="(slide, index) in totalSlides"
+              :key="index"
+              @click="goToSlide(index)"
+              :class="[
+                'w-3 h-3 rounded-full transition-all duration-300',
+                currentSlide === index 
+                  ? 'bg-white w-8' 
+                  : 'bg-white/50 hover:bg-white/75'
+              ]"
+              :aria-label="`Go to slide ${index + 1}`"
+            ></button>
+          </div>
         </div>
       </div>
     </div>
@@ -133,11 +233,110 @@
       </div>
     </div>
 
-    <!-- Models & Textures Section -->
+    <!-- Game Screenshots Carousel -->
     <div class="bg-modal-color-gradient rounded-2xl shadow-sm border border-color p-8 transition-all duration-300 hover:shadow-lg">
       <h3 class="text-2xl font-bold text-color mb-6 flex items-center gap-2">
         <svg class="w-7 h-7 text-pink-500" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
+        </svg>
+        Game Screenshots
+      </h3>
+      
+      <!-- Carousel Container - Centered with max width -->
+      <div class="max-w-lg mx-auto">
+        <div class="relative rounded-xl overflow-hidden border-2 border-purple-500/20">
+          <!-- Slides -->
+          <div class="relative h-[620px] w-full">
+          <transition name="fade" mode="out-in">
+            <div
+              v-if="currentSlide === 0"
+              key="slide-0"
+              class="absolute inset-0 w-full h-full"
+            >
+              <img 
+                src="@/assets/necro-brawl/necro-brawl-image-1.jpg" 
+                alt="Game Controls & Mechanics"
+                class="w-full h-full object-cover object-center"
+              />
+              <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+                <p class="text-white text-xl font-semibold" style="text-shadow: 0px 0px 2px #000">Game Controls & Mechanics</p>
+              </div>
+            </div>
+            <div
+              v-else-if="currentSlide === 1"
+              key="slide-1"
+              class="absolute inset-0 w-full h-full"
+            >
+              <img 
+                src="@/assets/necro-brawl/necro-brawl-image-2.jpg" 
+                alt="Gameplay Action"
+                class="w-full h-full object-cover object-center"
+              />
+              <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+                <p class="text-white text-xl font-semibold" style="text-shadow: 0px 0px 2px #000">Gameplay Action</p>
+              </div>
+            </div>
+            <div
+              v-else
+              key="slide-2"
+              class="absolute inset-0 w-full h-full"
+            >
+              <img 
+                src="@/assets/necro-brawl/necro-brawl-image-3.jpg" 
+                alt="Stadium Arena"
+                class="w-full h-full object-cover object-center"
+              />
+              <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+                <p class="text-white text-xl font-semibold" style="text-shadow: 0px 0px 2px #000">Stadium Arena</p>
+              </div>
+            </div>
+          </transition>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <button
+          @click="prevSlide"
+          class="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 hover:scale-110 backdrop-blur-sm"
+          aria-label="Previous slide"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <button
+          @click="nextSlide"
+          class="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 hover:scale-110 backdrop-blur-sm"
+          aria-label="Next slide"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+
+        <!-- Indicators -->
+        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+          <button
+            v-for="(slide, index) in totalSlides"
+            :key="index"
+            @click="goToSlide(index)"
+            :class="[
+              'w-3 h-3 rounded-full transition-all duration-300',
+              currentSlide === index 
+                ? 'bg-white w-8' 
+                : 'bg-white/50 hover:bg-white/75'
+            ]"
+            :aria-label="`Go to slide ${index + 1}`"
+          ></button>
+        </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Models & Textures Section -->
+    <div class="bg-modal-color-gradient rounded-2xl shadow-sm border border-color p-8 transition-all duration-300 hover:shadow-lg">
+      <h3 class="text-2xl font-bold text-color mb-6 flex items-center gap-2">
+        <svg class="w-7 h-7 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
         </svg>
         Models & Textures
       </h3>
@@ -166,9 +365,39 @@
 </template>
 
 <script setup>
-import { defineEmits } from 'vue';
+import { defineEmits, ref, onMounted, onUnmounted } from 'vue';
 
 defineEmits(['back']);
+
+// Carousel state
+const currentSlide = ref(0);
+const totalSlides = 3;
+let autoPlayInterval = null;
+
+const nextSlide = () => {
+  currentSlide.value = (currentSlide.value + 1) % totalSlides;
+};
+
+const prevSlide = () => {
+  currentSlide.value = (currentSlide.value - 1 + totalSlides) % totalSlides;
+};
+
+const goToSlide = (index) => {
+  currentSlide.value = index;
+};
+
+// Auto-play functionality
+onMounted(() => {
+  autoPlayInterval = setInterval(() => {
+    nextSlide();
+  }, 5000); // Change slide every 5 seconds
+});
+
+onUnmounted(() => {
+  if (autoPlayInterval) {
+    clearInterval(autoPlayInterval);
+  }
+});
 </script>
 
 <style scoped>
@@ -186,5 +415,16 @@ defineEmits(['back']);
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Fade transition for carousel */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.6s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
