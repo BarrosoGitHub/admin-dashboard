@@ -35,7 +35,7 @@
     </div>
 
     <!-- Summary Section -->
-    <div class="bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
+    <div id="summary" class="bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
       <h3 class="text-2xl font-bold text-color mb-4 flex items-center">
         <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
           <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
@@ -47,26 +47,29 @@
     </div>
 
         <!-- Skills Section -->
-    <div class="bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
-      <h3 class="text-2xl font-bold text-color mb-6 flex items-center">
+    <div id="skills" class="bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
+      <h3 class="text-2xl font-bold text-color mb-4 flex items-center">
         <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path>
         </svg>
         Technical Skills
       </h3>
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div v-for="(skillCategory, category) in profile.skills" :key="category" class="space-y-3">
-          <h4 class="text-md font-semibold text-color mb-3 flex items-center">
-            <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+      <div class="grid grid-cols-1 lg:grid-cols-6 gap-4">
+        <div v-for="(skillCategory, category) in profile.skills" :key="category" class="space-y-2">
+          <h4 class="text-sm font-semibold text-color flex items-center mb-3">
+            <span class="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></span>
             {{ category }}
           </h4>
-          <div class="space-y-2">
-            <div v-for="(skill, idx) in skillCategory" :key="idx" class="group relative">
-              <div class="px-4 py-3 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-lg text-sm hover:bg-blue-500/20 hover:border-blue-500/40 transition-all duration-300 cursor-pointer">
-                <div class="font-medium">{{ skill.name }}</div>
-                <div class="text-xs text-gray-500 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 max-h-0 group-hover:max-h-40 overflow-hidden">
-                  {{ skill.description }}
-                </div>
+          <div class="space-y-1.5">
+            <div v-for="(skill, idx) in skillCategory" :key="idx" class="group border-l-4 border-blue-500 pl-3 hover:border-purple-500 transition-all duration-300 cursor-pointer p-2 rounded-r-lg hover:bg-blue-500/5">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs font-medium text-blue-400">{{ skill.name }}</span>
+                <svg class="w-3 h-3 text-blue-400 opacity-50 transition-opacity flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                </svg>
+              </div>
+              <div class="text-xs text-gray-400 max-h-0 opacity-0 group-hover:max-h-96 group-hover:opacity-100 transition-all duration-300 overflow-hidden">
+                {{ skill.description }}
               </div>
             </div>
           </div>
@@ -75,7 +78,7 @@
     </div>
 
     <!-- Experience Section -->
-    <div class="bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
+    <div id="experience" class="bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
       <h3 class="text-2xl font-bold text-color mb-6 flex items-center">
         <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"></path>
@@ -83,41 +86,17 @@
         </svg>
         Work Experience
       </h3>
-      <div class="space-y-6">
-        <div v-for="(job, index) in profile.experience" :key="index" class="border-l-4 border-blue-500 pl-4 hover:border-purple-500 transition-colors duration-300">
+      <div class="space-y-4">
+        <div v-for="(job, index) in profile.experience" :key="index" class="group border-l-4 border-blue-500 pl-4 hover:border-purple-500 transition-all duration-300 cursor-pointer p-3 rounded-r-lg hover:bg-blue-500/5">
           <div class="flex justify-between items-start mb-2">
-            <div>
+            <div class="flex-1">
               <h4 class="text-lg font-semibold text-color">{{ job.position }}</h4>
               <p class="text-gray-400">{{ job.company }}</p>
+              <p v-if="job.location" class="text-sm text-gray-500">{{ job.location }}</p>
             </div>
-            <span class="text-sm text-gray-500">{{ job.period }}</span>
+            <span class="text-sm text-gray-500 ml-4">{{ job.period }}</span>
           </div>
-          <ul class="list-disc list-inside text-gray-400 space-y-1">
-            <li v-for="(responsibility, idx) in job.responsibilities" :key="idx">{{ responsibility }}</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <!-- Experience Section -->
-    <div class="bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
-      <h3 class="text-2xl font-bold text-color mb-6 flex items-center">
-        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"></path>
-          <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z"></path>
-        </svg>
-        Work Experience
-      </h3>
-      <div class="space-y-6">
-        <div v-for="(job, index) in profile.experience" :key="index" class="border-l-4 border-blue-500 pl-4 hover:border-purple-500 transition-colors duration-300">
-          <div class="flex justify-between items-start mb-2">
-            <div>
-              <h4 class="text-lg font-semibold text-color">{{ job.position }}</h4>
-              <p class="text-gray-400">{{ job.company }}</p>
-            </div>
-            <span class="text-sm text-gray-500">{{ job.period }}</span>
-          </div>
-          <ul class="list-disc list-inside text-gray-400 space-y-1">
+          <ul class="list-disc list-inside text-gray-400 space-y-1 max-h-0 opacity-0 group-hover:max-h-96 group-hover:opacity-100 transition-all duration-300 overflow-hidden">
             <li v-for="(responsibility, idx) in job.responsibilities" :key="idx">{{ responsibility }}</li>
           </ul>
         </div>
@@ -125,7 +104,7 @@
     </div>
 
     <!-- Education Section -->
-    <div class="bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
+    <div id="education" class="bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
       <h3 class="text-2xl font-bold text-color mb-6 flex items-center">
         <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
           <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"></path>
@@ -147,7 +126,7 @@
     </div>
 
     <!-- Certifications Section -->
-    <div class="bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
+    <div id="certifications" class="bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
       <h3 class="text-2xl font-bold text-color mb-6 flex items-center">
         <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
@@ -166,7 +145,7 @@
     </div>
 
     <!-- Languages Section -->
-    <div class="bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
+    <div id="languages" class="bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
       <h3 class="text-2xl font-bold text-color mb-6 flex items-center">
         <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M7 2a1 1 0 011 1v1h3a1 1 0 110 2H9.578a18.87 18.87 0 01-1.724 4.78c.29.354.596.696.914 1.026a1 1 0 11-1.44 1.389c-.188-.196-.373-.396-.554-.6a19.098 19.098 0 01-3.107 3.567 1 1 0 01-1.334-1.49 17.087 17.087 0 003.13-3.733 18.992 18.992 0 01-1.487-2.494 1 1 0 111.79-.89c.234.47.489.928.764 1.372.417-.934.752-1.913.997-2.927H3a1 1 0 110-2h3V3a1 1 0 011-1zm6 6a1 1 0 01.894.553l2.991 5.982a.869.869 0 01.02.037l.99 1.98a1 1 0 11-1.79.895L15.383 16h-4.764l-.724 1.447a1 1 0 11-1.788-.894l.99-1.98.019-.038 2.99-5.982A1 1 0 0113 8zm-1.382 6h2.764L13 11.236 11.618 14z" clip-rule="evenodd"></path>
@@ -188,7 +167,7 @@
 import { computed } from 'vue';
 
 const profile = {
-  name: "Professional Name",
+  name: "Diogo Miguel Rebelo Barroso",
   title: "Senior Software Engineer | Full Stack Developer",
   email: "email@example.com",
   phone: "+351 123 456 789",
@@ -197,36 +176,45 @@ const profile = {
   
   experience: [
     {
-      position: "Senior Full Stack Developer",
-      company: "Tech Company",
-      period: "2021 - Present",
+      position: "Software Engineer - Embedded Systems. Eng.",
+      company: "Petrotec",
+      period: "February 2024 - Present",
       responsibilities: [
-        "Developed and maintained containerized applications using Docker and Kubernetes",
-        "Built RESTful APIs with Node.js, Express, and TypeScript",
-        "Implemented responsive front-end interfaces using Vue.js and React",
-        "Led database design and optimization for PostgreSQL and MongoDB"
+        "As a Software Engineer, I specialize in backend development with .NET, focusing on Linux-based and embedded systems.",
+        "I leverage Docker for containerization and ensure secure communications through SSH and encryption.",
+        "My experience includes designing and developing microservices, building and integrating RESTful APIs, enabling HTTPS and WebSocket communication for efficient data exchange, and utilizing MQTT for reliable real-time messaging.",
+        "Integration of advanced hardware interfaces on microcomputer boards by developing custom device drivers, ensuring seamless data acquisition and robust system reliability for critical industrial applications in the energy sector."
       ]
     },
     {
-      position: "Software Engineer",
-      company: "Previous Company",
-      period: "2019 - 2021",
+      position: "Experienced Programmer",
+      company: "Deloitte",
+      period: "February 2022 - February 2024",
       responsibilities: [
-        "Developed web applications using modern JavaScript frameworks",
-        "Collaborated with cross-functional teams in Agile environment",
-        "Implemented CI/CD pipelines for automated testing and deployment",
-        "Maintained code quality through code reviews and testing"
+        "Designed databases using SQL Server and MongoDB for efficient data storage.",
+        "Collaborated in cross-functional teams to gather requirements for new applications.",
+        "Developed scalable software applications across multiple platforms.",
+        "Integrated third-party APIs to enhance software interoperability.",
+        "Streamlined deployment pipelines by automating testing and integration processes, enabling faster release cycles and improved code reliability."
       ]
     },
     {
-      position: "Junior Developer",
-      company: "Startup Company",
-      period: "2018 - 2019",
+      position: "Teacher",
+      company: "Ε.Ρ.Α",
+      period: "February 2020 - February 2022",
       responsibilities: [
-        "Assisted in development of customer-facing web applications",
-        "Wrote clean, maintainable code following best practices",
-        "Participated in daily standups and sprint planning",
-        "Fixed bugs and implemented new features based on requirements"
+        "Developed and delivered comprehensive lesson plans on electricity, electronics, and digital systems, adapting instructional methods to accommodate varying student learning styles.",
+        "Guided laboratory sessions and hands-on experiments, reinforcing foundational concepts in electricity and electronics while ensuring adherence to safety protocols.",
+        "Assessed student progress by designing and grading assignments, projects, and exams, providing timely feedback to support mastery of course objectives."
+      ]
+    },
+    {
+      position: "Estimator",
+      company: "Sotécnica Lisbon Airport",
+      period: "March 2019 - August 2019",
+      responsibilities: [
+        "Prepared comprehensive cost analyses and project bids for airport electrical systems, aligning with regulatory standards and optimizing resource allocation to ensure budgetary compliance and operational efficiency.",
+        "Formulated detailed quantity takeoffs and material estimates for large-scale electrical infrastructure projects, ensuring alignment with project specifications and compliance requirements."
       ]
     }
   ],
@@ -242,49 +230,52 @@ const profile = {
   
   skills: {
     "Backend Development": [
-      { name: ".NET Core (up to version 9), Microservices", description: "Expert in building scalable microservices using .NET Core framework, from version 1.0 to the latest version 9, with deep understanding of distributed systems architecture" },
-      { name: "ASP.NET Web API, RESTful Services", description: "Extensive experience developing RESTful APIs with ASP.NET Core Web API, implementing best practices for REST architecture, CRUD operations, and HTTP methods" }
+      { name: ".NET Core (up to version 9), Microservices", description: "Scalable microservices and distributed systems with .NET Core 1.0-9" },
+      { name: "ASP.NET Web API, RESTful Services", description: "RESTful API development with ASP.NET Core, CRUD operations, and HTTP best practices" }
     ],
     "Databases & Caching": [
-      { name: "MySQL, PostgreSQL, SQLite", description: "Proficient in relational database design, optimization, and management across MySQL, PostgreSQL, and SQLite for various application needs" },
-      { name: "LiteDB, Redis", description: "Experience with embedded NoSQL database LiteDB and Redis for high-performance caching and session management" }
+      { name: "MySQL, PostgreSQL, SQLite", description: "Relational database design, optimization, and management" },
+      { name: "LiteDB, Redis", description: "Embedded NoSQL database and high-performance caching solutions" }
     ],
     "Operating Systems & Architectures": [
-      { name: "Windows, Linux (WSL)", description: "Cross-platform development expertise on Windows and Linux environments, including Windows Subsystem for Linux (WSL) for seamless integration" },
-      { name: "ARM64, AMD64", description: "Experience building and deploying applications for both ARM64 and AMD64 processor architectures" }
-    ],
-    "Containerization": [
-      { name: "Docker", description: "Advanced containerization skills with Docker for creating, deploying, and managing containerized applications in production environments" }
+      { name: "Windows, Linux (WSL)", description: "Cross-platform development on Windows, Linux, and WSL environments" },
+      { name: "ARM64, AMD64", description: "Multi-architecture application development and deployment" }
     ],
     "Cloud Platforms": [
-      { name: "Microsoft Azure", description: "Experience with Azure cloud services including App Services, Azure Functions, Azure SQL Database, and cloud infrastructure management" },
-      { name: "Amazon Web Services (AWS)", description: "Proficient in AWS services including EC2, S3, Lambda, RDS, and deploying scalable cloud-based applications" }
-    ],
-    "Version Control & CI/CD": [
-      { name: "Jenkins", description: "Implementing automated CI/CD pipelines with Jenkins for continuous integration, testing, and deployment workflows" }
-    ],
-    "API Development & Testing": [
-      { name: "Swagger, Postman", description: "API documentation with Swagger/OpenAPI and comprehensive API testing using Postman for RESTful services" }
+      { name: "Microsoft Azure", description: "App Services, Azure Functions, Azure SQL Database, infrastructure management" },
+      { name: "Amazon Web Services (AWS)", description: "EC2, S3, Lambda, RDS, and scalable cloud application deployment" }
     ],
     "Networking & Security": [
-      { name: "SSH, TLS, SSL, JWT", description: "Secure communication protocols including SSH for remote access, TLS/SSL for encryption, and JWT for authentication" },
-      { name: "MobaXterm, PuTTY", description: "Proficient with terminal emulators MobaXterm and PuTTY for remote server management and SSH connections" }
-    ],
-    "Web Communication": [
-      { name: "HTTPS, SFTP", description: "Secure web protocols for encrypted HTTP communication and secure file transfer" },
-      { name: "gRPC, XMLRPC, WebSockets", description: "Modern RPC frameworks and real-time bidirectional communication protocols for efficient client-server interactions" },
-      { name: "MQTT", description: "Lightweight messaging protocol for IoT and real-time messaging applications" }
+      { name: "SSH, TLS, SSL, JWT", description: "Secure protocols for remote access, encryption, and authentication" },
+      { name: "MobaXterm, PuTTY", description: "Terminal emulators for remote server management and SSH" }
     ],
     "Development & Debugging Tools": [
-      { name: "Fork (Git Client)", description: "Advanced Git client for visual repository management, branching, and merge operations" },
-      { name: "Hercules (Serial/TCP Debugging)", description: "Specialized tool for debugging serial port and TCP/IP communications in embedded and network applications" }
+      { name: "Fork (Git Client)", description: "Visual Git repository management, branching, and merging" },
+      { name: "Hercules (Serial/TCP Debugging)", description: "Serial port and TCP/IP debugging for embedded systems" }
+    ],
+    "Version Control & CI/CD": [
+      { name: "Git, Bitbucket, GitHub", description: "Version control systems and repository hosting platforms" },
+      { name: "Jenkins", description: "Automated CI/CD pipelines for continuous integration and deployment" }
+    ],
+    "API Development & Testing": [
+      { name: "Swagger, Postman", description: "API documentation with OpenAPI/Swagger and comprehensive testing" },
+      { name: "REST, SOAP", description: "RESTful and SOAP web service design and implementation" }
+    ],
+    "Containerization": [
+      { name: "Docker", description: "Container creation, deployment, and production environment management" },
+      { name: "Docker Compose, Registries", description: "Multi-container orchestration and private container registry management" }
+    ],
+    "Web Communication": [
+      { name: "HTTPS, SFTP, WebSockets", description: "Secure protocols for HTTP, file transfer, and real-time bidirectional communication" },
+      { name: "gRPC, MQTT, XMLRPC", description: "Modern RPC frameworks and lightweight messaging for IoT applications" }
     ],
     "Front-End Development": [
-      { name: "Vue 3, JavaScript, Tailwind", description: "Modern front-end development with Vue 3 Composition API, vanilla JavaScript, and Tailwind CSS for responsive UI design" }
+      { name: "Vue 3, JavaScript, Tailwind", description: "Vue 3 Composition API, JavaScript, and Tailwind CSS for responsive UIs" },
+      { name: "HTML5, CSS3, Responsive Design", description: "Modern web standards and mobile-first responsive design principles" }
     ],
     "Project Management & Docs": [
-      { name: "Jira, Confluence", description: "Project tracking, issue management with Jira and team documentation/collaboration with Confluence" },
-      { name: "Bitbucket, GitHub, Jenkins, Nexus", description: "Complete DevOps ecosystem: Bitbucket/GitHub for source control, Jenkins for CI/CD, and Nexus for artifact management" }
+      { name: "Jira, Confluence", description: "Project tracking, issue management, and team documentation" },
+      { name: "Bitbucket, GitHub, Jenkins, Nexus", description: "Source control, CI/CD automation, and artifact management" }
     ]
   },
   

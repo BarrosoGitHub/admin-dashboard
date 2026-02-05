@@ -6,9 +6,10 @@
     </div>
 
     <!-- Portfolio Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <!-- Project Card 1 - Ad Display Device -->
       <div 
+        id="project-1"
         ref="card1"
         @click="selectProject(1)"
         @mouseenter="hovering1 = true"
@@ -31,50 +32,27 @@
         </div>
       </div>
 
-      <!-- Project Card 2 -->
+      <!-- Project Card 5 - Necro Brawl Detailed -->
       <div 
-        ref="card2"
-        @click="selectProject(2)"
-        @mouseenter="hovering2 = true"
-        @mouseleave="handleMouseLeave(2)"
-        @mousemove="(e) => handleMouseMove(e, 2)"
+        id="project-5"
+        ref="card5"
+        @click="selectProject(5)"
+        @mouseenter="hovering5 = true"
+        @mouseleave="handleMouseLeave(5)"
+        @mousemove="(e) => handleMouseMove(e, 5)"
         class="bg-modal-color-gradient rounded-2xl shadow-sm overflow-hidden border border-color cursor-pointer group portfolio-card"
       >
-        <div class="h-48 bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
+        <div class="h-48 bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
           <svg class="w-20 h-20 text-white" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>
           </svg>
         </div>
         <div class="p-4">
-          <h3 class="text-xl font-semibold text-color mb-2 transition-all duration-200">API Service</h3>
-          <p class="text-gray-400 dark:text-gray-400 mb-4 transition-all duration-200">Backend API with Node.js and Express framework</p>
+          <h3 class="text-xl font-semibold text-color mb-2 transition-all duration-200">Necro Brawl - Game Showcase</h3>
+          <p class="text-gray-400 dark:text-gray-400 mb-4 transition-all duration-200">Stadium zombie survival with basketball tricks. Featured at Games Expo Edinburgh</p>
           <div class="flex flex-wrap gap-2">
-            <span class="px-3 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 rounded-full">Node.js</span>
-            <span class="px-3 py-1 text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded-full">Express</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Project Card 3 -->
-      <div 
-        ref="card3"
-        @click="selectProject(3)"
-        @mouseenter="hovering3 = true"
-        @mouseleave="handleMouseLeave(3)"
-        @mousemove="(e) => handleMouseMove(e, 3)"
-        class="bg-modal-color-gradient rounded-2xl shadow-sm overflow-hidden border border-color cursor-pointer group portfolio-card"
-      >
-        <div class="h-48 bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
-          <svg class="w-20 h-20 text-white" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path>
-          </svg>
-        </div>
-        <div class="p-4">
-          <h3 class="text-xl font-semibold text-color mb-2 transition-all duration-200">Analytics Platform</h3>
-          <p class="text-gray-400 dark:text-gray-400 mb-4 transition-all duration-200">Real-time data visualization and analytics</p>
-          <div class="flex flex-wrap gap-2">
-            <span class="px-3 py-1 text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 rounded-full">Analytics</span>
-            <span class="px-3 py-1 text-xs font-medium bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200 rounded-full">Charts</span>
+            <span class="px-3 py-1 text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 rounded-full">3D Modeling</span>
+            <span class="px-3 py-1 text-xs font-medium bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200 rounded-full">Textures</span>
           </div>
         </div>
       </div>
@@ -90,13 +68,17 @@ const emit = defineEmits(['project-selected']);
 const card1 = ref(null);
 const card2 = ref(null);
 const card3 = ref(null);
+const card4 = ref(null);
+const card5 = ref(null);
 const hovering1 = ref(false);
 const hovering2 = ref(false);
 const hovering3 = ref(false);
+const hovering4 = ref(false);
+const hovering5 = ref(false);
 
-const currentGradientStop = ref({ 1: 60, 2: 60, 3: 60 });
-const targetGradientStop = ref({ 1: 60, 2: 60, 3: 60 });
-const isAnimating = ref({ 1: false, 2: false, 3: false });
+const currentGradientStop = ref({ 1: 60, 2: 60, 3: 60, 4: 60, 5: 60 });
+const targetGradientStop = ref({ 1: 60, 2: 60, 3: 60, 4: 60, 5: 60 });
+const isAnimating = ref({ 1: false, 2: false, 3: false, 4: false, 5: false });
 
 let gradientAnimationFrame = {};
 
@@ -105,7 +87,7 @@ function selectProject(projectId) {
 }
 
 function updateCardBackground(cardId) {
-  const cardRef = cardId === 1 ? card1.value : cardId === 2 ? card2.value : card3.value;
+  const cardRef = cardId === 1 ? card1.value : cardId === 2 ? card2.value : cardId === 3 ? card3.value : cardId === 4 ? card4.value : card5.value;
   if (!cardRef) return;
   
   const isDark = document.documentElement.classList.contains('dark');
@@ -122,6 +104,8 @@ onMounted(() => {
     updateCardBackground(1);
     updateCardBackground(2);
     updateCardBackground(3);
+    updateCardBackground(4);
+    updateCardBackground(5);
   });
   
   darkModeObserver.observe(document.documentElement, {
@@ -147,7 +131,7 @@ function animateGradientStop(cardId) {
   if (Math.abs(diff) > 0.01) {
     currentGradientStop.value[cardId] += diff * lagFactor;
     
-    const cardRef = cardId === 1 ? card1.value : cardId === 2 ? card2.value : card3.value;
+    const cardRef = cardId === 1 ? card1.value : cardId === 2 ? card2.value : cardId === 3 ? card3.value : cardId === 4 ? card4.value : card5.value;
     if (cardRef) {
       const isDark = document.documentElement.classList.contains('dark');
       const baseColor = isDark ? '#363636' : '#FFFFFF';
@@ -165,7 +149,7 @@ function animateGradientStop(cardId) {
 }
 
 function handleMouseMove(event, cardId) {
-  const cardRef = cardId === 1 ? card1.value : cardId === 2 ? card2.value : card3.value;
+  const cardRef = cardId === 1 ? card1.value : cardId === 2 ? card2.value : cardId === 3 ? card3.value : cardId === 4 ? card4.value : card5.value;
   if (!cardRef) return;
   
   const rect = cardRef.getBoundingClientRect();
@@ -194,10 +178,12 @@ function handleMouseMove(event, cardId) {
 }
 
 function handleMouseLeave(cardId) {
-  const cardRef = cardId === 1 ? card1.value : cardId === 2 ? card2.value : card3.value;
+  const cardRef = cardId === 1 ? card1.value : cardId === 2 ? card2.value : cardId === 3 ? card3.value : cardId === 4 ? card4.value : card5.value;
   if (cardId === 1) hovering1.value = false;
   if (cardId === 2) hovering2.value = false;
   if (cardId === 3) hovering3.value = false;
+  if (cardId === 4) hovering4.value = false;
+  if (cardId === 5) hovering5.value = false;
   
   if (!cardRef) return;
   

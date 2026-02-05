@@ -8,6 +8,7 @@ import AppInfoCard from "../components/tabs/AppInfoCard.vue";
 import StatusElementCard from "../components/tabs/StatusElementCard.vue";
 import PortfolioCard from "../components/tabs/PortfolioCard.vue";
 import ProfileCard from "../components/tabs/ProfileCard.vue";
+import NecroBrawlShowcase from "../components/tabs/NecroBrawlShowcase.vue";
 import StatsCard from "../components/dashboard/StatsCard.vue";
 import SimpleChart from "../components/dashboard/SimpleChart.vue";
 import RecentActivity from "../components/dashboard/RecentActivity.vue";
@@ -125,14 +126,16 @@ function handleProjectSelected(projectId) {
   showProjectDetails.value = true;
   showPortfolio.value = false;
   
-  // Fetch project data (app info)
-  axios.get(`${API_BASE_URL}/info/services`)
-    .then(response => {
-      appInfoData.value = Array.isArray(response.data) ? response.data : [response.data];
-    })
-    .catch(error => {
-      appInfoData.value = [];
-    });
+  // Only fetch app info data for projects that need it (not project 5)
+  if (projectId !== 5) {
+    axios.get(`${API_BASE_URL}/info/services`)
+      .then(response => {
+        appInfoData.value = Array.isArray(response.data) ? response.data : [response.data];
+      })
+      .catch(error => {
+        appInfoData.value = [];
+      });
+  }
 }
 
 function resetAllModals() {
@@ -287,7 +290,10 @@ onBeforeUnmount(() => {
                 @success="handlePasswordChangeSuccess"
               />
               <transition :key="activeModal" mode="out-in">
-                <template v-if="showProjectDetails && selectedProject">
+                <template v-if="showProjectDetails && selectedProject === 5">
+                  <NecroBrawlShowcase @back="handlePortfolio" />
+                </template>
+                <template v-else-if="showProjectDetails && selectedProject">
                   <div class="p-6 space-y-6">
                     <div class="flex items-center justify-between mb-6">
                       <div>
