@@ -7,6 +7,7 @@ import PasswordChangeModal from "../components/Modals/PasswordChangeModal.vue";
 import AppInfoCard from "../components/tabs/AppInfoCard.vue";
 import StatusElementCard from "../components/tabs/StatusElementCard.vue";
 import PortfolioCard from "../components/tabs/PortfolioCard.vue";
+import ProfileCard from "../components/tabs/ProfileCard.vue";
 import StatsCard from "../components/dashboard/StatsCard.vue";
 import SimpleChart from "../components/dashboard/SimpleChart.vue";
 import RecentActivity from "../components/dashboard/RecentActivity.vue";
@@ -52,6 +53,7 @@ const activeModal = ref(null);
 const showAppInfoCard = ref(false);
 const showPasswordChangeModal = ref(false);
 const showPortfolio = ref(true);
+const showProfile = ref(false);
 const selectedProject = ref(null);
 const showProjectDetails = ref(false);
 
@@ -79,6 +81,7 @@ const activeCardName = computed(() => {
   switch (activeModal.value) {
     case 'appInfo': return 'App Information';
     case 'portfolio': return 'Portfolio';
+    case 'profile': return 'Curriculum Vitae';
     default: return 'Portfolio';
   }
 });
@@ -105,6 +108,16 @@ function handlePortfolio() {
   selectedProject.value = null;
   showAppInfoCard.value = false;
   showPortfolio.value = true;
+  showProfile.value = false;
+}
+
+function handleProfile() {
+  activeModal.value = "profile";
+  showProjectDetails.value = false;
+  selectedProject.value = null;
+  showAppInfoCard.value = false;
+  showPortfolio.value = false;
+  showProfile.value = true;
 }
 
 function handleProjectSelected(projectId) {
@@ -128,6 +141,7 @@ function resetAllModals() {
   showDashboard.value = false;
   showPasswordChangeModal.value = false;
   showPortfolio.value = true;
+  showProfile.value = false;
   selectedProject.value = null;
   showProjectDetails.value = false;
   appInfoData.value = [];
@@ -243,6 +257,7 @@ onBeforeUnmount(() => {
       @sidebar-toggle="sidebarOpen = $event"
       @password-change="handlePasswordChange"
       @portfolio="handlePortfolio"
+      @profile="handleProfile"
     />
     
     <div :class="sidebarClasses">
@@ -422,6 +437,9 @@ onBeforeUnmount(() => {
                 </template>
                 <template v-else-if="showPortfolio">
                   <PortfolioCard @project-selected="handleProjectSelected" />
+                </template>
+                <template v-else-if="showProfile">
+                  <ProfileCard />
                 </template>
               </transition>
             </div>

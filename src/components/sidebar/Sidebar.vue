@@ -35,6 +35,15 @@
             <span class="ms-3">Portfolio</span>
           </a>
         </li>
+        <!-- Profile Section -->
+        <li>
+          <a href="#" class="flex items-center p-2 text-color rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 group" @click.prevent="handleProfileClick">
+            <svg class="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-color dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="ms-3">Profile</span>
+          </a>
+        </li>
       </ul>
     </div>
     <!-- Footer note for board type -->
@@ -60,7 +69,8 @@ const props = defineProps({
 const emit = defineEmits([
   'sidebar-toggle',
   'portfolio',
-  'project-selected'
+  'project-selected',
+  'profile'
 ]);
 
 const showSidebar = ref(props.show);
@@ -79,6 +89,10 @@ watch(showSidebar, (val) => {
 
 function handlePortfolioClick() {
   emit('portfolio');
+}
+
+function handleProfileClick() {
+  emit('profile');
 }
 
 onMounted(() => {
