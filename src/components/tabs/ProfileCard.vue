@@ -46,6 +46,59 @@
       <p class="text-gray-400 leading-relaxed">{{ profile.summary }}</p>
     </div>
 
+        <!-- Skills Section -->
+    <div class="bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
+      <h3 class="text-2xl font-bold text-color mb-6 flex items-center">
+        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path>
+        </svg>
+        Technical Skills
+      </h3>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div v-for="(skillCategory, category) in profile.skills" :key="category" class="space-y-3">
+          <h4 class="text-md font-semibold text-color mb-3 flex items-center">
+            <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+            {{ category }}
+          </h4>
+          <div class="space-y-2">
+            <div v-for="(skill, idx) in skillCategory" :key="idx" class="group relative">
+              <div class="px-4 py-3 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-lg text-sm hover:bg-blue-500/20 hover:border-blue-500/40 transition-all duration-300 cursor-pointer">
+                <div class="font-medium">{{ skill.name }}</div>
+                <div class="text-xs text-gray-500 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 max-h-0 group-hover:max-h-40 overflow-hidden">
+                  {{ skill.description }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Experience Section -->
+    <div class="bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
+      <h3 class="text-2xl font-bold text-color mb-6 flex items-center">
+        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+          <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z"></path>
+        </svg>
+        Work Experience
+      </h3>
+      <div class="space-y-6">
+        <div v-for="(job, index) in profile.experience" :key="index" class="border-l-4 border-blue-500 pl-4 hover:border-purple-500 transition-colors duration-300">
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <h4 class="text-lg font-semibold text-color">{{ job.position }}</h4>
+              <p class="text-gray-400">{{ job.company }}</p>
+            </div>
+            <span class="text-sm text-gray-500">{{ job.period }}</span>
+          </div>
+          <ul class="list-disc list-inside text-gray-400 space-y-1">
+            <li v-for="(responsibility, idx) in job.responsibilities" :key="idx">{{ responsibility }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
     <!-- Experience Section -->
     <div class="bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
       <h3 class="text-2xl font-bold text-color mb-6 flex items-center">
@@ -85,29 +138,9 @@
             <div>
               <h4 class="text-lg font-semibold text-color">{{ edu.degree }}</h4>
               <p class="text-gray-400">{{ edu.institution }}</p>
+              <p v-if="edu.gpa" class="text-sm text-gray-500 mt-1">{{ edu.gpa }}</p>
             </div>
             <span class="text-sm text-gray-500">{{ edu.year }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Skills Section -->
-    <div class="bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
-      <h3 class="text-2xl font-bold text-color mb-6 flex items-center">
-        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path>
-        </svg>
-        Technical Skills
-      </h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div v-for="(skillGroup, category) in profile.skills" :key="category">
-          <h4 class="text-md font-semibold text-color mb-3">{{ category }}</h4>
-          <div class="flex flex-wrap gap-2">
-            <span v-for="(skill, idx) in skillGroup" :key="idx" 
-                  class="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm hover:bg-blue-500/30 transition-colors duration-200">
-              {{ skill }}
-            </span>
           </div>
         </div>
       </div>
@@ -160,7 +193,7 @@ const profile = {
   email: "email@example.com",
   phone: "+351 123 456 789",
   location: "Portugal",
-  summary: "Experienced software engineer with 5+ years of expertise in full-stack development, system architecture, and database management. Specialized in building scalable web applications and containerized solutions. Proven track record in leading development teams and delivering high-quality software solutions.",
+  summary: "Experienced software engineer with 5+ years of expertise in full-stack development, system architecture, and embedded systems. Specialized in building scalable web applications and containerized solutions. Proven track record in leading development teams and delivering high-quality software solutions.",
   
   experience: [
     {
@@ -200,24 +233,59 @@ const profile = {
   
   education: [
     {
-      degree: "Master's in Computer Science",
-      institution: "University Name",
-      year: "2018"
-    },
-    {
-      degree: "Bachelor's in Information Technology",
-      institution: "University Name",
-      year: "2016"
+      degree: "Master's in Electrical and Computer Engineering",
+      institution: "Instituto Politecnico de Setúbal",
+      year: "2021",
+      gpa: "3.5 GPA (17.5 Average)"
     }
   ],
   
   skills: {
-    "Frontend": ["Vue.js", "React", "TypeScript", "Tailwind CSS", "HTML5", "CSS3"],
-    "Backend": ["Node.js", "Express", "Python", "FastAPI", "REST APIs"],
-    "Database": ["PostgreSQL", "MongoDB", "Redis", "SQL"],
-    "DevOps": ["Docker", "Kubernetes", "CI/CD", "Git", "Linux", "Nginx"],
-    "Tools": ["VS Code", "Vite", "Webpack", "Jest", "Postman"],
-    "Other": ["Agile/Scrum", "Microservices", "WebSockets", "System Design"]
+    "Backend Development": [
+      { name: ".NET Core (up to version 9), Microservices", description: "Expert in building scalable microservices using .NET Core framework, from version 1.0 to the latest version 9, with deep understanding of distributed systems architecture" },
+      { name: "ASP.NET Web API, RESTful Services", description: "Extensive experience developing RESTful APIs with ASP.NET Core Web API, implementing best practices for REST architecture, CRUD operations, and HTTP methods" }
+    ],
+    "Databases & Caching": [
+      { name: "MySQL, PostgreSQL, SQLite", description: "Proficient in relational database design, optimization, and management across MySQL, PostgreSQL, and SQLite for various application needs" },
+      { name: "LiteDB, Redis", description: "Experience with embedded NoSQL database LiteDB and Redis for high-performance caching and session management" }
+    ],
+    "Operating Systems & Architectures": [
+      { name: "Windows, Linux (WSL)", description: "Cross-platform development expertise on Windows and Linux environments, including Windows Subsystem for Linux (WSL) for seamless integration" },
+      { name: "ARM64, AMD64", description: "Experience building and deploying applications for both ARM64 and AMD64 processor architectures" }
+    ],
+    "Containerization": [
+      { name: "Docker", description: "Advanced containerization skills with Docker for creating, deploying, and managing containerized applications in production environments" }
+    ],
+    "Cloud Platforms": [
+      { name: "Microsoft Azure", description: "Experience with Azure cloud services including App Services, Azure Functions, Azure SQL Database, and cloud infrastructure management" },
+      { name: "Amazon Web Services (AWS)", description: "Proficient in AWS services including EC2, S3, Lambda, RDS, and deploying scalable cloud-based applications" }
+    ],
+    "Version Control & CI/CD": [
+      { name: "Jenkins", description: "Implementing automated CI/CD pipelines with Jenkins for continuous integration, testing, and deployment workflows" }
+    ],
+    "API Development & Testing": [
+      { name: "Swagger, Postman", description: "API documentation with Swagger/OpenAPI and comprehensive API testing using Postman for RESTful services" }
+    ],
+    "Networking & Security": [
+      { name: "SSH, TLS, SSL, JWT", description: "Secure communication protocols including SSH for remote access, TLS/SSL for encryption, and JWT for authentication" },
+      { name: "MobaXterm, PuTTY", description: "Proficient with terminal emulators MobaXterm and PuTTY for remote server management and SSH connections" }
+    ],
+    "Web Communication": [
+      { name: "HTTPS, SFTP", description: "Secure web protocols for encrypted HTTP communication and secure file transfer" },
+      { name: "gRPC, XMLRPC, WebSockets", description: "Modern RPC frameworks and real-time bidirectional communication protocols for efficient client-server interactions" },
+      { name: "MQTT", description: "Lightweight messaging protocol for IoT and real-time messaging applications" }
+    ],
+    "Development & Debugging Tools": [
+      { name: "Fork (Git Client)", description: "Advanced Git client for visual repository management, branching, and merge operations" },
+      { name: "Hercules (Serial/TCP Debugging)", description: "Specialized tool for debugging serial port and TCP/IP communications in embedded and network applications" }
+    ],
+    "Front-End Development": [
+      { name: "Vue 3, JavaScript, Tailwind", description: "Modern front-end development with Vue 3 Composition API, vanilla JavaScript, and Tailwind CSS for responsive UI design" }
+    ],
+    "Project Management & Docs": [
+      { name: "Jira, Confluence", description: "Project tracking, issue management with Jira and team documentation/collaboration with Confluence" },
+      { name: "Bitbucket, GitHub, Jenkins, Nexus", description: "Complete DevOps ecosystem: Bitbucket/GitHub for source control, Jenkins for CI/CD, and Nexus for artifact management" }
+    ]
   },
   
   certifications: [

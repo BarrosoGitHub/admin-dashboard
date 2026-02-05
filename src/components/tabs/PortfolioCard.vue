@@ -9,8 +9,12 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <!-- Project Card 1 - Ad Display Device -->
       <div 
+        ref="card1"
         @click="selectProject(1)"
-        class="bg-modal-color-gradient rounded-2xl shadow-sm overflow-hidden border border-color transition-all duration-300 hover:shadow-lg cursor-pointer group"
+        @mouseenter="hovering1 = true"
+        @mouseleave="handleMouseLeave(1)"
+        @mousemove="(e) => handleMouseMove(e, 1)"
+        class="bg-modal-color-gradient rounded-2xl shadow-sm overflow-hidden border border-color cursor-pointer group portfolio-card"
       >
         <div class="h-48 bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
           <svg class="w-20 h-20 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -29,8 +33,12 @@
 
       <!-- Project Card 2 -->
       <div 
+        ref="card2"
         @click="selectProject(2)"
-        class="bg-modal-color-gradient rounded-2xl shadow-sm overflow-hidden border border-color transition-all duration-300 hover:shadow-lg cursor-pointer group"
+        @mouseenter="hovering2 = true"
+        @mouseleave="handleMouseLeave(2)"
+        @mousemove="(e) => handleMouseMove(e, 2)"
+        class="bg-modal-color-gradient rounded-2xl shadow-sm overflow-hidden border border-color cursor-pointer group portfolio-card"
       >
         <div class="h-48 bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
           <svg class="w-20 h-20 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -49,8 +57,12 @@
 
       <!-- Project Card 3 -->
       <div 
+        ref="card3"
         @click="selectProject(3)"
-        class="bg-modal-color-gradient rounded-2xl shadow-sm overflow-hidden border border-color transition-all duration-300 hover:shadow-lg cursor-pointer group"
+        @mouseenter="hovering3 = true"
+        @mouseleave="handleMouseLeave(3)"
+        @mousemove="(e) => handleMouseMove(e, 3)"
+        class="bg-modal-color-gradient rounded-2xl shadow-sm overflow-hidden border border-color cursor-pointer group portfolio-card"
       >
         <div class="h-48 bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
           <svg class="w-20 h-20 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -71,12 +83,133 @@
 </template>
 
 <script setup>
-import { defineEmits } from 'vue';
+import { defineEmits, ref, onMounted, onUnmounted } from 'vue';
 
 const emit = defineEmits(['project-selected']);
 
+const card1 = ref(null);
+const card2 = ref(null);
+const card3 = ref(null);
+const hovering1 = ref(false);
+const hovering2 = ref(false);
+const hovering3 = ref(false);
+
+const currentGradientStop = ref({ 1: 60, 2: 60, 3: 60 });
+const targetGradientStop = ref({ 1: 60, 2: 60, 3: 60 });
+const isAnimating = ref({ 1: false, 2: false, 3: false });
+
+let gradientAnimationFrame = {};
+
 function selectProject(projectId) {
   emit('project-selected', projectId);
+}
+
+function updateCardBackground(cardId) {
+  const cardRef = cardId === 1 ? card1.value : cardId === 2 ? card2.value : card3.value;
+  if (!cardRef) return;
+  
+  const isDark = document.documentElement.classList.contains('dark');
+  const baseColor = isDark ? '#363636' : '#FFFFFF';
+  const accentColor = isDark ? '#333333' : '#f3f3f3';
+  cardRef.style.background = `linear-gradient(135deg, ${baseColor} 0%, ${baseColor} 60%, ${accentColor} 60%, ${accentColor} 100%)`;
+}
+
+let darkModeObserver;
+
+onMounted(() => {
+  // Observe dark mode class changes
+  darkModeObserver = new MutationObserver(() => {
+    updateCardBackground(1);
+    updateCardBackground(2);
+    updateCardBackground(3);
+  });
+  
+  darkModeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class']
+  });
+});
+
+onUnmounted(() => {
+  if (darkModeObserver) {
+    darkModeObserver.disconnect();
+  }
+  Object.values(gradientAnimationFrame).forEach(frame => {
+    if (frame) cancelAnimationFrame(frame);
+  });
+});
+
+// Smooth gradient stop animation with lag
+function animateGradientStop(cardId) {
+  const lagFactor = 0.15;
+  const diff = targetGradientStop.value[cardId] - currentGradientStop.value[cardId];
+  
+  if (Math.abs(diff) > 0.01) {
+    currentGradientStop.value[cardId] += diff * lagFactor;
+    
+    const cardRef = cardId === 1 ? card1.value : cardId === 2 ? card2.value : card3.value;
+    if (cardRef) {
+      const isDark = document.documentElement.classList.contains('dark');
+      const baseColor = isDark ? '#363636' : '#FFFFFF';
+      const accentColor = isDark ? '#333333' : '#f3f3f3';
+      
+      cardRef.style.background = `linear-gradient(135deg, ${baseColor} 0%, ${baseColor} ${currentGradientStop.value[cardId]}%, ${accentColor} ${currentGradientStop.value[cardId]}%, ${accentColor} 100%)`;
+    }
+    
+    if (isAnimating.value[cardId]) {
+      gradientAnimationFrame[cardId] = requestAnimationFrame(() => animateGradientStop(cardId));
+    }
+  } else {
+    isAnimating.value[cardId] = false;
+  }
+}
+
+function handleMouseMove(event, cardId) {
+  const cardRef = cardId === 1 ? card1.value : cardId === 2 ? card2.value : card3.value;
+  if (!cardRef) return;
+  
+  const rect = cardRef.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  
+  const centerX = rect.width / 2;
+  const centerY = rect.height / 2;
+  
+  const rotateX = ((y - centerY) / centerY) * -10;
+  const rotateY = ((x - centerX) / centerX) * 10;
+  
+  const normalizedX = (x - centerX) / centerX;
+  const normalizedY = (y - centerY) / centerY;
+  
+  targetGradientStop.value[cardId] = 70 + (normalizedX * -9) + (normalizedY * 1);
+  
+  if (!isAnimating.value[cardId]) {
+    isAnimating.value[cardId] = true;
+    animateGradientStop(cardId);
+  }
+  
+  const scale = 1.02;
+  cardRef.style.transition = 'transform 0.35s cubic-bezier(0.34, .56, 0.64, 1)';
+  cardRef.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${scale})`;
+}
+
+function handleMouseLeave(cardId) {
+  const cardRef = cardId === 1 ? card1.value : cardId === 2 ? card2.value : card3.value;
+  if (cardId === 1) hovering1.value = false;
+  if (cardId === 2) hovering2.value = false;
+  if (cardId === 3) hovering3.value = false;
+  
+  if (!cardRef) return;
+  
+  targetGradientStop.value[cardId] = 60;
+  
+  if (!isAnimating.value[cardId]) {
+    isAnimating.value[cardId] = true;
+    animateGradientStop(cardId);
+  }
+  
+  cardRef.style.transition = 'transform 0.75s cubic-bezier(0.34, 2.56, 0.64, 1)';
+  cardRef.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)';
 }
 </script>
 
@@ -94,5 +227,11 @@ function selectProject(projectId) {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.portfolio-card {
+  transition: box-shadow 0.3s, background 0.3s;
+  transform-style: preserve-3d;
+  will-change: transform, background;
 }
 </style>
