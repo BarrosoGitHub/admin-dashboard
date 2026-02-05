@@ -3,12 +3,15 @@ import { ref, watch, onMounted, onBeforeUnmount, computed } from "vue";
 import Sidebar from "../components/sidebar/Sidebar.vue";
 import Navbar from "../components/navbar/Navbar.vue";
 import ConfirmationToast from "../components/toasts/ConfirmationToast.vue";
-import ConfirmConfigurationChanges from "../components/Modals/ConfirmConfigurationChangesModal.vue";
 import PasswordChangeModal from "../components/Modals/PasswordChangeModal.vue";
 import AppInfoCard from "../components/tabs/AppInfoCard.vue";
 import StatusElementCard from "../components/tabs/StatusElementCard.vue";
 import PortfolioCard from "../components/tabs/PortfolioCard.vue";
+import StatsCard from "../components/dashboard/StatsCard.vue";
+import SimpleChart from "../components/dashboard/SimpleChart.vue";
+import RecentActivity from "../components/dashboard/RecentActivity.vue";
 import { API_BASE_URL, WS_BASE_URL } from '@/apiConfig.js';
+import axios from 'axios';
 const diagnostics = ref({
   cpuTemp: 0,
   ramUsage: 0,
@@ -48,11 +51,20 @@ let ws = null;
 const activeModal = ref(null);
 const showAppInfoCard = ref(false);
 const showPasswordChangeModal = ref(false);
-const showPortfolio = ref(false);
+const showPortfolio = ref(true);
+const selectedProject = ref(null);
+const showProjectDetails = ref(false);
 
 // --- Data refs ---
 const appInfoData = ref([]);
-
+const showDashboard = ref(false);
+const dashboardStats = ref({
+  displayStatus: 'Active',
+  impressions: '12.4K',
+  adsPlayed: 342,
+  containers: 5
+});
+const chartData = ref([1240, 1580, 1420, 1890, 1650, 2100, 1950]);
 
 // --- Component refs ---
 const sidebarOpen = ref(false);
@@ -61,10 +73,13 @@ const toastRef = ref(null);
 // --- Search functionality ---
 const searchValue = ref("");
 const activeCardName = computed(() => {
+  if (selectedProject.value && showProjectDetails.value) {
+    return 'Project Details';
+  }
   switch (activeModal.value) {
     case 'appInfo': return 'App Information';
     case 'portfolio': return 'Portfolio';
-    default: return '';
+    default: return 'Portfolio';
   }
 });
 
@@ -84,58 +99,37 @@ watch(activeModal, (newModal, oldModal) => {
   }
 });
 
-// --- Persistence helpers ---
-function persistModalState() {
-  const state = {
-    activeModal: activeModal.value,
-    showAppInfoCard: showAppInfoCard.value,
-    appInfoData: appInfoData.value,
-  };
-  localStorage.setItem("modalState", JSON.stringify(state));
-}
-
-function restoreModalState() {
-  const stateStr = localStorage.getItem("modalState");
-  if (!stateStr) return;
-  try {
-    const state = JSON.parse(stateStr);
-    activeModal.value = state.activeModal;
-    showAppInfoCard.value = state.showAppInfoCard;
-    appInfoData.value = state.appInfoData;
-  } catch {}
-}
-
-// Watchers to persist state
-watch(
-  [
-    activeModal,
-    showAppInfoCard,
-    appInfoData,
-  ],
-  persistModalState,
-  { deep: true }
-);
-
-
-
-function handleDashboard(data) {
-  appInfoData.value = Array.isArray(data) ? data : [data];
-  activeModal.value = "appInfo";
-  showAppInfoCard.value = true;
-  showPortfolio.value = false;
-}
-
 function handlePortfolio() {
   activeModal.value = "portfolio";
+  showProjectDetails.value = false;
+  selectedProject.value = null;
   showAppInfoCard.value = false;
   showPortfolio.value = true;
+}
+
+function handleProjectSelected(projectId) {
+  selectedProject.value = projectId;
+  showProjectDetails.value = true;
+  showPortfolio.value = false;
+  
+  // Fetch project data (app info)
+  axios.get(`${API_BASE_URL}/info/services`)
+    .then(response => {
+      appInfoData.value = Array.isArray(response.data) ? response.data : [response.data];
+    })
+    .catch(error => {
+      appInfoData.value = [];
+    });
 }
 
 function resetAllModals() {
   activeModal.value = null;
   showAppInfoCard.value = false;
+  showDashboard.value = false;
   showPasswordChangeModal.value = false;
-  showPortfolio.value = false;
+  showPortfolio.value = true;
+  selectedProject.value = null;
+  showProjectDetails.value = false;
   appInfoData.value = [];
 }
 
@@ -153,26 +147,7 @@ window.addEventListener("sidebar-close", resetAllModals);
 onMounted(() => {
   setTimeout(() => {
     sidebarOpen.value = true;
-  }, 150); // Adjust delay as needed for effect
-
-  // Restore modal state on refresh
-  restoreModalState();
-
-  // Show dashboard if coming from login
-  if (localStorage.getItem("showDashboardOnHome") === "true") {
-    localStorage.removeItem("showDashboardOnHome");
-    // Fetch dashboard data (same as handleDashboardClick in Sidebar)
-    import("axios").then(({ default: axios }) => {
-      axios
-        .get(`${API_BASE_URL}/info/services`)
-        .then((response) => {
-          handleDashboard(response.data);
-        })
-        .catch(() => {
-          handleDashboard([]);
-        });
-    });
-  }
+  }, 150);
 
   initializeWebSocket();
 });
@@ -266,7 +241,6 @@ onBeforeUnmount(() => {
     <Sidebar
       :show="sidebarOpen"
       @sidebar-toggle="sidebarOpen = $event"
-      @dashboard="handleDashboard"
       @password-change="handlePasswordChange"
       @portfolio="handlePortfolio"
     />
@@ -295,27 +269,162 @@ onBeforeUnmount(() => {
                 @success="handlePasswordChangeSuccess"
               />
               <transition :key="activeModal" mode="out-in">
-                <template v-if="activeModal === 'portfolio' && showPortfolio">
-                  <PortfolioCard />
+                <template v-if="showProjectDetails && selectedProject">
+                  <div class="p-6 space-y-6">
+                    <div class="flex items-center justify-between mb-6">
+                      <div>
+                        <h2 class="text-3xl font-bold text-color">Ad Display Device</h2>
+                        <p class="text-gray-400 dark:text-gray-400 mt-2">Containerized digital signage platform</p>
+                      </div>
+                      <button 
+                        @click="handlePortfolio"
+                        class="px-4 py-2 bg-modal-color-gradient border border-color rounded-lg text-color hover:shadow-lg transition-all duration-200"
+                      >
+                        ← Back to Projects
+                      </button>
+                    </div>
+
+                    <!-- Stats Cards Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                      <StatsCard 
+                        title="Display Status" 
+                        :value="dashboardStats.displayStatus"
+                        change="24/7"
+                        changeType="up"
+                        iconType="display"
+                      />
+                      <StatsCard 
+                        title="Impressions" 
+                        :value="dashboardStats.impressions"
+                        change="+18%"
+                        changeType="up"
+                        iconType="impressions"
+                      />
+                      <StatsCard 
+                        title="Ads Played Today" 
+                        :value="dashboardStats.adsPlayed"
+                        change="+23"
+                        changeType="up"
+                        iconType="ads"
+                      />
+                      <StatsCard 
+                        title="Active Containers" 
+                        :value="dashboardStats.containers"
+                        change="Healthy"
+                        changeType="up"
+                        iconType="containers"
+                      />
+                    </div>
+
+                    <!-- Charts and Activity Row -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      <div class="lg:col-span-2">
+                        <SimpleChart 
+                          title="Ad Impressions (Last 7 Days)" 
+                          :data="chartData"
+                          :labels="['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']"
+                          color="#8B5CF6"
+                        />
+                      </div>
+                      <RecentActivity />
+                    </div>
+
+                    <!-- System Stats -->
+                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                      <div class="bg-modal-color-gradient rounded-2xl shadow-sm border border-color p-6 transition-all duration-300 hover:shadow-lg group">
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <p class="text-sm text-gray-400 dark:text-gray-400 transition-all duration-200">CPU Temp</p>
+                            <p class="text-2xl font-bold text-color transition-all duration-200">{{ diagnostics.cpuTemp }}°C</p>
+                          </div>
+                          <div class="w-16 h-16">
+                            <StatusElementCard
+                              title=""
+                              :value="diagnostics.cpuTemp"
+                              :mainValue="''"
+                              :maxValue="100"
+                              :secondaryValues="[]"
+                              :size="60"
+                              :stroke="8"
+                              type="cpu"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="bg-modal-color-gradient rounded-2xl shadow-sm border border-color p-6 transition-all duration-300 hover:shadow-lg group">
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <p class="text-sm text-gray-400 dark:text-gray-400 transition-all duration-200">RAM Usage</p>
+                            <p class="text-2xl font-bold text-color transition-all duration-200">{{ diagnostics.ramUsage }}%</p>
+                          </div>
+                          <div class="w-16 h-16">
+                            <StatusElementCard
+                              title=""
+                              :value="diagnostics.ramUsage"
+                              :mainValue="''"
+                              :maxValue="maxRamValue"
+                              :secondaryValues="[]"
+                              :size="60"
+                              :stroke="8"
+                              type="ram"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="bg-modal-color-gradient rounded-2xl shadow-sm border border-color p-6 transition-all duration-300 hover:shadow-lg group">
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <p class="text-sm text-gray-400 dark:text-gray-400 transition-all duration-200">Disk Space</p>
+                            <p class="text-2xl font-bold text-color transition-all duration-200">{{ diagnostics.diskSpace }}%</p>
+                          </div>
+                          <div class="w-16 h-16">
+                            <StatusElementCard
+                              title=""
+                              :value="diagnostics.diskSpace"
+                              :mainValue="''"
+                              :maxValue="100"
+                              :secondaryValues="[]"
+                              :size="60"
+                              :stroke="8"
+                              type="disk"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="bg-modal-color-gradient rounded-2xl shadow-sm border border-color p-6 transition-all duration-300 hover:shadow-lg group">
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <p class="text-sm text-gray-400 dark:text-gray-400 transition-all duration-200">Board Type</p>
+                            <p class="text-lg font-bold text-color transition-all duration-200">{{ appInfoData[0]?.BoardType || 'Unknown' }}</p>
+                          </div>
+                          <div class="p-3 bg-indigo-500 rounded-full transition-transform duration-200 group-hover:scale-110">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- App Info Cards -->
+                    <div v-if="hasAppInfoData" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      <AppInfoCard
+                        v-for="(info, idx) in appInfoData"
+                        :key="idx"
+                        :info="info"
+                        :smallVersion="false"
+                      />
+                    </div>
+                  </div>
+                </template>
+                <template v-else-if="showPortfolio">
+                  <PortfolioCard @project-selected="handleProjectSelected" />
                 </template>
               </transition>
             </div>
-            <transition name="appinfo-slide-right" mode="out-in">
-              <div
-                v-if="hasAppInfoData && activeModal !== 'appInfo'"
-                class="flex flex-col items-end pt-5 pr-4 mr-20 z-40"
-                style="pointer-events: none"
-              >
-                <div style="pointer-events: auto">
-                  <AppInfoCard
-                    v-for="(info, idx) in filteredAppInfoData"
-                    :key="idx"
-                    :info="info"
-                    :smallVersion="true"
-                  />
-                </div>
-              </div>
-            </transition>
               <div
                 v-if="activeModal === 'appInfo' && showAppInfoCard"
                 id="popup-modal"
@@ -389,9 +498,6 @@ onBeforeUnmount(() => {
     </div>
   </div>
 
-  <ConfirmConfigurationChanges
-    ref="diffModalRef"
-  />
   <ConfirmationToast ref="toastRef" />
 </template>
 
