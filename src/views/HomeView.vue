@@ -22,6 +22,34 @@ const diagnostics = ref({
   ramUsages: []
 });
 
+const animatedDiagnostics = ref({
+  cpuTemp: 0,
+  ramUsage: 0,
+  diskSpace: 0
+});
+
+function animateDiagnosticValue(key, start, end, duration = 800) {
+  const startTime = performance.now();
+  
+  function update(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    
+    // Easing function for smooth animation
+    const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+    
+    animatedDiagnostics.value[key] = start + (end - start) * easeOutQuart;
+    
+    if (progress < 1) {
+      requestAnimationFrame(update);
+    } else {
+      animatedDiagnostics.value[key] = end;
+    }
+  }
+  
+  requestAnimationFrame(update);
+}
+
 // Computed properties for better performance
 const hasAppInfoData = computed(() => Array.isArray(appInfoData.value) && appInfoData.value.length > 0);
 const hasFilteredAppInfoData = computed(() => filteredAppInfoData.value && filteredAppInfoData.value.length);
@@ -210,30 +238,45 @@ function updateDiagnostics(data) {
       cpuAverage = cpu1;
     }
     
-    diagnostics.value.cpuTemp = Math.round(cpuAverage);
+    const newCpuTemp = Math.round(cpuAverage);
+    if (newCpuTemp !== diagnostics.value.cpuTemp) {
+      animateDiagnosticValue('cpuTemp', animatedDiagnostics.value.cpuTemp, newCpuTemp);
+    }
+    diagnostics.value.cpuTemp = newCpuTemp;
     diagnostics.value.cpuTemps = Object.entries(data.cpuTemperatures)
       .map(([key, value]) => `${key}: ${value}°C`);
   } else {
     diagnostics.value.cpuTemp = 0;
+    animatedDiagnostics.value.cpuTemp = 0;
     diagnostics.value.cpuTemps = [];
   }
   
   // RAM Usage processing
   if (data.ramUsage?.total && data.ramUsage?.load) {
-    diagnostics.value.ramUsage = Math.round((data.ramUsage.load / data.ramUsage.total) * 100);
+    const newRamUsage = Math.round((data.ramUsage.load / data.ramUsage.total) * 100);
+    if (newRamUsage !== diagnostics.value.ramUsage) {
+      animateDiagnosticValue('ramUsage', animatedDiagnostics.value.ramUsage, newRamUsage);
+    }
+    diagnostics.value.ramUsage = newRamUsage;
     diagnostics.value.ramUsages = Object.entries(data.ramUsage)
       .map(([key, value]) => `${key}: ${value} Mb`);
   } else {
     diagnostics.value.ramUsage = 0;
+    animatedDiagnostics.value.ramUsage = 0;
     diagnostics.value.ramUsages = [];
   }
   
   // Disk Space processing
   if (Array.isArray(data.diskSpace) && data.diskSpace.length > 0) {
     const root = data.diskSpace.find(d => d.mount === "/") || data.diskSpace[0];
-    diagnostics.value.diskSpace = root?.percentUsed ? Math.round(root.percentUsed) : 0;
+    const newDiskSpace = root?.percentUsed ? Math.round(root.percentUsed) : 0;
+    if (newDiskSpace !== diagnostics.value.diskSpace) {
+      animateDiagnosticValue('diskSpace', animatedDiagnostics.value.diskSpace, newDiskSpace);
+    }
+    diagnostics.value.diskSpace = newDiskSpace;
   } else {
     diagnostics.value.diskSpace = 0;
+    animatedDiagnostics.value.diskSpace = 0;
   }
 }
 
@@ -359,7 +402,7 @@ onBeforeUnmount(() => {
                         <div class="flex items-center justify-between">
                           <div>
                             <p class="text-sm text-gray-400 dark:text-gray-400 transition-all duration-200">CPU Temp</p>
-                            <p class="text-2xl font-bold text-color transition-all duration-200">{{ diagnostics.cpuTemp }}°C</p>
+                            <p class="text-2xl font-bold text-color transition-all duration-200">{{ Math.round(animatedDiagnostics.cpuTemp) }}°C</p>
                           </div>
                           <div class="w-16 h-16">
                             <StatusElementCard
@@ -380,7 +423,7 @@ onBeforeUnmount(() => {
                         <div class="flex items-center justify-between">
                           <div>
                             <p class="text-sm text-gray-400 dark:text-gray-400 transition-all duration-200">RAM Usage</p>
-                            <p class="text-2xl font-bold text-color transition-all duration-200">{{ diagnostics.ramUsage }}%</p>
+                            <p class="text-2xl font-bold text-color transition-all duration-200">{{ Math.round(animatedDiagnostics.ramUsage) }}%</p>
                           </div>
                           <div class="w-16 h-16">
                             <StatusElementCard
@@ -401,7 +444,7 @@ onBeforeUnmount(() => {
                         <div class="flex items-center justify-between">
                           <div>
                             <p class="text-sm text-gray-400 dark:text-gray-400 transition-all duration-200">Disk Space</p>
-                            <p class="text-2xl font-bold text-color transition-all duration-200">{{ diagnostics.diskSpace }}%</p>
+                            <p class="text-2xl font-bold text-color transition-all duration-200">{{ Math.round(animatedDiagnostics.diskSpace) }}%</p>
                           </div>
                           <div class="w-16 h-16">
                             <StatusElementCard

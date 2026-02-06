@@ -15,9 +15,9 @@
     </div>
 
     <!-- Game Description & Screenshots Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- About the Game -->
-      <div class="bg-modal-color-gradient rounded-2xl shadow-sm border border-color p-8 transition-all duration-300 hover:shadow-lg">
+      <div class="lg:col-span-2 bg-modal-color-gradient rounded-2xl shadow-sm border border-color p-8 transition-all duration-300 hover:shadow-lg">
         <div class="flex items-start gap-4 mb-6">
           <div class="p-3 bg-gradient-to-br from-orange-400 to-red-600 rounded-full">
             <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -40,14 +40,8 @@
       </div>
 
       <!-- Game Screenshots Carousel -->
-      <div class="bg-modal-color-gradient rounded-2xl shadow-sm border border-color p-8 transition-all duration-300 hover:shadow-lg">
-        <h3 class="text-2xl font-bold text-color mb-6 flex items-center gap-2">
-          <svg class="w-7 h-7 text-pink-500" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
-          </svg>
-          Screenshots
-        </h3>
-        
+      <div class="md:col-span-1 bg-modal-color-gradient rounded-2xl shadow-sm border border-color p-6 transition-all duration-300 hover:shadow-lg">
+      
         <!-- Carousel Container -->
         <div class="relative rounded-xl overflow-hidden border-2 border-purple-500/20">
           <!-- Slides -->
@@ -185,25 +179,104 @@
     <!-- Development Details -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <!-- Technical Stack -->
-      <div class="bg-modal-color-gradient rounded-2xl shadow-sm border border-color p-6 transition-all duration-300 hover:shadow-lg">
-        <h3 class="text-xl font-bold text-color mb-4 flex items-center gap-2">
-          <svg class="w-6 h-6 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-          </svg>
+      <div class="bg-gradient-to-br from-purple-500/5 to-pink-500/5 rounded-2xl shadow-sm border-2 border-purple-500/20 p-8 transition-all duration-300 hover:shadow-xl hover:border-purple-500/40">
+        <h3 class="text-2xl font-bold text-color mb-6 flex items-center gap-3">
+          <div class="p-2 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg">
+            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+            </svg>
+          </div>
           Technical Stack
         </h3>
-        <div class="space-y-3">
-          <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-            <span class="px-3 py-1 text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 rounded-full">Unity Engine</span>
-            <span class="text-sm text-gray-600 dark:text-gray-300">Game Development Framework</span>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Unity Engine -->
+          <div class="group relative bg-modal-color-gradient rounded-xl p-4 border border-color hover:border-purple-500 transition-all duration-300 hover:scale-105 hover:shadow-lg">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 3.5a1.5 1.5 0 013 0V4a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-.5a1.5 1.5 0 000 3h.5a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-.5a1.5 1.5 0 00-3 0v.5a1 1 0 01-1 1H6a1 1 0 01-1-1v-3a1 1 0 00-1-1h-.5a1.5 1.5 0 010-3H4a1 1 0 001-1V6a1 1 0 011-1h3a1 1 0 001-1v-.5z"></path>
+                </svg>
+              </div>
+              <div>
+                <h4 class="font-bold text-color">Unity</h4>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Game Engine</p>
+              </div>
+            </div>
           </div>
-          <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-            <span class="px-3 py-1 text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 rounded-full">C#</span>
-            <span class="text-sm text-gray-600 dark:text-gray-300">Game Logic & Systems</span>
+
+          <!-- C# Mono -->
+          <div class="group relative bg-modal-color-gradient rounded-xl p-4 border border-color hover:border-purple-500 transition-all duration-300 hover:scale-105 hover:shadow-lg">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                </svg>
+              </div>
+              <div>
+                <h4 class="font-bold text-color">C# Mono</h4>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Scripting</p>
+              </div>
+            </div>
           </div>
-          <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-            <span class="px-3 py-1 text-xs font-medium bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200 rounded-full">3D Modeling</span>
-            <span class="text-sm text-gray-600 dark:text-gray-300">Custom Assets & Textures</span>
+
+          <!-- Blender -->
+          <div class="group relative bg-modal-color-gradient rounded-xl p-4 border border-color hover:border-orange-500 transition-all duration-300 hover:scale-105 hover:shadow-lg">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
+                </svg>
+              </div>
+              <div>
+                <h4 class="font-bold text-color">Blender</h4>
+                <p class="text-xs text-gray-500 dark:text-gray-400">3D Modeling</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cinemachine -->
+          <div class="group relative bg-modal-color-gradient rounded-xl p-4 border border-color hover:border-pink-500 transition-all duration-300 hover:scale-105 hover:shadow-lg">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-10 h-10 bg-gradient-to-br from-pink-400 to-pink-600 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"></path>
+                </svg>
+              </div>
+              <div>
+                <h4 class="font-bold text-color">Cinemachine</h4>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Camera System</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Input System -->
+          <div class="group relative bg-modal-color-gradient rounded-xl p-4 border border-color hover:border-indigo-500 transition-all duration-300 hover:scale-105 hover:shadow-lg">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-10 h-10 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.34.208-.646.477-.859a4 4 0 10-4.954 0c.27.213.462.519.476.859h4.002z"></path>
+                </svg>
+              </div>
+              <div>
+                <h4 class="font-bold text-color">Input System</h4>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Controls</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Physics & More -->
+          <div class="group relative bg-modal-color-gradient rounded-xl p-4 border border-color hover:border-green-500 transition-all duration-300 hover:scale-105 hover:shadow-lg">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path>
+                </svg>
+              </div>
+              <div>
+                <h4 class="font-bold text-color">Physics & More</h4>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Unity Tools</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -229,105 +302,6 @@
             <div class="text-2xl font-bold text-color">Games Expo Edinburgh</div>
             <div class="text-sm text-gray-600 dark:text-gray-300">Featured & Praised</div>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Game Screenshots Carousel -->
-    <div class="bg-modal-color-gradient rounded-2xl shadow-sm border border-color p-8 transition-all duration-300 hover:shadow-lg">
-      <h3 class="text-2xl font-bold text-color mb-6 flex items-center gap-2">
-        <svg class="w-7 h-7 text-pink-500" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
-        </svg>
-        Game Screenshots
-      </h3>
-      
-      <!-- Carousel Container - Centered with max width -->
-      <div class="max-w-lg mx-auto">
-        <div class="relative rounded-xl overflow-hidden border-2 border-purple-500/20">
-          <!-- Slides -->
-          <div class="relative h-[620px] w-full">
-          <transition name="fade" mode="out-in">
-            <div
-              v-if="currentSlide === 0"
-              key="slide-0"
-              class="absolute inset-0 w-full h-full"
-            >
-              <img 
-                src="@/assets/necro-brawl/necro-brawl-image-1.jpg" 
-                alt="Game Controls & Mechanics"
-                class="w-full h-full object-cover object-center"
-              />
-              <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
-                <p class="text-white text-xl font-semibold" style="text-shadow: 0px 0px 2px #000">Game Controls & Mechanics</p>
-              </div>
-            </div>
-            <div
-              v-else-if="currentSlide === 1"
-              key="slide-1"
-              class="absolute inset-0 w-full h-full"
-            >
-              <img 
-                src="@/assets/necro-brawl/necro-brawl-image-2.jpg" 
-                alt="Gameplay Action"
-                class="w-full h-full object-cover object-center"
-              />
-              <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
-                <p class="text-white text-xl font-semibold" style="text-shadow: 0px 0px 2px #000">Gameplay Action</p>
-              </div>
-            </div>
-            <div
-              v-else
-              key="slide-2"
-              class="absolute inset-0 w-full h-full"
-            >
-              <img 
-                src="@/assets/necro-brawl/necro-brawl-image-3.jpg" 
-                alt="Stadium Arena"
-                class="w-full h-full object-cover object-center"
-              />
-              <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
-                <p class="text-white text-xl font-semibold" style="text-shadow: 0px 0px 2px #000">Stadium Arena</p>
-              </div>
-            </div>
-          </transition>
-        </div>
-
-        <!-- Navigation Buttons -->
-        <button
-          @click="prevSlide"
-          class="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 hover:scale-110 backdrop-blur-sm"
-          aria-label="Previous slide"
-        >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-          </svg>
-        </button>
-        <button
-          @click="nextSlide"
-          class="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 hover:scale-110 backdrop-blur-sm"
-          aria-label="Next slide"
-        >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-          </svg>
-        </button>
-
-        <!-- Indicators -->
-        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-          <button
-            v-for="(slide, index) in totalSlides"
-            :key="index"
-            @click="goToSlide(index)"
-            :class="[
-              'w-3 h-3 rounded-full transition-all duration-300',
-              currentSlide === index 
-                ? 'bg-white w-8' 
-                : 'bg-white/50 hover:bg-white/75'
-            ]"
-            :aria-label="`Go to slide ${index + 1}`"
-          ></button>
-        </div>
         </div>
       </div>
     </div>

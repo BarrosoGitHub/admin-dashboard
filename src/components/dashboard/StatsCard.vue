@@ -3,7 +3,7 @@
     <div class="flex items-center justify-between">
       <div class="flex-1">
         <p class="text-sm font-medium text-gray-400 dark:text-gray-400 transition-all duration-200">{{ title }}</p>
-        <p class="text-2xl font-bold text-color mt-2 transition-all duration-200">{{ value }}</p>
+        <p class="text-2xl font-bold text-color mt-2 transition-all duration-200">{{ displayValue }}</p>
         <div class="flex items-center mt-2" v-if="change">
           <span :class="changeClass" class="text-sm font-medium flex items-center transition-all duration-200">
             <svg v-if="changeType === 'up'" class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -24,7 +24,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, watch, onMounted } from 'vue';
 import { 
   TvIcon,
   EyeIcon,
@@ -43,6 +43,87 @@ const props = defineProps({
   iconType: {
     type: String,
     default: 'display'
+  }
+});
+
+const animatedValue = ref(0);
+const displayValue = computed(() => {
+  // If value is a number, show animated counter
+  if (typeof props.value === 'number') {
+    return Math.round(animatedValue.value);
+  }
+  // If value contains a number (like "12.4K"), animate the numeric part
+  if (typeof props.value === 'string' && /\d/.test(props.value)) {
+    const match = props.value.match(/([\d.]+)/);
+    if (match) {
+      const num = parseFloat(match[1]);
+      const suffix = props.value.replace(match[0], '');
+      return (animatedValue.value || num).toFixed(1) + suffix;
+    }
+  }
+  return props.value;
+});
+
+function animateValue(start, end, duration = 1500) {
+  const startTime = performance.now();
+  const isDecimal = typeof end === 'number' && end % 1 !== 0;
+  
+  function update(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    
+    // Easing function for smooth animation
+    const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+    
+    animatedValue.value = start + (end - start) * easeOutQuart;
+    
+    if (progress < 1) {
+      requestAnimationFrame(update);
+    } else {
+      animatedValue.value = end;
+    }
+  }
+  
+  requestAnimationFrame(update);
+}
+
+onMounted(() => {
+  // Extract numeric value for animation
+  let targetValue = 0;
+  if (typeof props.value === 'number') {
+    targetValue = props.value;
+  } else if (typeof props.value === 'string') {
+    const match = props.value.match(/([\d.]+)/);
+    if (match) {
+      targetValue = parseFloat(match[1]);
+    }
+  }
+  
+  if (targetValue > 0) {
+    animateValue(0, targetValue);
+  }
+});
+
+watch(() => props.value, (newValue, oldValue) => {
+  let newNum = 0;
+  let oldNum = 0;
+  
+  if (typeof newValue === 'number') {
+    newNum = newValue;
+  } else if (typeof newValue === 'string') {
+    const match = newValue.match(/([\d.]+)/);
+    if (match) newNum = parseFloat(match[1]);
+  }
+  
+  if (typeof oldValue === 'number') {
+    oldNum = oldValue;
+  } else if (typeof oldValue === 'string') {
+    const match = oldValue.match(/([\d.]+)/);
+    if (match) oldNum = parseFloat(match[1]);
+  }
+  
+  if (newNum !== oldNum && newNum > 0) {
+    animateValue(oldNum, newNum, 800);
   }
 });
 
