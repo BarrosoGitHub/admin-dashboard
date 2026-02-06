@@ -95,13 +95,13 @@
           <!-- Portfolio Submenu -->
           <ul :class="['mt-2 space-y-1 overflow-hidden transition-all duration-300', portfolioMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0']">
             <li>
-              <a href="#" class="flex items-center p-2 text-sm text-gray-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-color ml-6" @click.prevent="scrollToProject('project-1')">
+              <a href="#" class="flex items-center p-2 text-sm text-gray-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-color ml-6" @click.prevent="openProject(1)">
                 <span class="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></span>
                 Ad Display Device
               </a>
             </li>
             <li>
-              <a href="#" class="flex items-center p-2 text-sm text-gray-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-color ml-6" @click.prevent="scrollToProject('project-5')">
+              <a href="#" class="flex items-center p-2 text-sm text-gray-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-color ml-6" @click.prevent="openProject(5)">
                 <span class="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></span>
                 Necro Brawl Showcase
               </a>
@@ -180,15 +180,8 @@ function scrollToSection(sectionId) {
   }, 100);
 }
 
-function scrollToProject(projectId) {
-  emit('portfolio');
-  // Give the portfolio view time to render, then scroll
-  setTimeout(() => {
-    const element = document.getElementById(projectId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }, 100);
+function openProject(projectId) {
+  emit('project-selected', projectId);
 }
 
 onMounted(() => {

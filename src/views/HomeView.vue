@@ -307,6 +307,7 @@ onBeforeUnmount(() => {
       @password-change="handlePasswordChange"
       @portfolio="handlePortfolio"
       @profile="handleProfile"
+      @project-selected="handleProjectSelected"
     />
     
     <div :class="sidebarClasses">
