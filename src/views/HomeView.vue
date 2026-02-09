@@ -95,7 +95,38 @@ const dashboardStats = ref({
   adsPlayed: 342,
   containers: 5
 });
-const chartData = ref([1240, 1580, 1420, 1890, 1650, 2100, 1950]);
+
+const selectedMetric = ref('impressions');
+const metricsData = ref({
+  impressions: {
+    data: [1240, 1580, 1420, 1890, 1650, 2100, 1950],
+    title: 'Impressions (Last 7 Days)',
+    color: '#10B981'
+  },
+  adsPlayed: {
+    data: [298, 315, 287, 356, 342, 389, 367],
+    title: 'Ads Played (Last 7 Days)',
+    color: '#8B5CF6'
+  },
+  displayStatus: {
+    data: [24, 24, 24, 24, 24, 24, 24],
+    title: 'Uptime Hours (Last 7 Days)',
+    color: '#3B82F6'
+  },
+  containers: {
+    data: [5, 5, 5, 4, 5, 5, 5],
+    title: 'Active Containers (Last 7 Days)',
+    color: '#F59E0B'
+  }
+});
+
+const chartData = computed(() => metricsData.value[selectedMetric.value].data);
+const chartTitle = computed(() => metricsData.value[selectedMetric.value].title);
+const chartColor = computed(() => metricsData.value[selectedMetric.value].color);
+
+function selectMetric(metric) {
+  selectedMetric.value = metric;
+}
 
 // --- Component refs ---
 const sidebarOpen = ref(false);
@@ -354,44 +385,56 @@ onBeforeUnmount(() => {
 
                     <!-- Stats Cards Grid -->
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                      <StatsCard 
-                        title="Display Status" 
-                        :value="dashboardStats.displayStatus"
-                        change="24/7"
-                        changeType="up"
-                        iconType="display"
-                      />
-                      <StatsCard 
-                        title="Impressions" 
-                        :value="dashboardStats.impressions"
-                        change="+18%"
-                        changeType="up"
-                        iconType="impressions"
-                      />
-                      <StatsCard 
-                        title="Ads Played Today" 
-                        :value="dashboardStats.adsPlayed"
-                        change="+23"
-                        changeType="up"
-                        iconType="ads"
-                      />
-                      <StatsCard 
-                        title="Active Containers" 
-                        :value="dashboardStats.containers"
-                        change="Healthy"
-                        changeType="up"
-                        iconType="containers"
-                      />
+                      <div @click="selectMetric('displayStatus')" class="cursor-pointer transform transition-all duration-200 hover:scale-105">
+                        <StatsCard 
+                          title="Display Status" 
+                          :value="dashboardStats.displayStatus"
+                          change="24/7"
+                          changeType="up"
+                          iconType="display"
+                          :selected="selectedMetric === 'displayStatus'"
+                        />
+                      </div>
+                      <div @click="selectMetric('impressions')" class="cursor-pointer transform transition-all duration-200 hover:scale-105">
+                        <StatsCard 
+                          title="Impressions" 
+                          :value="dashboardStats.impressions"
+                          change="+18%"
+                          changeType="up"
+                          iconType="impressions"
+                          :selected="selectedMetric === 'impressions'"
+                        />
+                      </div>
+                      <div @click="selectMetric('adsPlayed')" class="cursor-pointer transform transition-all duration-200 hover:scale-105">
+                        <StatsCard 
+                          title="Ads Played Today" 
+                          :value="dashboardStats.adsPlayed"
+                          change="+23"
+                          changeType="up"
+                          iconType="ads"
+                          :selected="selectedMetric === 'adsPlayed'"
+                        />
+                      </div>
+                      <div @click="selectMetric('containers')" class="cursor-pointer transform transition-all duration-200 hover:scale-105">
+                        <StatsCard 
+                          title="Active Containers" 
+                          :value="dashboardStats.containers"
+                          change="Healthy"
+                          changeType="up"
+                          iconType="containers"
+                          :selected="selectedMetric === 'containers'"
+                        />
+                      </div>
                     </div>
 
                     <!-- Charts and Activity Row -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                       <div class="lg:col-span-2">
                         <SimpleChart 
-                          title="Ad Impressions (Last 7 Days)" 
+                          :title="chartTitle" 
                           :data="chartData"
                           :labels="['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']"
-                          color="#8B5CF6"
+                          :color="chartColor"
                         />
                       </div>
                       <RecentActivity />

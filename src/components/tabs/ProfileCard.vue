@@ -1,49 +1,52 @@
 <template>
   <div class="p-6 space-y-6">
-    <!-- Header Section -->
-    <div class="bg-modal-color-gradient rounded-2xl p-8 border border-color shadow-lg">
-      <div class="flex items-center space-x-6">
-        <div class="w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-4xl font-bold">
-          {{ initials }}
-        </div>
-        <div class="flex-1">
-          <h1 class="text-4xl font-bold text-color mb-2">{{ profile.name }}</h1>
-          <h2 class="text-xl text-gray-400 mb-4">{{ profile.title }}</h2>
-          <div class="flex flex-wrap gap-4 text-sm text-gray-400">
-            <div class="flex items-center">
-              <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
-                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
-              </svg>
-              {{ profile.email }}
-            </div>
-            <div class="flex items-center">
-              <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path>
-              </svg>
-              {{ profile.phone }}
-            </div>
-            <div class="flex items-center">
-              <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
-              </svg>
-              {{ profile.location }}
+    <!-- Header and Summary Section - Side by Side -->
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      <!-- Header Section -->
+      <div class="lg:col-span-3 bg-modal-color-gradient rounded-2xl p-8 border border-color shadow-lg">
+        <div class="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-6">
+          <div class="w-32 h-32 flex-shrink-0 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-4xl font-bold p-2">
+            {{ initials }}
+          </div>
+          <div class="flex-1 text-center md:text-left">
+            <h1 class="text-3xl font-bold text-color mb-2">{{ profile.name }}</h1>
+            <h2 class="text-lg text-gray-400 mb-4">{{ profile.title }}</h2>
+            <div class="flex flex-col gap-3 text-sm text-gray-400">
+              <div class="flex items-center justify-center md:justify-start">
+                <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
+                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
+                </svg>
+                <span class="break-all">{{ profile.email }}</span>
+              </div>
+              <div class="flex items-center justify-center md:justify-start">
+                <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path>
+                </svg>
+                {{ profile.phone }}
+              </div>
+              <div class="flex items-center justify-center md:justify-start">
+                <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                </svg>
+                {{ profile.location }}
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Summary Section -->
-    <div id="summary" class="bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
-      <h3 class="text-2xl font-bold text-color mb-4 flex items-center">
-        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
-          <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path>
-        </svg>
-        Professional Summary
-      </h3>
-      <p class="text-gray-400 leading-relaxed">{{ profile.summary }}</p>
+      <!-- Summary Section -->
+      <div id="summary" class="lg:col-span-2 bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
+        <h3 class="text-2xl font-bold text-color mb-4 flex items-center">
+          <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path>
+          </svg>
+          Professional Summary
+        </h3>
+        <p class="text-gray-400 leading-relaxed">{{ profile.summary }}</p>
+      </div>
     </div>
 
         <!-- Skills Section -->
@@ -77,49 +80,74 @@
       </div>
     </div>
 
-    <!-- Experience Section -->
-    <div id="experience" class="bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
-      <h3 class="text-2xl font-bold text-color mb-6 flex items-center">
-        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"></path>
-          <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z"></path>
-        </svg>
-        Work Experience
-      </h3>
-      <div class="space-y-4">
-        <div v-for="(job, index) in profile.experience" :key="index" class="group border-l-4 border-blue-500 pl-4 hover:border-purple-500 transition-all duration-300 cursor-pointer p-3 rounded-r-lg hover:bg-blue-500/5">
-          <div class="flex justify-between items-start mb-2">
-            <div class="flex-1">
-              <h4 class="text-lg font-semibold text-color">{{ job.position }}</h4>
-              <p class="text-gray-400">{{ job.company }}</p>
-              <p v-if="job.location" class="text-sm text-gray-500">{{ job.location }}</p>
+    <!-- Work Experience and Education/Languages Section - Side by Side -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Experience Section -->
+      <div id="experience" class="bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
+        <h3 class="text-2xl font-bold text-color mb-6 flex items-center">
+          <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+            <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z"></path>
+          </svg>
+          Work Experience
+        </h3>
+        <div class="space-y-4">
+          <div v-for="(job, index) in profile.experience" :key="index" class="group border-l-4 border-blue-500 pl-4 hover:border-purple-500 transition-all duration-300 cursor-pointer p-3 rounded-r-lg hover:bg-blue-500/5">
+            <div class="flex justify-between items-start mb-2">
+              <div class="flex-1">
+                <h4 class="text-lg font-semibold text-color">{{ job.position }}</h4>
+                <p class="text-gray-400">{{ job.company }}</p>
+                <p v-if="job.location" class="text-sm text-gray-500">{{ job.location }}</p>
+              </div>
+              <span class="text-sm text-gray-500 ml-4">{{ job.period }}</span>
             </div>
-            <span class="text-sm text-gray-500 ml-4">{{ job.period }}</span>
+            <ul class="list-disc list-inside text-gray-400 space-y-1 max-h-0 opacity-0 group-hover:max-h-96 group-hover:opacity-100 transition-all duration-700 overflow-hidden">
+              <li v-for="(responsibility, idx) in job.responsibilities" :key="idx">{{ responsibility }}</li>
+            </ul>
           </div>
-          <ul class="list-disc list-inside text-gray-400 space-y-1 max-h-0 opacity-0 group-hover:max-h-96 group-hover:opacity-100 transition-all duration-300 overflow-hidden">
-            <li v-for="(responsibility, idx) in job.responsibilities" :key="idx">{{ responsibility }}</li>
-          </ul>
         </div>
       </div>
-    </div>
 
-    <!-- Education Section -->
-    <div id="education" class="bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
-      <h3 class="text-2xl font-bold text-color mb-6 flex items-center">
-        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"></path>
-        </svg>
-        Education
-      </h3>
-      <div class="space-y-4">
-        <div v-for="(edu, index) in profile.education" :key="index" class="border-l-4 border-green-500 pl-4 hover:border-yellow-500 transition-colors duration-300">
-          <div class="flex justify-between items-start">
-            <div>
-              <h4 class="text-lg font-semibold text-color">{{ edu.degree }}</h4>
-              <p class="text-gray-400">{{ edu.institution }}</p>
-              <p v-if="edu.gpa" class="text-sm text-gray-500 mt-1">{{ edu.gpa }}</p>
+      <!-- Education and Languages Column -->
+      <div class="space-y-6">
+        <!-- Education Section -->
+        <div id="education" class="bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
+          <h3 class="text-2xl font-bold text-color mb-6 flex items-center">
+            <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"></path>
+            </svg>
+            Education
+          </h3>
+          <div class="space-y-4">
+            <div v-for="(edu, index) in profile.education" :key="index" class="group border-l-4 border-green-500 pl-4 hover:border-yellow-500 transition-colors duration-300 cursor-pointer">
+              <div class="flex justify-between items-start">
+                <div class="flex-1">
+                  <h4 class="text-lg font-semibold text-color">{{ edu.degree }}</h4>
+                  <div class="relative">
+                    <p class="text-gray-400 group-hover:opacity-0 group-hover:invisible transition-all duration-300">{{ edu.institution }}</p>
+                    <p v-if="edu.gpa" class="text-sm text-gray-500 mt-1 absolute top-0 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">{{ edu.gpa }}</p>
+                  </div>
+                </div>
+                <span class="text-sm text-gray-500">{{ edu.year }}</span>
+              </div>
             </div>
-            <span class="text-sm text-gray-500">{{ edu.year }}</span>
+          </div>
+        </div>
+
+        <!-- Languages Section -->
+        <div id="languages" class="bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
+          <h3 class="text-2xl font-bold text-color mb-6 flex items-center">
+            <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7 2a1 1 0 011 1v1h3a1 1 0 110 2H9.578a18.87 18.87 0 01-1.724 4.78c.29.354.596.696.914 1.026a1 1 0 11-1.44 1.389c-.188-.196-.373-.396-.554-.6a19.098 19.098 0 01-3.107 3.567 1 1 0 01-1.334-1.49 17.087 17.087 0 003.13-3.733 18.992 18.992 0 01-1.487-2.494 1 1 0 111.79-.89c.234.47.489.928.764 1.372.417-.934.752-1.913.997-2.927H3a1 1 0 110-2h3V3a1 1 0 011-1zm6 6a1 1 0 01.894.553l2.991 5.982a.869.869 0 01.02.037l.99 1.98a1 1 0 11-1.79.895L15.383 16h-4.764l-.724 1.447a1 1 0 11-1.788-.894l.99-1.98.019-.038 2.99-5.982A1 1 0 0113 8zm-1.382 6h2.764L13 11.236 11.618 14z" clip-rule="evenodd"></path>
+            </svg>
+            Languages
+          </h3>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div v-for="(proficiency, language) in profile.languages" :key="language" 
+                 class="text-center p-3 bg-purple-500/10 rounded-lg hover:bg-purple-500/20 transition-colors duration-200">
+              <p class="text-color font-semibold">{{ language }}</p>
+              <p class="text-sm text-gray-400">{{ proficiency }}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -142,23 +170,6 @@
           <span>{{ cert }}</span>
         </li>
       </ul>
-    </div>
-
-    <!-- Languages Section -->
-    <div id="languages" class="bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
-      <h3 class="text-2xl font-bold text-color mb-6 flex items-center">
-        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M7 2a1 1 0 011 1v1h3a1 1 0 110 2H9.578a18.87 18.87 0 01-1.724 4.78c.29.354.596.696.914 1.026a1 1 0 11-1.44 1.389c-.188-.196-.373-.396-.554-.6a19.098 19.098 0 01-3.107 3.567 1 1 0 01-1.334-1.49 17.087 17.087 0 003.13-3.733 18.992 18.992 0 01-1.487-2.494 1 1 0 111.79-.89c.234.47.489.928.764 1.372.417-.934.752-1.913.997-2.927H3a1 1 0 110-2h3V3a1 1 0 011-1zm6 6a1 1 0 01.894.553l2.991 5.982a.869.869 0 01.02.037l.99 1.98a1 1 0 11-1.79.895L15.383 16h-4.764l-.724 1.447a1 1 0 11-1.788-.894l.99-1.98.019-.038 2.99-5.982A1 1 0 0113 8zm-1.382 6h2.764L13 11.236 11.618 14z" clip-rule="evenodd"></path>
-        </svg>
-        Languages
-      </h3>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div v-for="(proficiency, language) in profile.languages" :key="language" 
-             class="text-center p-3 bg-purple-500/10 rounded-lg hover:bg-purple-500/20 transition-colors duration-200">
-          <p class="text-color font-semibold">{{ language }}</p>
-          <p class="text-sm text-gray-400">{{ proficiency }}</p>
-        </div>
-      </div>
     </div>
   </div>
 </template>

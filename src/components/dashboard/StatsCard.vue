@@ -1,5 +1,8 @@
 <template>
-  <div class="bg-modal-color-gradient rounded-2xl shadow-sm p-6 border border-color hover:shadow-lg transition-all duration-300 group">
+  <div :class="[
+    'bg-modal-color-gradient rounded-2xl shadow-sm p-6 border-2 transition-all duration-300 group',
+    selected ? 'border-blue-500 shadow-lg shadow-blue-500/50 ring-2 ring-blue-500/20' : 'border-color hover:shadow-lg'
+  ]">
     <div class="flex items-center justify-between">
       <div class="flex-1">
         <p class="text-sm font-medium text-gray-400 dark:text-gray-400 transition-all duration-200">{{ title }}</p>
@@ -43,6 +46,10 @@ const props = defineProps({
   iconType: {
     type: String,
     default: 'display'
+  },
+  selected: {
+    type: Boolean,
+    default: false
   }
 });
 
