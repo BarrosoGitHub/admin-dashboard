@@ -2,27 +2,43 @@
   <div class="bg-modal-color-gradient rounded-2xl shadow-sm border border-color p-6 transition-all duration-300 hover:shadow-lg group">
     <h3 class="text-lg font-semibold text-color mb-4 transition-all duration-200">{{ title }}</h3>
     <div class="relative h-64">
-      <svg class="w-full h-full" viewBox="0 0 500 200" preserveAspectRatio="none">
+      <svg class="w-full h-full" viewBox="0 0 500 200" preserveAspectRatio="xMidYMid meet">
         <!-- Grid lines -->
         <line v-for="i in 5" :key="`h-${i}`" 
-          :x1="0" :y1="i * 40" :x2="500" :y2="i * 40" 
+          :x1="40" :y1="i * 40" :x2="500" :y2="i * 40" 
           stroke="currentColor" class="text-gray-600 dark:text-gray-600" stroke-width="1" opacity="0.2"/>
         
-        <!-- Area fill -->
-        <path :d="areaPath" :fill="areaFill" opacity="0.2"/>
-        
-        <!-- Line -->
-        <path :d="linePath" :stroke="lineColor" stroke-width="3" fill="none" stroke-linecap="round" class="transition-all duration-300"/>
-        
-        <!-- Points -->
-        <circle v-for="(point, index) in points" :key="index"
-          :cx="point.x" :cy="point.y" r="4" 
-          :fill="lineColor" class="opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer"/>
+        <!-- Bar chart -->
+        <g v-for="(bar, index) in bars" :key="index">
+          <rect 
+            :x="bar.x" 
+            :y="bar.y" 
+            :width="bar.width" 
+            :height="bar.height"
+            :fill="barColor"
+            class="transition-all duration-300 hover:opacity-80 cursor-pointer"
+            opacity="0.7"
+            rx="4"
+          />
+          <!-- Value label on top of bar -->
+          <text 
+            :x="bar.x + bar.width / 2" 
+            :y="bar.y - 5"
+            text-anchor="middle"
+            class="text-xs fill-gray-400 dark:fill-gray-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            font-size="12"
+          >{{ bar.value }}</text>
+        </g>
       </svg>
       
       <!-- Labels -->
-      <div class="flex justify-between mt-2 text-xs text-gray-400 dark:text-gray-400">
-        <span v-for="label in labels" :key="label" class="transition-all duration-200">{{ label }}</span>
+      <div class="relative mt-2 text-xs text-gray-400 dark:text-gray-400" style="height: 20px;">
+        <span 
+          v-for="(label, index) in labels" 
+          :key="label" 
+          class="absolute transition-all duration-200"
+          :style="{ left: `${(bars[index].x + bars[index].width / 2) / 5}%`, transform: 'translateX(-50%)' }"
+        >{{ label }}</span>
       </div>
     </div>
   </div>
@@ -50,37 +66,31 @@ const props = defineProps({
   }
 });
 
-const lineColor = computed(() => props.color);
-const areaFill = computed(() => props.color);
+const barColor = computed(() => props.color);
 
 const maxValue = computed(() => Math.max(...props.data));
 const minValue = computed(() => Math.min(...props.data));
 
-const points = computed(() => {
+const bars = computed(() => {
   const width = 500;
   const height = 200;
-  const padding = 20;
-  const segmentWidth = (width - 2 * padding) / (props.data.length - 1);
+  const padding = 40;
+  const bottomPadding = 20;
+  const barSpacing = 8;
+  const barWidth = (width - 2 * padding - (props.data.length - 1) * barSpacing) / props.data.length;
   
   return props.data.map((value, index) => {
-    const x = padding + index * segmentWidth;
+    const x = padding + index * (barWidth + barSpacing);
     const normalizedValue = (value - minValue.value) / (maxValue.value - minValue.value || 1);
-    const y = height - padding - (normalizedValue * (height - 2 * padding));
-    return { x, y, value };
+    const barHeight = normalizedValue * (height - padding - bottomPadding);
+    const y = height - bottomPadding - barHeight;
+    return { 
+      x, 
+      y, 
+      width: barWidth, 
+      height: barHeight,
+      value 
+    };
   });
-});
-
-const linePath = computed(() => {
-  if (points.value.length === 0) return '';
-  return points.value.reduce((path, point, index) => {
-    return index === 0 ? `M ${point.x} ${point.y}` : `${path} L ${point.x} ${point.y}`;
-  }, '');
-});
-
-const areaPath = computed(() => {
-  if (points.value.length === 0) return '';
-  const firstPoint = points.value[0];
-  const lastPoint = points.value[points.value.length - 1];
-  return `${linePath.value} L ${lastPoint.x} 180 L ${firstPoint.x} 180 Z`;
 });
 </script>

@@ -141,7 +141,7 @@ const activeCardName = computed(() => {
   switch (activeModal.value) {
     case 'appInfo': return 'App Information';
     case 'portfolio': return 'Portfolio';
-    case 'profile': return 'Curriculum Vitae';
+    case 'profile': return 'Profile';
     default: return 'Portfolio';
   }
 });
@@ -215,6 +215,20 @@ function handlePasswordChange() {
 
 function handlePasswordChangeSuccess() {
   toastRef.value?.showConfirmationToast("Password changed successfully!", true);
+}
+
+function handleNavigateToProfile() {
+  showProfile.value = true;
+  showPortfolio.value = false;
+  showProjectDetails.value = false;
+  showDashboard.value = false;
+}
+
+function handleNavigateToPortfolio() {
+  showProfile.value = false;
+  showPortfolio.value = true;
+  showProjectDetails.value = false;
+  showDashboard.value = false;
 }
 
 // Listen for logout event (dispatched from Avatar.vue)
@@ -350,13 +364,15 @@ onBeforeUnmount(() => {
             @sidebar-toggle="sidebarOpen = !sidebarOpen" 
             @password-change="handlePasswordChange"
             @search-update="handleSearchUpdate"
+            @navigate-to-profile="handleNavigateToProfile"
+            @navigate-to-portfolio="handleNavigateToPortfolio"
             :searchValue="searchValue"
             :showSearch="showSearchForActiveCard"
             :activeCard="activeCardName"
             :sidebarOpen="sidebarOpen"
           />
 
-          <div class="flex flex-col md:flex-row md:space-x-4">
+          <div class="flex flex-col md:flex-row md:space-x-4 pt-24">
           
             <div class="flex-1">
               <PasswordChangeModal
@@ -393,6 +409,7 @@ onBeforeUnmount(() => {
                           changeType="up"
                           iconType="display"
                           :selected="selectedMetric === 'displayStatus'"
+                          :progress="100"
                         />
                       </div>
                       <div @click="selectMetric('impressions')" class="cursor-pointer transform transition-all duration-200 hover:scale-105">
@@ -403,6 +420,7 @@ onBeforeUnmount(() => {
                           changeType="up"
                           iconType="impressions"
                           :selected="selectedMetric === 'impressions'"
+                          :progress="85"
                         />
                       </div>
                       <div @click="selectMetric('adsPlayed')" class="cursor-pointer transform transition-all duration-200 hover:scale-105">
@@ -413,6 +431,7 @@ onBeforeUnmount(() => {
                           changeType="up"
                           iconType="ads"
                           :selected="selectedMetric === 'adsPlayed'"
+                          :progress="92"
                         />
                       </div>
                       <div @click="selectMetric('containers')" class="cursor-pointer transform transition-all duration-200 hover:scale-105">
@@ -423,6 +442,7 @@ onBeforeUnmount(() => {
                           changeType="up"
                           iconType="containers"
                           :selected="selectedMetric === 'containers'"
+                          :progress="100"
                         />
                       </div>
                     </div>
@@ -448,18 +468,6 @@ onBeforeUnmount(() => {
                             <p class="text-sm text-gray-400 dark:text-gray-400 transition-all duration-200">CPU Temp</p>
                             <p class="text-2xl font-bold text-color transition-all duration-200">{{ Math.round(animatedDiagnostics.cpuTemp) }}°C</p>
                           </div>
-                          <div class="w-16 h-16">
-                            <StatusElementCard
-                              title=""
-                              :value="diagnostics.cpuTemp"
-                              :mainValue="''"
-                              :maxValue="100"
-                              :secondaryValues="[]"
-                              :size="60"
-                              :stroke="8"
-                              type="cpu"
-                            />
-                          </div>
                         </div>
                       </div>
                       
@@ -469,18 +477,7 @@ onBeforeUnmount(() => {
                             <p class="text-sm text-gray-400 dark:text-gray-400 transition-all duration-200">RAM Usage</p>
                             <p class="text-2xl font-bold text-color transition-all duration-200">{{ Math.round(animatedDiagnostics.ramUsage) }}%</p>
                           </div>
-                          <div class="w-16 h-16">
-                            <StatusElementCard
-                              title=""
-                              :value="diagnostics.ramUsage"
-                              :mainValue="''"
-                              :maxValue="maxRamValue"
-                              :secondaryValues="[]"
-                              :size="60"
-                              :stroke="8"
-                              type="ram"
-                            />
-                          </div>
+                          
                         </div>
                       </div>
 
@@ -489,18 +486,6 @@ onBeforeUnmount(() => {
                           <div>
                             <p class="text-sm text-gray-400 dark:text-gray-400 transition-all duration-200">Disk Space</p>
                             <p class="text-2xl font-bold text-color transition-all duration-200">{{ Math.round(animatedDiagnostics.diskSpace) }}%</p>
-                          </div>
-                          <div class="w-16 h-16">
-                            <StatusElementCard
-                              title=""
-                              :value="diagnostics.diskSpace"
-                              :mainValue="''"
-                              :maxValue="100"
-                              :secondaryValues="[]"
-                              :size="60"
-                              :stroke="8"
-                              type="disk"
-                            />
                           </div>
                         </div>
                       </div>

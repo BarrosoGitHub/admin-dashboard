@@ -5,7 +5,7 @@
       <!-- Header Section -->
       <div class="lg:col-span-3 bg-modal-color-gradient rounded-2xl p-8 border border-color shadow-lg">
         <div class="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-6">
-          <div class="w-32 h-32 flex-shrink-0 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-4xl font-bold p-2">
+          <div class="w-32 h-32 flex-shrink-0 rounded-full bg-gradient-to-br from-gray-500 to-gray-700 flex items-center justify-center text-white text-4xl font-bold p-2">
             {{ initials }}
           </div>
           <div class="flex-1 text-center md:text-left">
@@ -49,30 +49,34 @@
       </div>
     </div>
 
-        <!-- Skills Section -->
-    <div id="skills" class="bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
-      <h3 class="text-2xl font-bold text-color mb-4 flex items-center">
-        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
+    <!-- Skills Section -->
+    <div id="skills" class="bg-modal-color-gradient rounded-2xl p-8 border border-color shadow-lg">
+      <h3 class="text-2xl font-bold text-color mb-6 flex items-center">
+        <svg class="w-6 h-6 mr-2 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path>
         </svg>
         Technical Skills
       </h3>
-      <div class="grid grid-cols-1 lg:grid-cols-6 gap-4">
-        <div v-for="(skillCategory, category) in profile.skills" :key="category" class="space-y-2">
-          <h4 class="text-sm font-semibold text-color flex items-center mb-3">
-            <span class="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></span>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div v-for="(skillCategory, category) in profile.skills" :key="category" 
+             class="bg-gray-800/30 rounded-xl p-4 border border-gray-700/50 hover:border-gray-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-gray-500/10">
+          <h4 class="text-sm font-bold text-gray-300 mb-4 flex items-center">
+            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
             {{ category }}
           </h4>
-          <div class="space-y-1.5">
-            <div v-for="(skill, idx) in skillCategory" :key="idx" class="group border-l-4 border-blue-500 pl-3 hover:border-purple-500 transition-all duration-300 cursor-pointer p-2 rounded-r-lg hover:bg-blue-500/5">
-              <div class="flex items-center justify-between mb-1">
-                <span class="text-xs font-medium text-blue-400">{{ skill.name }}</span>
-                <svg class="w-3 h-3 text-blue-400 opacity-50 transition-opacity flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                </svg>
+          <div class="space-y-2">
+            <div v-for="(skill, idx) in skillCategory" :key="idx" 
+                 class="group relative">
+              <div class="flex items-start text-sm text-gray-300 hover:text-gray-200 transition-colors duration-200 cursor-help py-1.5 px-2 rounded hover:bg-gray-700/30">
+                <span class="w-1 h-1 bg-gray-400 rounded-full mr-2 mt-1.5 flex-shrink-0"></span>
+                <span class="flex-1 leading-tight">{{ skill.name }}</span>
               </div>
-              <div class="text-xs text-gray-400 max-h-0 opacity-0 group-hover:max-h-96 group-hover:opacity-100 transition-all duration-300 overflow-hidden">
+              <!-- Tooltip on hover -->
+              <div class="absolute left-0 top-full mt-1 w-full bg-gray-900 border border-gray-600/50 rounded-lg p-3 text-xs text-gray-300 shadow-xl z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none">
                 {{ skill.description }}
+                <div class="absolute -top-1 left-4 w-2 h-2 bg-gray-900 border-l border-t border-gray-600/50 transform rotate-45"></div>
               </div>
             </div>
           </div>
@@ -92,7 +96,7 @@
           Work Experience
         </h3>
         <div class="space-y-4">
-          <div v-for="(job, index) in profile.experience" :key="index" class="group border-l-4 border-blue-500 pl-4 hover:border-purple-500 transition-all duration-300 cursor-pointer p-3 rounded-r-lg hover:bg-blue-500/5">
+          <div v-for="(job, index) in profile.experience" :key="index" class="group border-l-4 border-gray-500 pl-4 hover:border-gray-400 transition-all duration-300 cursor-pointer p-3 rounded-r-lg hover:bg-gray-700/10">
             <div class="flex justify-between items-start mb-2">
               <div class="flex-1">
                 <h4 class="text-lg font-semibold text-color">{{ job.position }}</h4>
@@ -119,7 +123,7 @@
             Education
           </h3>
           <div class="space-y-4">
-            <div v-for="(edu, index) in profile.education" :key="index" class="group border-l-4 border-green-500 pl-4 hover:border-yellow-500 transition-colors duration-300 cursor-pointer">
+            <div v-for="(edu, index) in profile.education" :key="index" class="group border-l-4 border-gray-500 pl-4 hover:border-gray-400 transition-colors duration-300 cursor-pointer">
               <div class="flex justify-between items-start">
                 <div class="flex-1">
                   <h4 class="text-lg font-semibold text-color">{{ edu.degree }}</h4>
@@ -144,7 +148,7 @@
           </h3>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div v-for="(proficiency, language) in profile.languages" :key="language" 
-                 class="text-center p-3 bg-purple-500/10 rounded-lg hover:bg-purple-500/20 transition-colors duration-200">
+                 class="text-center p-3 bg-gray-700/20 rounded-lg hover:bg-gray-600/30 transition-colors duration-200">
               <p class="text-color font-semibold">{{ language }}</p>
               <p class="text-sm text-gray-400">{{ proficiency }}</p>
             </div>
@@ -164,7 +168,7 @@
       <ul class="space-y-3">
         <li v-for="(cert, index) in profile.certifications" :key="index" 
             class="flex items-start text-gray-400 hover:text-color transition-colors duration-200">
-          <svg class="w-5 h-5 mr-2 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+          <svg class="w-5 h-5 mr-2 text-gray-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
           </svg>
           <span>{{ cert }}</span>
