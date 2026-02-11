@@ -3,6 +3,7 @@ import './assets/main.css'
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
+import VueApexCharts from 'vue3-apexcharts'
 
 // Initialize dark mode from localStorage
 const savedDarkMode = localStorage.getItem('darkMode');
@@ -18,4 +19,5 @@ if (isDarkMode) {
 
 const app = createApp(App)
 app.use(router)
+app.use(VueApexCharts)
 app.mount('#app')

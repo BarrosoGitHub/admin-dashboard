@@ -77,7 +77,7 @@
 
 <template>
   
-  <div class="fixed top-0 left-0 right-0 z-50 navbar-blur bg-gradient-to-b from-black/30 via-black/20 to-transparent dark:from-black/50 dark:via-black/30 dark:to-transparent border-b border-gray-200/10 dark:border-gray-700/20">
+  <div class="fixed top-0 left-0 right-0 z-50 navbar-blur bg-gradient-to-b from-black/30 via-black/20 to-transparent dark:from-black/50 dark:via-black/30 dark:to-transparent ">
 
     <nav class="max-w-full">
             

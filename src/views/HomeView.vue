@@ -12,6 +12,7 @@ import NecroBrawlShowcase from "../components/tabs/NecroBrawlShowcase.vue";
 import StatsCard from "../components/dashboard/StatsCard.vue";
 import SimpleChart from "../components/dashboard/SimpleChart.vue";
 import RecentActivity from "../components/dashboard/RecentActivity.vue";
+import CurrentAdCard from "../components/dashboard/CurrentAdCard.vue";
 import { API_BASE_URL, WS_BASE_URL } from '@/apiConfig.js';
 import axios from 'axios';
 const diagnostics = ref({
@@ -23,9 +24,9 @@ const diagnostics = ref({
 });
 
 const animatedDiagnostics = ref({
-  cpuTemp: 0,
-  ramUsage: 0,
-  diskSpace: 0
+  cpuTemp: 45,
+  ramUsage: 66,
+  diskSpace: 23
 });
 
 function animateDiagnosticValue(key, start, end, duration = 800) {
@@ -374,7 +375,7 @@ onBeforeUnmount(() => {
 
           <div class="flex flex-col md:flex-row md:space-x-4 pt-24">
           
-            <div class="flex-1">
+            <div class="flex-1 px-4">
               <PasswordChangeModal
                 :show="showPasswordChangeModal"
                 @close="showPasswordChangeModal = false"
@@ -449,7 +450,7 @@ onBeforeUnmount(() => {
 
                     <!-- Charts and Activity Row -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                      <div class="lg:col-span-2">
+                      <div class="lg:col-span-1">
                         <SimpleChart 
                           :title="chartTitle" 
                           :data="chartData"
@@ -457,7 +458,12 @@ onBeforeUnmount(() => {
                           :color="chartColor"
                         />
                       </div>
-                      <RecentActivity />
+                      <div class="lg:col-span-1">
+                        <RecentActivity />
+                      </div>
+                      <div class="lg:col-span-1">
+                        <CurrentAdCard />
+                      </div>
                     </div>
 
                     <!-- System Stats -->
