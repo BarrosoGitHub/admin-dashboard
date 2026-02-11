@@ -12,11 +12,11 @@
           <span class="text-xs font-mono text-color">{{ formatTime(currentAd.timeLeft) }}</span>
         </div>
         
-        <div class="bg-gradient-to-r from-purple-900/20 to-white-900/20 rounded-xl p-4 border border-purple-500/30 relative overflow-hidden">
-          <div class="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-transparent animate-pulse"></div>
+        <div class="bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-xl p-4 border border-gray-500/20 relative overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-transparent animate-pulse"></div>
           <div class="relative z-10">
             <div class="flex items-center space-x-3">
-              <div class="p-3 bg-purple-500 rounded-lg">
+              <div class="p-3 bg-purple-600/80 rounded-lg">
                 <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
                 </svg>
@@ -26,15 +26,15 @@
                 <p class="text-sm text-gray-400">{{ currentAd.title }}</p>
               </div>
               <div class="text-right">
-                <div class="text-2xl font-bold text-purple-400">{{ Math.round(((currentAd.duration - currentAd.timeLeft) / currentAd.duration) * 100) }}%</div>
+                <div class="text-2xl font-bold text-purple-300/90">{{ Math.round(((currentAd.duration - currentAd.timeLeft) / currentAd.duration) * 100) }}%</div>
                 <div class="text-xs text-gray-400">Complete</div>
               </div>
             </div>
             
             <!-- Progress Bar -->
-            <div class="mt-4 h-2 bg-gray-700 rounded-full overflow-hidden">
+            <div class="mt-4 h-2 bg-gray-700/50 rounded-full overflow-hidden">
               <div 
-                class="h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-1000 ease-linear"
+                class="h-full bg-gradient-to-r from-purple-500/70 to-blue-500/70 transition-all duration-1000 ease-linear"
                 :style="{ width: `${100 - (currentAd.timeLeft / currentAd.duration) * 100}%` }"
               ></div>
             </div>
@@ -56,7 +56,7 @@
               :key="ad.id"
               class="flex items-center space-x-3 p-2 rounded-lg transition-all duration-200"
             >
-              <div class="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm">
+              <div class="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500/70 to-purple-500/70 flex items-center justify-center text-white font-bold text-sm">
                 {{ index + 1 }}
               </div>
               <div class="flex-1 min-w-0">
