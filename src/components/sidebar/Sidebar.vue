@@ -1,79 +1,69 @@
 <template>
 
-<div class="bg-white rounded ">
+<div>
   <!-- Sidebar -->
   <aside
     :class=" [
-      'fixed top-0 left-0 z-40 w-64 h-screen p-4 overflow-y-auto bg-sidebar-color-gradient transition-transform duration-300 ease-in-out',
+      'fixed top-0 left-0 z-40 w-64 h-screen overflow-y-auto bg-sidebar-color-gradient transition-transform duration-300 ease-in-out',
       showSidebar ? 'translate-x-0 sidebar-shadow' : '-translate-x-full'
     ]"
     aria-label="Sidebar"
     style="display: flex; flex-direction: column; height: 100vh;"
   >
-    <!-- Connection Icon -->
-    <div class="flex justify-center items-center mb-8">
+    <!-- Top accent bar -->
+    <div class="h-0.5 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-transparent flex-shrink-0"></div>
+
+    <!-- Logo / Brand -->
+    <div class="flex justify-center items-center px-4 pt-6 pb-5 flex-shrink-0">
       <img
         src="@/assets/connection.png"
         alt="Connection"
-        class="h-12 w-auto"
+        class="h-10 w-auto opacity-90"
       />
     </div>
-    <div class="py-4 overflow-y-auto flex-1">
-      <!-- Menus Section -->
-      <div class="mb-6">
-        <h3 class="px-3 mb-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Main</h3>
-        <ul class="space-y-1">
-          <!-- Profile Section -->
+
+    <!-- Divider -->
+    <div class="mx-4 mb-4 h-px bg-white/5 flex-shrink-0"></div>
+
+    <div class="px-3 pb-4 overflow-y-auto flex-1 space-y-6">
+      <!-- Main Section -->
+      <div>
+        <p class="px-2 mb-2 text-[10px] font-bold text-indigo-400/70 uppercase tracking-widest">Main</p>
+        <ul class="space-y-0.5">
+          <!-- Profile -->
           <li>
             <button 
               @click="toggleProfileMenu" 
-              class="w-full flex items-center px-3 py-2.5 text-sm text-gray-300 rounded-lg group transition-all duration-200 hover:bg-gray-800/50"
+              :class="[
+                'w-full flex items-center px-3 py-2.5 text-sm rounded-lg transition-all duration-200 group',
+                profileMenuOpen
+                  ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/20'
+                  : 'text-gray-400 hover:bg-white/5 hover:text-gray-200 border border-transparent'
+              ]"
             >
-              <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              <svg :class="['w-4 h-4 mr-3 flex-shrink-0 transition-colors', profileMenuOpen ? 'text-indigo-400' : 'text-gray-500 group-hover:text-gray-300']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
-              <span class="flex-1 text-left">Profile</span>
-              <svg :class="['w-4 h-4 transition-transform duration-200 text-gray-400', profileMenuOpen ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <span class="flex-1 text-left font-medium">Profile</span>
+              <svg :class="['w-3.5 h-3.5 transition-transform duration-200', profileMenuOpen ? 'rotate-180 text-indigo-400' : 'text-gray-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
               </svg>
             </button>
             
             <!-- Profile Submenu -->
-            <ul :class="['mt-1 space-y-0.5 overflow-hidden transition-all duration-300', profileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0']">
-              <li>
-                <a href="#" class="flex items-center px-3 py-2 text-sm text-gray-400 rounded-lg hover:bg-gray-800/50 hover:text-gray-300 ml-11 transition-all duration-200" @click.prevent="scrollToSection('summary')">
-                  <span class="w-1.5 h-1.5 bg-gray-500 rounded-full mr-3"></span>
-                  Summary
-                </a>
-              </li>
-              <li>
-                <a href="#" class="flex items-center px-3 py-2 text-sm text-gray-400 rounded-lg hover:bg-gray-800/50 hover:text-gray-300 ml-11 transition-all duration-200" @click.prevent="scrollToSection('skills')">
-                  <span class="w-1.5 h-1.5 bg-gray-500 rounded-full mr-3"></span>
-                  Technical Skills
-                </a>
-              </li>
-              <li>
-                <a href="#" class="flex items-center px-3 py-2 text-sm text-gray-400 rounded-lg hover:bg-gray-800/50 hover:text-gray-300 ml-11 transition-all duration-200" @click.prevent="scrollToSection('experience')">
-                  <span class="w-1.5 h-1.5 bg-gray-500 rounded-full mr-3"></span>
-                  Work Experience
-                </a>
-              </li>
-              <li>
-                <a href="#" class="flex items-center px-3 py-2 text-sm text-gray-400 rounded-lg hover:bg-gray-800/50 hover:text-gray-300 ml-11 transition-all duration-200" @click.prevent="scrollToSection('education')">
-                  <span class="w-1.5 h-1.5 bg-gray-500 rounded-full mr-3"></span>
-                  Education
-                </a>
-              </li>
-              <li>
-                <a href="#" class="flex items-center px-3 py-2 text-sm text-gray-400 rounded-lg hover:bg-gray-800/50 hover:text-gray-300 ml-11 transition-all duration-200" @click.prevent="scrollToSection('certifications')">
-                  <span class="w-1.5 h-1.5 bg-gray-500 rounded-full mr-3"></span>
-                  Certifications
-                </a>
-              </li>
-              <li>
-                <a href="#" class="flex items-center px-3 py-2 text-sm text-gray-400 rounded-lg hover:bg-gray-800/50 hover:text-gray-300 ml-11 transition-all duration-200" @click.prevent="scrollToSection('languages')">
-                  <span class="w-1.5 h-1.5 bg-gray-500 rounded-full mr-3"></span>
-                  Languages
+            <ul :class="['mt-1 space-y-0.5 overflow-hidden transition-all duration-300 pl-3', profileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0']">
+              <li v-for="item in [
+                { id: 'summary',        label: 'Summary' },
+                { id: 'skills',         label: 'Technical Skills' },
+                { id: 'experience',     label: 'Work Experience' },
+                { id: 'education',      label: 'Education' },
+                { id: 'languages',      label: 'Languages' }
+              ]" :key="item.id">
+                <a href="#"
+                  class="flex items-center px-3 py-2 text-xs text-gray-500 rounded-md hover:bg-indigo-500/10 hover:text-indigo-300 transition-all duration-150 group"
+                  @click.prevent="scrollToSection(item.id)">
+                  <span class="w-1 h-1 rounded-full bg-gray-600 group-hover:bg-indigo-400 mr-2.5 flex-shrink-0 transition-colors"></span>
+                  {{ item.label }}
                 </a>
               </li>
             </ul>
@@ -83,37 +73,42 @@
 
       <!-- Apps Section -->
       <div>
-        <h3 class="px-3 mb-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Apps</h3>
-        <ul class="space-y-1">
-          <!-- Portfolio Section -->
+        <p class="px-2 mb-2 text-[10px] font-bold text-indigo-400/70 uppercase tracking-widest">Projects</p>
+        <ul class="space-y-0.5">
           <li>
             <button
               @click="togglePortfolioMenu"
               :class="[
-                'w-full flex items-center px-3 py-2.5 text-sm rounded-lg group transition-all duration-200',
-                portfolioMenuOpen ? 'bg-gray-700/30 text-gray-200' : 'text-gray-300 hover:bg-gray-800/50'
+                'w-full flex items-center px-3 py-2.5 text-sm rounded-lg transition-all duration-200 group',
+                portfolioMenuOpen
+                  ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/20'
+                  : 'text-gray-400 hover:bg-white/5 hover:text-gray-200 border border-transparent'
               ]"
             >
-              <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg :class="['w-4 h-4 mr-3 flex-shrink-0 transition-colors', portfolioMenuOpen ? 'text-indigo-400' : 'text-gray-500 group-hover:text-gray-300']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
               </svg>
-              <span class="flex-1 text-left">Portfolio</span>
-              <svg :class="['w-4 h-4 transition-transform duration-200', portfolioMenuOpen ? 'rotate-180 text-gray-300' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <span class="flex-1 text-left font-medium">Portfolio</span>
+              <svg :class="['w-3.5 h-3.5 transition-transform duration-200', portfolioMenuOpen ? 'rotate-180 text-indigo-400' : 'text-gray-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
               </svg>
             </button>
             
             <!-- Portfolio Submenu -->
-            <ul :class="['mt-1 space-y-0.5 overflow-hidden transition-all duration-300', portfolioMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0']">
+            <ul :class="['mt-1 space-y-0.5 overflow-hidden transition-all duration-300 pl-3', portfolioMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0']">
               <li>
-                <a href="#" class="flex items-center px-3 py-2 text-sm text-gray-400 rounded-lg hover:bg-gray-800/50 hover:text-gray-300 ml-11 transition-all duration-200" @click.prevent="openProject(1)">
-                  <span class="w-1.5 h-1.5 bg-gray-500 rounded-full mr-3"></span>
+                <a href="#"
+                  class="flex items-center px-3 py-2 text-xs text-gray-500 rounded-md hover:bg-indigo-500/10 hover:text-indigo-300 transition-all duration-150 group"
+                  @click.prevent="openProject(1)">
+                  <span class="w-1 h-1 rounded-full bg-gray-600 group-hover:bg-indigo-400 mr-2.5 flex-shrink-0 transition-colors"></span>
                   Ad Display Device
                 </a>
               </li>
               <li>
-                <a href="#" class="flex items-center px-3 py-2 text-sm text-gray-400 rounded-lg hover:bg-gray-800/50 hover:text-gray-300 ml-11 transition-all duration-200" @click.prevent="openProject(5)">
-                  <span class="w-1.5 h-1.5 bg-gray-500 rounded-full mr-3"></span>
+                <a href="#"
+                  class="flex items-center px-3 py-2 text-xs text-gray-500 rounded-md hover:bg-indigo-500/10 hover:text-indigo-300 transition-all duration-150 group"
+                  @click.prevent="openProject(5)">
+                  <span class="w-1 h-1 rounded-full bg-gray-600 group-hover:bg-indigo-400 mr-2.5 flex-shrink-0 transition-colors"></span>
                   Necro Brawl Showcase
                 </a>
               </li>
@@ -122,7 +117,7 @@
         </ul>
       </div>
     </div>
-   
+
   </aside>
 </div>
 

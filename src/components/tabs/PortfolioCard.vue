@@ -1,12 +1,17 @@
 <template>
   <div class="portfolio-container p-6">
+    <!-- Header -->
     <div class="mb-8">
-      <h1 class="text-3xl font-bold text-color mb-2">Projects</h1>
-      <p class="text-gray-400 dark:text-gray-400">Select a project to view details</p>
+      <div class="flex items-center gap-3 mb-1">
+        <div class="w-1 h-7 rounded-full bg-gradient-to-b from-indigo-500 to-purple-500"></div>
+        <h1 class="text-3xl font-bold text-color">Projects</h1>
+      </div>
+      <p class="text-gray-500 dark:text-gray-400 ml-4 text-sm">Select a project to explore</p>
     </div>
 
     <!-- Portfolio Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
       <!-- Project Card 1 - Ad Display Device -->
       <div 
         id="project-1"
@@ -15,24 +20,43 @@
         @mouseenter="hovering1 = true"
         @mouseleave="handleMouseLeave(1)"
         @mousemove="(e) => handleMouseMove(e, 1)"
-        class="bg-modal-color-gradient rounded-2xl shadow-sm overflow-hidden border border-color cursor-pointer group portfolio-card"
+        class="bg-modal-color-gradient rounded-2xl overflow-hidden border border-color cursor-pointer group portfolio-card transition-shadow duration-300 hover:shadow-[0_8px_30px_rgba(99,102,241,0.18)]"
       >
-        <div class="h-48 bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
-          <svg class="w-20 h-20 text-white" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
-          </svg>
+        <!-- Banner -->
+        <div class="h-44 relative overflow-hidden bg-gradient-to-br from-indigo-600 via-blue-600 to-cyan-500">
+          <!-- Grid pattern overlay -->
+          <div class="absolute inset-0 banner-grid opacity-20"></div>
+          <!-- Glow orb -->
+          <div class="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/10 blur-2xl"></div>
+          <div class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/30 to-transparent"></div>
+          <!-- Icon -->
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="p-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 shadow-xl">
+              <svg class="w-10 h-10 text-white drop-shadow" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+              </svg>
+            </div>
+          </div>
+          <!-- Live badge -->
+          <div class="absolute top-3 right-3 flex items-center gap-1.5 bg-black/30 backdrop-blur-sm rounded-full px-2.5 py-1 border border-white/10">
+            <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
+            <span class="text-[10px] font-semibold text-white/80 tracking-wider">LIVE DEMO</span>
+          </div>
         </div>
+
         <div class="p-4">
-          <h3 class="text-xl font-semibold text-color mb-2 transition-all duration-200">Ad Display Device</h3>
-          <p class="text-gray-400 dark:text-gray-400 mb-4 transition-all duration-200">Containerized digital signage platform with real-time analytics</p>
-          <div class="flex flex-wrap gap-2">
-            <span class="px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full">Docker</span>
-            <span class="px-3 py-1 text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 rounded-full">Vue.js</span>
+          <h3 class="text-base font-bold text-color mb-1.5 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors duration-200">Ad Display Device</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-3 leading-relaxed">Containerized digital signage on ARM64 with real-time analytics</p>
+          <div class="flex flex-wrap gap-1.5">
+            <span class="tag tag-blue">Docker</span>
+            <span class="tag tag-indigo">ARM64</span>
+            <span class="tag tag-purple">Vue.js</span>
+            <span class="tag tag-cyan">.NET</span>
           </div>
         </div>
       </div>
 
-      <!-- Project Card 5 - Necro Brawl Detailed -->
+      <!-- Project Card 5 - Necro Brawl -->
       <div 
         id="project-5"
         ref="card5"
@@ -40,22 +64,36 @@
         @mouseenter="hovering5 = true"
         @mouseleave="handleMouseLeave(5)"
         @mousemove="(e) => handleMouseMove(e, 5)"
-        class="bg-modal-color-gradient rounded-2xl shadow-sm overflow-hidden border border-color cursor-pointer group portfolio-card"
+        class="bg-modal-color-gradient rounded-2xl overflow-hidden border border-color cursor-pointer group portfolio-card transition-shadow duration-300 hover:shadow-[0_8px_30px_rgba(168,85,247,0.18)]"
       >
-        <div class="h-48 bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
-          <svg class="w-20 h-20 text-white" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>
-          </svg>
+        <!-- Banner -->
+        <div class="h-44 relative overflow-hidden bg-gradient-to-br from-purple-700 via-fuchsia-600 to-pink-500">
+          <div class="absolute inset-0 banner-grid opacity-20"></div>
+          <div class="absolute -top-6 -left-6 w-28 h-28 rounded-full bg-white/10 blur-2xl"></div>
+          <div class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/30 to-transparent"></div>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="p-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 shadow-xl">
+              <svg class="w-10 h-10 text-white drop-shadow" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+          </div>
+          <div class="absolute top-3 right-3 flex items-center gap-1.5 bg-black/30 backdrop-blur-sm rounded-full px-2.5 py-1 border border-white/10">
+            <span class="text-[10px] font-semibold text-white/80 tracking-wider">GAME</span>
+          </div>
         </div>
+
         <div class="p-4">
-          <h3 class="text-xl font-semibold text-color mb-2 transition-all duration-200">Necro Brawl - Game Showcase</h3>
-          <p class="text-gray-400 dark:text-gray-400 mb-4 transition-all duration-200">Stadium zombie survival with basketball tricks. Featured at Games Expo Edinburgh</p>
-          <div class="flex flex-wrap gap-2">
-            <span class="px-3 py-1 text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 rounded-full">3D Modeling</span>
-            <span class="px-3 py-1 text-xs font-medium bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200 rounded-full">Textures</span>
+          <h3 class="text-base font-bold text-color mb-1.5 group-hover:text-purple-700 dark:group-hover:text-purple-300 transition-colors duration-200">Necro Brawl</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-3 leading-relaxed">Stadium zombie survival with basketball. Featured at Games Expo Edinburgh</p>
+          <div class="flex flex-wrap gap-1.5">
+            <span class="tag tag-purple">3D Modeling</span>
+            <span class="tag tag-pink">Textures</span>
+            <span class="tag tag-fuchsia">Game Design</span>
           </div>
         </div>
       </div>
+
     </div>
   </div>
 </template>
@@ -201,23 +239,47 @@ function handleMouseLeave(cardId) {
 
 <style scoped>
 .portfolio-container {
-  animation: fadeIn 0.3s ease-in;
+  animation: fadeIn 0.35s ease-out;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .portfolio-card {
-  transition: box-shadow 0.3s, background 0.3s;
   transform-style: preserve-3d;
-  will-change: transform, background;
+  will-change: transform;
 }
+
+/* Dot-grid banner pattern */
+.banner-grid {
+  background-image: radial-gradient(circle, rgba(255,255,255,0.6) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Tech stack tags */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid;
+}
+.tag-blue    { background: rgba(59,130,246,0.12);  color: #93c5fd; border-color: rgba(59,130,246,0.25); }
+.tag-indigo  { background: rgba(99,102,241,0.12);  color: #a5b4fc; border-color: rgba(99,102,241,0.25); }
+.tag-purple  { background: rgba(168,85,247,0.12);  color: #d8b4fe; border-color: rgba(168,85,247,0.25); }
+.tag-cyan    { background: rgba(6,182,212,0.12);   color: #67e8f9; border-color: rgba(6,182,212,0.25); }
+.tag-pink    { background: rgba(236,72,153,0.12);  color: #f9a8d4; border-color: rgba(236,72,153,0.25); }
+.tag-fuchsia { background: rgba(217,70,239,0.12);  color: #e879f9; border-color: rgba(217,70,239,0.25); }
+
+/* Light mode overrides — darker text for legibility on white cards */
+:global(:root:not(.dark)) .tag-blue    { background: rgba(59,130,246,0.08);  color: #1d4ed8; border-color: rgba(59,130,246,0.3); }
+:global(:root:not(.dark)) .tag-indigo  { background: rgba(99,102,241,0.08);  color: #4338ca; border-color: rgba(99,102,241,0.3); }
+:global(:root:not(.dark)) .tag-purple  { background: rgba(168,85,247,0.08);  color: #7e22ce; border-color: rgba(168,85,247,0.3); }
+:global(:root:not(.dark)) .tag-cyan    { background: rgba(6,182,212,0.08);   color: #0e7490; border-color: rgba(6,182,212,0.3); }
+:global(:root:not(.dark)) .tag-pink    { background: rgba(236,72,153,0.08);  color: #be185d; border-color: rgba(236,72,153,0.3); }
+:global(:root:not(.dark)) .tag-fuchsia { background: rgba(217,70,239,0.08);  color: #a21caf; border-color: rgba(217,70,239,0.3); }
 </style>

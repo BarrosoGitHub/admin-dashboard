@@ -407,43 +407,43 @@ onBeforeUnmount(() => {
                           <span v-if="!infoBtnSeen" class="absolute inset-0 rounded-full border border-purple-400/60 animate-ping pointer-events-none"></span>
                           <!-- Tooltip -->
                           <div class="absolute right-0 top-10 z-50 w-80 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                            <div class="bg-gray-900 border border-gray-600/60 rounded-xl shadow-2xl p-4 text-left">
+                            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-600/60 rounded-xl shadow-2xl p-4 text-left">
                               <div class="flex items-center gap-2 mb-3">
                                 <div class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></div>
-                                <span class="text-xs font-bold text-purple-300 uppercase tracking-widest">Simulated Environment</span>
+                                <span class="text-xs font-bold text-purple-600 dark:text-purple-300 uppercase tracking-widest">Simulated Environment</span>
                               </div>
-                              <p class="text-sm text-gray-200 font-semibold mb-2">Ad Display Embedded System</p>
-                              <p class="text-xs text-gray-400 leading-relaxed mb-3">
-                                This dashboard simulates the management interface of a real-world <span class="text-purple-300 font-medium">ad display board</span> built on a <span class="text-blue-300 font-medium">Toradex Apalis</span> — a production-grade ARM64 system-on-module (SOM).
+                              <p class="text-sm text-gray-800 dark:text-gray-200 font-semibold mb-2">Ad Display Embedded System</p>
+                              <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mb-3">
+                                This dashboard simulates the management interface of a real-world <span class="text-purple-600 dark:text-purple-300 font-medium">ad display board</span> built on a <span class="text-blue-600 dark:text-blue-300 font-medium">Toradex Apalis</span> — a production-grade ARM64 system-on-module (SOM).
                               </p>
-                              <div class="space-y-2 border-t border-gray-700/60 pt-3">
+                              <div class="space-y-2 border-t border-gray-200 dark:border-gray-700/60 pt-3">
                                 <div class="flex items-start gap-2">
-                                  <span class="text-purple-400 text-xs mt-0.5">▸</span>
-                                  <p class="text-xs text-gray-400"><span class="text-gray-200 font-medium">Docker microservices</span> — each concern (ad scheduler, renderer, telemetry, network watchdog) runs in its own isolated container on the ARM64 host.</p>
+                                  <span class="text-purple-500 dark:text-purple-400 text-xs mt-0.5">▸</span>
+                                  <p class="text-xs text-gray-500 dark:text-gray-400"><span class="text-gray-900 dark:text-gray-200 font-medium">Docker microservices</span> — each concern (ad scheduler, renderer, telemetry, network watchdog) runs in its own isolated container on the ARM64 host.</p>
                                 </div>
                                 <div class="flex items-start gap-2">
-                                  <span class="text-purple-400 text-xs mt-0.5">▸</span>
-                                  <p class="text-xs text-gray-400"><span class="text-gray-200 font-medium">Ad playback engine</span> — a lightweight Chromium-based kiosk renderer consumes a playlist API and plays scheduled media full-screen.</p>
+                                  <span class="text-purple-500 dark:text-purple-400 text-xs mt-0.5">▸</span>
+                                  <p class="text-xs text-gray-500 dark:text-gray-400"><span class="text-gray-900 dark:text-gray-200 font-medium">Ad playback engine</span> — a lightweight Chromium-based kiosk renderer consumes a playlist API and plays scheduled media full-screen.</p>
                                 </div>
                                 <div class="flex items-start gap-2">
-                                  <span class="text-purple-400 text-xs mt-0.5">▸</span>
-                                  <p class="text-xs text-gray-400"><span class="text-gray-200 font-medium">Remote management</span> — this web dashboard communicates with a REST/WebSocket gateway container to push content updates, retrieve health metrics, and reboot services without physical access.</p>
+                                  <span class="text-purple-500 dark:text-purple-400 text-xs mt-0.5">▸</span>
+                                  <p class="text-xs text-gray-500 dark:text-gray-400"><span class="text-gray-900 dark:text-gray-200 font-medium">Remote management</span> — this web dashboard communicates with a REST/WebSocket gateway container to push content updates, retrieve health metrics, and reboot services without physical access.</p>
                                 </div>
                                 <div class="flex items-start gap-2">
-                                  <span class="text-purple-400 text-xs mt-0.5">▸</span>
-                                  <p class="text-xs text-gray-400"><span class="text-gray-200 font-medium">OTA updates</span> — container images are pulled from a private registry over a secured channel, enabling zero-downtime deployments in the field.</p>
+                                  <span class="text-purple-500 dark:text-purple-400 text-xs mt-0.5">▸</span>
+                                  <p class="text-xs text-gray-500 dark:text-gray-400"><span class="text-gray-900 dark:text-gray-200 font-medium">OTA updates</span> — container images are pulled from a private registry over a secured channel, enabling zero-downtime deployments in the field.</p>
                                 </div>
                                 <div class="flex items-start gap-2">
-                                  <span class="text-purple-400 text-xs mt-0.5">▸</span>
-                                  <p class="text-xs text-gray-400"><span class="text-gray-200 font-medium">Telemetry & uptime</span> — the device streams CPU temperature, memory usage, and display heartbeats to this dashboard in real time.</p>
+                                  <span class="text-purple-500 dark:text-purple-400 text-xs mt-0.5">▸</span>
+                                  <p class="text-xs text-gray-500 dark:text-gray-400"><span class="text-gray-900 dark:text-gray-200 font-medium">Telemetry & uptime</span> — the device streams CPU temperature, memory usage, and display heartbeats to this dashboard in real time.</p>
                                 </div>
                               </div>
-                              <div class="mt-3 pt-3 border-t border-gray-700/60 flex items-center gap-2">
-                                <span class="text-xs text-gray-500 italic">All data shown is simulated for portfolio demonstration purposes.</span>
+                              <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700/60 flex items-center gap-2">
+                                <span class="text-xs text-gray-400 dark:text-gray-500 italic">All data shown is simulated for portfolio demonstration purposes.</span>
                               </div>
                             </div>
                             <!-- Arrow -->
-                            <div class="absolute -top-1.5 right-3 w-3 h-3 bg-gray-900 border-l border-t border-gray-600/60 rotate-45"></div>
+                            <div class="absolute -top-1.5 right-3 w-3 h-3 bg-white dark:bg-gray-900 border-l border-t border-gray-200 dark:border-gray-600/60 rotate-45"></div>
                           </div>
                         </div>
                         <button 
@@ -524,8 +524,8 @@ onBeforeUnmount(() => {
                     <!-- System Health -->
                     <div>
                       <div class="flex items-center gap-3 mb-4">
-                        <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">System Health</span>
-                        <div class="flex-1 h-px bg-gray-700/50"></div>
+                        <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">System Health</span>
+                        <div class="flex-1 h-px bg-gray-300/60 dark:bg-gray-700/50"></div>
                         <div class="flex items-center gap-1.5">
                           <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
                           <span class="text-xs text-green-400 font-medium">Nominal</span>
@@ -536,7 +536,7 @@ onBeforeUnmount(() => {
                         <!-- CPU Temp -->
                         <div class="bg-modal-color-gradient rounded-2xl shadow-sm border border-color p-5 transition-all duration-300 hover:shadow-lg group">
                           <div class="flex items-center justify-between mb-3">
-                            <p class="text-sm text-gray-400">CPU Temp</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">CPU Temp</p>
                             <div :class="['p-2 rounded-lg transition-transform duration-200 group-hover:scale-110', animatedDiagnostics.cpuTemp >= 75 ? 'bg-red-500/20' : animatedDiagnostics.cpuTemp >= 60 ? 'bg-orange-500/20' : 'bg-emerald-500/20']">
                               <svg :class="['w-5 h-5', animatedDiagnostics.cpuTemp >= 75 ? 'text-red-400' : animatedDiagnostics.cpuTemp >= 60 ? 'text-orange-400' : 'text-emerald-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6a2 2 0 012-2h2a2 2 0 012 2v13m-6 0a3 3 0 006 0M9 19H7a2 2 0 01-2-2v0a2 2 0 012-2h2m6 4h2a2 2 0 002-2v0a2 2 0 00-2-2h-2"/>
@@ -546,19 +546,19 @@ onBeforeUnmount(() => {
                           <p :class="['text-2xl font-bold transition-all duration-200', animatedDiagnostics.cpuTemp >= 75 ? 'text-red-400' : animatedDiagnostics.cpuTemp >= 60 ? 'text-orange-400' : 'text-emerald-400']">
                             {{ Math.round(animatedDiagnostics.cpuTemp) }}°C
                           </p>
-                          <div class="mt-3 h-1.5 bg-gray-700/50 rounded-full overflow-hidden">
+                          <div class="mt-3 h-1.5 bg-gray-200 dark:bg-gray-700/50 rounded-full overflow-hidden">
                             <div
                               :class="['h-full rounded-full transition-all duration-700', animatedDiagnostics.cpuTemp >= 75 ? 'bg-red-400' : animatedDiagnostics.cpuTemp >= 60 ? 'bg-orange-400' : 'bg-emerald-400']"
                               :style="{ width: `${Math.min(animatedDiagnostics.cpuTemp, 100)}%` }"
                             ></div>
                           </div>
-                          <p class="text-xs text-gray-500 mt-1.5">Max 100°C threshold</p>
+                          <p class="text-xs text-gray-400 dark:text-gray-500 mt-1.5">Max 100°C threshold</p>
                         </div>
 
                         <!-- RAM Usage -->
                         <div class="bg-modal-color-gradient rounded-2xl shadow-sm border border-color p-5 transition-all duration-300 hover:shadow-lg group">
                           <div class="flex items-center justify-between mb-3">
-                            <p class="text-sm text-gray-400">RAM Usage</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">RAM Usage</p>
                             <div :class="['p-2 rounded-lg transition-transform duration-200 group-hover:scale-110', animatedDiagnostics.ramUsage >= 85 ? 'bg-red-500/20' : animatedDiagnostics.ramUsage >= 70 ? 'bg-orange-500/20' : 'bg-blue-500/20']">
                               <svg :class="['w-5 h-5', animatedDiagnostics.ramUsage >= 85 ? 'text-red-400' : animatedDiagnostics.ramUsage >= 70 ? 'text-orange-400' : 'text-blue-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
@@ -568,19 +568,19 @@ onBeforeUnmount(() => {
                           <p :class="['text-2xl font-bold transition-all duration-200', animatedDiagnostics.ramUsage >= 85 ? 'text-red-400' : animatedDiagnostics.ramUsage >= 70 ? 'text-orange-400' : 'text-blue-400']">
                             {{ Math.round(animatedDiagnostics.ramUsage) }}%
                           </p>
-                          <div class="mt-3 h-1.5 bg-gray-700/50 rounded-full overflow-hidden">
+                          <div class="mt-3 h-1.5 bg-gray-200 dark:bg-gray-700/50 rounded-full overflow-hidden">
                             <div
                               :class="['h-full rounded-full transition-all duration-700', animatedDiagnostics.ramUsage >= 85 ? 'bg-red-400' : animatedDiagnostics.ramUsage >= 70 ? 'bg-orange-400' : 'bg-blue-400']"
                               :style="{ width: `${animatedDiagnostics.ramUsage}%` }"
                             ></div>
                           </div>
-                          <p class="text-xs text-gray-500 mt-1.5">of available memory</p>
+                          <p class="text-xs text-gray-400 dark:text-gray-500 mt-1.5">of available memory</p>
                         </div>
 
                         <!-- Disk Space -->
                         <div class="bg-modal-color-gradient rounded-2xl shadow-sm border border-color p-5 transition-all duration-300 hover:shadow-lg group">
                           <div class="flex items-center justify-between mb-3">
-                            <p class="text-sm text-gray-400">Disk Space</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Disk Space</p>
                             <div :class="['p-2 rounded-lg transition-transform duration-200 group-hover:scale-110', animatedDiagnostics.diskSpace >= 85 ? 'bg-red-500/20' : animatedDiagnostics.diskSpace >= 70 ? 'bg-orange-500/20' : 'bg-purple-500/20']">
                               <svg :class="['w-5 h-5', animatedDiagnostics.diskSpace >= 85 ? 'text-red-400' : animatedDiagnostics.diskSpace >= 70 ? 'text-orange-400' : 'text-purple-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7c0-2-1-3-3-3H7C5 4 4 5 4 7zm0 5h16M8 16h.01"/>
@@ -590,30 +590,30 @@ onBeforeUnmount(() => {
                           <p :class="['text-2xl font-bold transition-all duration-200', animatedDiagnostics.diskSpace >= 85 ? 'text-red-400' : animatedDiagnostics.diskSpace >= 70 ? 'text-orange-400' : 'text-purple-400']">
                             {{ Math.round(animatedDiagnostics.diskSpace) }}%
                           </p>
-                          <div class="mt-3 h-1.5 bg-gray-700/50 rounded-full overflow-hidden">
+                          <div class="mt-3 h-1.5 bg-gray-200 dark:bg-gray-700/50 rounded-full overflow-hidden">
                             <div
                               :class="['h-full rounded-full transition-all duration-700', animatedDiagnostics.diskSpace >= 85 ? 'bg-red-400' : animatedDiagnostics.diskSpace >= 70 ? 'bg-orange-400' : 'bg-purple-400']"
                               :style="{ width: `${animatedDiagnostics.diskSpace}%` }"
                             ></div>
                           </div>
-                          <p class="text-xs text-gray-500 mt-1.5">of eMMC storage used</p>
+                          <p class="text-xs text-gray-400 dark:text-gray-500 mt-1.5">of eMMC storage used</p>
                         </div>
 
                         <!-- Board Type -->
                         <div class="bg-modal-color-gradient rounded-2xl shadow-sm border border-color p-5 transition-all duration-300 hover:shadow-lg group">
                           <div class="flex items-center justify-between mb-3">
-                            <p class="text-sm text-gray-400">Board Type</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Board Type</p>
                             <div class="p-2 bg-indigo-500/20 rounded-lg transition-transform duration-200 group-hover:scale-110">
-                              <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
                               </svg>
                             </div>
                           </div>
                           <p class="text-xl font-bold text-color transition-all duration-200">Toradex Apalis</p>
                           <div class="mt-3 flex flex-wrap gap-1.5">
-                            <span class="text-xs bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 rounded-full px-2 py-0.5">ARM64</span>
-                            <span class="text-xs bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 rounded-full px-2 py-0.5">SOM</span>
-                            <span class="text-xs bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 rounded-full px-2 py-0.5">Docker</span>
+                            <span class="text-xs bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-300/60 dark:border-indigo-500/30 rounded-full px-2 py-0.5">ARM64</span>
+                            <span class="text-xs bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-300/60 dark:border-indigo-500/30 rounded-full px-2 py-0.5">SOM</span>
+                            <span class="text-xs bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-300/60 dark:border-indigo-500/30 rounded-full px-2 py-0.5">Docker</span>
                           </div>
                           <p class="text-xs text-gray-500 mt-1.5">iMX8 · Toradex BSP</p>
                         </div>
