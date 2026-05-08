@@ -122,10 +122,7 @@
         </ul>
       </div>
     </div>
-    <!-- Footer note for board type -->
-    <div class="text-xs text-gray-500 text-center select-none mt-4" style="margin-top: auto;">
-      Board type: <span class="font-semibold">{{ boardType }}</span>
-    </div>
+   
   </aside>
 </div>
 

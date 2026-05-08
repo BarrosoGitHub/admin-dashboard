@@ -31,6 +31,12 @@
                 </svg>
                 {{ profile.location }}
               </div>
+              <div class="flex items-center justify-center md:justify-start">
+                <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                </svg>
+                <a :href="profile.linkedin" target="_blank" rel="noopener noreferrer" class="hover:text-color transition-colors duration-200">LinkedIn</a>
+              </div>
             </div>
           </div>
         </div>
@@ -157,8 +163,8 @@
       </div>
     </div>
 
-    <!-- Certifications Section -->
-    <div id="certifications" class="bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
+    <!-- Certifications Section — only render when there is data -->
+    <div v-if="profile.certifications.length" id="certifications" class="bg-modal-color-gradient rounded-2xl p-6 border border-color shadow-lg">
       <h3 class="text-2xl font-bold text-color mb-6 flex items-center">
         <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
@@ -184,123 +190,113 @@ import { computed } from 'vue';
 const profile = {
   name: "Diogo Miguel Rebelo Barroso",
   title: "Senior Software Engineer | Full Stack Developer",
-  email: "email@example.com",
-  phone: "+351 123 456 789",
-  location: "Portugal",
-  summary: "Experienced software engineer with 5+ years of expertise in full-stack development, system architecture, and embedded systems. Specialized in building scalable web applications and containerized solutions. Proven track record in leading development teams and delivering high-quality software solutions.",
-  
+  email: "rebelo.barroso@gmail.com",
+  phone: "+351 91 599 4978",
+  location: "Almada, Setúbal",
+  linkedin: "https://www.linkedin.com/in/diogo-barroso-3872a81b3/",
+  summary: "Experienced software engineer with a robust background in backend development and current expertise as an Embedded System Engineer at Petrotec. Proficient in designing and implementing efficient and scalable solutions, with extensive experience working with Linux, Docker, and .NET technologies. I specialize in backend development using .NET, with strong proficiency in Linux environments and embedded systems like Toradex boards. I leverage Docker for containerization and ensure secure communications through SSH and encryption. My experience includes developing APIs, implementing HTTPS, and using WebSockets for efficient data exchange, as well as MQTT for reliable real-time messaging.",
+
   experience: [
     {
-      position: "Software Engineer - Embedded Systems. Eng.",
+      position: "Embedded Sys. Engineer / Developer",
       company: "Petrotec",
-      period: "February 2024 - Present",
+      period: "Feb 2024 – Present",
       responsibilities: [
-        "As a Software Engineer, I specialize in backend development with .NET, focusing on Linux-based and embedded systems.",
-        "I leverage Docker for containerization and ensure secure communications through SSH and encryption.",
-        "My experience includes designing and developing microservices, building and integrating RESTful APIs, enabling HTTPS and WebSocket communication for efficient data exchange, and utilizing MQTT for reliable real-time messaging.",
-        "Integration of advanced hardware interfaces on microcomputer boards by developing custom device drivers, ensuring seamless data acquisition and robust system reliability for critical industrial applications in the energy sector."
+        "Backend development with .NET, focusing on Linux-based and embedded systems (Toradex Apalis, ARM64).",
+        "Containerization of microservices with Docker; deployment and management on ARM64 hosts.",
+        "Secure communications through SSH, TLS/SSL encryption, and JWT authentication.",
+        "Designed and developed RESTful APIs, WebSocket gateways, and MQTT messaging for real-time data exchange.",
+        "Integration of hardware interfaces on microcomputer boards via custom device drivers for industrial energy-sector applications."
       ]
     },
     {
       position: "Experienced Programmer",
       company: "Deloitte",
-      period: "February 2022 - February 2024",
+      period: "Feb 2022 – Feb 2024",
       responsibilities: [
-        "Designed databases using SQL Server and MongoDB for efficient data storage.",
-        "Collaborated in cross-functional teams to gather requirements for new applications.",
-        "Developed scalable software applications across multiple platforms.",
-        "Integrated third-party APIs to enhance software interoperability.",
-        "Streamlined deployment pipelines by automating testing and integration processes, enabling faster release cycles and improved code reliability."
+        "Collaborated with cross-functional development teams to design and deliver scalable software applications.",
+        "Integrated third-party APIs to enhance software interoperability across platforms.",
+        "Streamlined CI/CD pipelines, enabling faster release cycles and improved code reliability."
       ]
     },
     {
       position: "Teacher",
-      company: "Ε.Ρ.Α",
-      period: "February 2020 - February 2022",
+      company: "E.P.A",
+      period: "Feb 2020 – Feb 2022",
       responsibilities: [
-        "Developed and delivered comprehensive lesson plans on electricity, electronics, and digital systems, adapting instructional methods to accommodate varying student learning styles.",
-        "Guided laboratory sessions and hands-on experiments, reinforcing foundational concepts in electricity and electronics while ensuring adherence to safety protocols.",
-        "Assessed student progress by designing and grading assignments, projects, and exams, providing timely feedback to support mastery of course objectives."
+        "Delivered lesson plans on Electricity, Electronics, and Digital Systems.",
+        "Guided laboratory sessions reinforcing foundational electronics concepts with adherence to safety protocols.",
+        "Assessed student progress through assignments, projects, and exams."
       ]
     },
     {
       position: "Estimator",
-      company: "Sotécnica Lisbon Airport",
-      period: "March 2019 - August 2019",
+      company: "Sotécnica – Lisbon Airport",
+      period: "Mar 2019 – Aug 2019",
       responsibilities: [
-        "Prepared comprehensive cost analyses and project bids for airport electrical systems, aligning with regulatory standards and optimizing resource allocation to ensure budgetary compliance and operational efficiency.",
-        "Formulated detailed quantity takeoffs and material estimates for large-scale electrical infrastructure projects, ensuring alignment with project specifications and compliance requirements."
+        "Prepared cost analyses and project bids for airport electrical systems.",
+        "Formulated quantity takeoffs and material estimates for large-scale electrical infrastructure projects."
       ]
     }
   ],
-  
+
   education: [
     {
-      degree: "Master's in Electrical and Computer Engineering",
-      institution: "Instituto Politecnico de Setúbal",
-      year: "2021",
+      degree: "Masters in Electrical Engineering and Computers",
+      institution: "Instituto Politécnico de Setúbal",
+      year: "2020 – 2022",
       gpa: "3.5 GPA (17.5 Average)"
     }
   ],
-  
+
   skills: {
     "Backend Development": [
-      { name: ".NET Core (up to version 9), Microservices", description: "Scalable microservices and distributed systems with .NET Core 1.0-9" },
-      { name: "ASP.NET Web API, RESTful Services", description: "RESTful API development with ASP.NET Core, CRUD operations, and HTTP best practices" }
-    ],
-    "Databases & Caching": [
-      { name: "MySQL, PostgreSQL, SQLite", description: "Relational database design, optimization, and management" },
-      { name: "LiteDB, Redis", description: "Embedded NoSQL database and high-performance caching solutions" }
-    ],
-    "Operating Systems & Architectures": [
-      { name: "Windows, Linux (WSL)", description: "Cross-platform development on Windows, Linux, and WSL environments" },
-      { name: "ARM64, AMD64", description: "Multi-architecture application development and deployment" }
-    ],
-    "Cloud Platforms": [
-      { name: "Microsoft Azure", description: "App Services, Azure Functions, Azure SQL Database, infrastructure management" },
-      { name: "Amazon Web Services (AWS)", description: "EC2, S3, Lambda, RDS, and scalable cloud application deployment" }
-    ],
-    "Networking & Security": [
-      { name: "SSH, TLS, SSL, JWT", description: "Secure protocols for remote access, encryption, and authentication" },
-      { name: "MobaXterm, PuTTY", description: "Terminal emulators for remote server management and SSH" }
-    ],
-    "Development & Debugging Tools": [
-      { name: "Fork (Git Client)", description: "Visual Git repository management, branching, and merging" },
-      { name: "Hercules (Serial/TCP Debugging)", description: "Serial port and TCP/IP debugging for embedded systems" }
-    ],
-    "Version Control & CI/CD": [
-      { name: "Git, Bitbucket, GitHub", description: "Version control systems and repository hosting platforms" },
-      { name: "Jenkins", description: "Automated CI/CD pipelines for continuous integration and deployment" }
-    ],
-    "API Development & Testing": [
-      { name: "Swagger, Postman", description: "API documentation with OpenAPI/Swagger and comprehensive testing" },
-      { name: "REST, SOAP", description: "RESTful and SOAP web service design and implementation" }
+      { name: ".NET Core (up to version 9)", description: "Scalable microservices and distributed systems with .NET Core through version 9" },
+      { name: "Microservices", description: "Designing and deploying independently deployable services with REST, WebSockets, and MQTT" }
     ],
     "Containerization": [
-      { name: "Docker", description: "Container creation, deployment, and production environment management" },
-      { name: "Docker Compose, Registries", description: "Multi-container orchestration and private container registry management" }
+      { name: "Docker", description: "Container creation, deployment, and production environment management on ARM64 and AMD64 hosts" },
+      { name: "Docker Compose & Registries", description: "Multi-container orchestration with Compose and private container registry management via Nexus" }
+    ],
+    "Operating Systems & Architectures": [
+      { name: "Windows, Linux (incl. WSL)", description: "Cross-platform development and administration on Windows, Linux, and WSL environments" },
+      { name: "ARM64, AMD64", description: "Multi-architecture builds and deployments, including Toradex Apalis (iMX8) SOM boards" }
+    ],
+    "Networking & Security": [
+      { name: "SSH, TLS, SSL, JWT", description: "Secure remote access, encrypted transport, and token-based authentication" },
+      { name: "MobaXterm, PuTTY", description: "Terminal emulators used for remote server management and SSH tunneling" }
     ],
     "Web Communication": [
-      { name: "HTTPS, SFTP, WebSockets", description: "Secure protocols for HTTP, file transfer, and real-time bidirectional communication" },
-      { name: "gRPC, MQTT, XMLRPC", description: "Modern RPC frameworks and lightweight messaging for IoT applications" }
+      { name: "HTTPS, WebSockets", description: "Secure HTTP and full-duplex real-time communication for dashboard and device APIs" },
+      { name: "MQTT", description: "Lightweight publish/subscribe messaging protocol for reliable IoT and embedded real-time messaging" }
     ],
-    "Front-End Development": [
-      { name: "Vue 3, JavaScript, Tailwind", description: "Vue 3 Composition API, JavaScript, and Tailwind CSS for responsive UIs" },
-      { name: "HTML5, CSS3, Responsive Design", description: "Modern web standards and mobile-first responsive design principles" }
+    "API Development & Testing": [
+      { name: "Swagger / OpenAPI", description: "Interactive API documentation and contract-first API design" },
+      { name: "Postman", description: "API testing, environment management, and automated request collections" }
+    ],
+    "Databases & Caching": [
+      { name: "MySQL", description: "Relational database design, queries, and administration" },
+      { name: "Redis", description: "In-memory data store used for high-performance caching and pub/sub messaging" }
+    ],
+    "Cloud Platforms": [
+      { name: "Azure DevOps", description: "CI/CD pipelines, repos, boards, and release management on Azure DevOps" },
+      { name: "Azure Functions", description: "Serverless compute on Microsoft Azure for event-driven microservices and integrations" }
+    ],
+    "Version Control & CI/CD": [
+      { name: "Bitbucket, GitHub", description: "Git repository hosting, pull requests, and branching strategies" },
+      { name: "Jenkins, Nexus", description: "Automated CI/CD pipelines and artifact repository management for containerized releases" }
+    ],
+    "Development & Debugging Tools": [
+      { name: "Fork (Git Client)", description: "Visual Git repository management, branching, merging, and conflict resolution" },
+      { name: "Hercules (Serial/TCP)", description: "Serial port and TCP/IP debugging tool used extensively for embedded systems diagnostics" }
     ],
     "Project Management & Docs": [
-      { name: "Jira, Confluence", description: "Project tracking, issue management, and team documentation" },
-      { name: "Bitbucket, GitHub, Jenkins, Nexus", description: "Source control, CI/CD automation, and artifact management" }
+      { name: "Jira, Confluence", description: "Agile project tracking, sprint planning, issue management, and team documentation" }
     ]
   },
-  
-  certifications: [
-    "AWS Certified Developer Associate",
-    "Docker Certified Associate",
-    "MongoDB Certified Developer",
-    "Scrum Master Certification"
-  ],
-  
+
+  certifications: [],
+
   languages: {
     "Portuguese": "Native",
     "English": "Fluent",
