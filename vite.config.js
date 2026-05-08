@@ -5,7 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 import VueDevTools from 'vite-plugin-vue-devtools'
 
 export default defineConfig({
-  base: '/configurator/',
+  base: '/admin-dashboard/',
   plugins: [vue(), tailwindcss(), VueDevTools()],
   resolve: {
     alias: {
