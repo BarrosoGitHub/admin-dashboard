@@ -9,6 +9,7 @@ import StatusElementCard from "../components/tabs/StatusElementCard.vue";
 import PortfolioCard from "../components/tabs/PortfolioCard.vue";
 import ProfileCard from "../components/tabs/ProfileCard.vue";
 import NecroBrawlShowcase from "../components/tabs/NecroBrawlShowcase.vue";
+import SentinelShowcase from "../components/tabs/SentinelShowcase.vue";
 import StatsCard from "../components/dashboard/StatsCard.vue";
 import SimpleChart from "../components/dashboard/SimpleChart.vue";
 import RecentActivity from "../components/dashboard/RecentActivity.vue";
@@ -187,8 +188,8 @@ function handleProjectSelected(projectId) {
   showProjectDetails.value = true;
   showPortfolio.value = false;
   
-  // Only fetch app info data for projects that need it (not project 5)
-  if (projectId !== 5) {
+  // Only fetch app info data for projects that need it (not project 5 or 2)
+  if (projectId !== 5 && projectId !== 2) {
     axios.get(`${API_BASE_URL}/info/services`)
       .then(response => {
         appInfoData.value = Array.isArray(response.data) ? response.data : [response.data];
@@ -385,6 +386,9 @@ onBeforeUnmount(() => {
               <transition :key="activeModal" mode="out-in">
                 <template v-if="showProjectDetails && selectedProject === 5">
                   <NecroBrawlShowcase @back="handlePortfolio" />
+                </template>
+                <template v-else-if="showProjectDetails && selectedProject === 2">
+                  <SentinelShowcase @back="handlePortfolio" />
                 </template>
                 <template v-else-if="showProjectDetails && selectedProject">
                   <div class="p-6 space-y-6">

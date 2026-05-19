@@ -6,12 +6,62 @@
         <h2 class="text-3xl font-bold text-color">Necro Brawl - Game Showcase</h2>
         <p class="text-gray-400 dark:text-gray-400 mt-2">Stadium zombie survival with basketball tricks</p>
       </div>
-      <button 
-        @click="$emit('back')"
-        class="px-4 py-2 bg-modal-color-gradient border border-color rounded-lg text-color hover:shadow-lg transition-all duration-200"
-      >
-        ← Back to Projects
-      </button>
+      <div class="flex items-center gap-3">
+        <!-- Info button -->
+        <div class="relative group">
+          <button
+            :class="['w-8 h-8 rounded-full border bg-modal-color-gradient text-sm font-bold flex items-center justify-center transition-all duration-200', infoBtnSeen ? 'border-color text-color hover:border-purple-400 hover:text-purple-300 hover:shadow-lg' : 'info-btn border-purple-500/60 text-purple-300 hover:border-purple-400 hover:shadow-[0_0_12px_2px_rgba(168,85,247,0.45)]']"
+            @mouseenter="infoBtnSeen = true"
+            @click="infoBtnSeen = true"
+          >
+            ?
+          </button>
+          <!-- ping ring -->
+          <span v-if="!infoBtnSeen" class="absolute inset-0 rounded-full border border-purple-400/60 animate-ping pointer-events-none"></span>
+          <!-- Tooltip -->
+          <div class="absolute right-0 top-10 z-50 w-80 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-600/60 rounded-xl shadow-2xl p-4 text-left">
+              <div class="flex items-center gap-2 mb-3">
+                <div class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></div>
+                <span class="text-xs font-bold text-purple-600 dark:text-purple-300 uppercase tracking-widest">Portfolio Project</span>
+              </div>
+              <p class="text-sm text-gray-800 dark:text-gray-200 font-semibold mb-2">Necro Brawl &mdash; Game Development</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mb-3">
+                Originally a <span class="text-purple-600 dark:text-purple-300 font-medium">university coursework project</span> built in two and a half months, Necro Brawl was later showcased at <span class="text-purple-600 dark:text-purple-300 font-medium">Games Expo Edinburgh</span> where it received praise from industry professionals.
+              </p>
+              <div class="space-y-2 border-t border-gray-200 dark:border-gray-700/60 pt-3">
+                <div class="flex items-start gap-2">
+                  <span class="text-purple-500 dark:text-purple-400 text-xs mt-0.5">&#9656;</span>
+                  <p class="text-xs text-gray-500 dark:text-gray-400"><span class="text-gray-900 dark:text-gray-200 font-medium">Custom 3D assets</span> &mdash; all character models, environment pieces, and props were modelled and textured from scratch specifically for this project.</p>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="text-purple-500 dark:text-purple-400 text-xs mt-0.5">&#9656;</span>
+                  <p class="text-xs text-gray-500 dark:text-gray-400"><span class="text-gray-900 dark:text-gray-200 font-medium">Trick-based combat</span> &mdash; a style meter system rewards skilled ball tricks with increased bounce targets, creating a risk/reward loop at the core of gameplay.</p>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="text-purple-500 dark:text-purple-400 text-xs mt-0.5">&#9656;</span>
+                  <p class="text-xs text-gray-500 dark:text-gray-400"><span class="text-gray-900 dark:text-gray-200 font-medium">Wave survival</span> &mdash; procedural zombie spawning scales difficulty over time, keeping the stadium arena tense across extended play sessions.</p>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="text-purple-500 dark:text-purple-400 text-xs mt-0.5">&#9656;</span>
+                  <p class="text-xs text-gray-500 dark:text-gray-400"><span class="text-gray-900 dark:text-gray-200 font-medium">Game design</span> &mdash; full game design documentation was produced covering mechanics, level layout, UX flow, and playtesting feedback.</p>
+                </div>
+              </div>
+              <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700/60">
+                <span class="text-xs text-gray-400 dark:text-gray-500 italic">Screenshots shown are from the in-development build.</span>
+              </div>
+            </div>
+            <!-- Arrow -->
+            <div class="absolute -top-1.5 right-3 w-3 h-3 bg-white dark:bg-gray-900 border-l border-t border-gray-200 dark:border-gray-600/60 rotate-45"></div>
+          </div>
+        </div>
+        <button 
+          @click="$emit('back')"
+          class="px-4 py-2 bg-modal-color-gradient border border-color rounded-lg text-color hover:shadow-lg transition-all duration-200"
+        >
+          ← Back to Projects
+        </button>
+      </div>
     </div>
 
     <!-- Game Description & Screenshots Section -->
@@ -346,6 +396,7 @@ defineEmits(['back']);
 // Carousel state
 const currentSlide = ref(0);
 const totalSlides = 3;
+const infoBtnSeen = ref(false);
 let autoPlayInterval = null;
 
 const nextSlide = () => {
@@ -400,5 +451,24 @@ onUnmounted(() => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.info-btn {
+  position: relative;
+  overflow: hidden;
+}
+.info-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: linear-gradient(115deg, transparent 30%, rgba(168,85,247,0.35) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: btn-shine 2.4s ease-in-out infinite;
+}
+@keyframes btn-shine {
+  0%   { background-position: 200% center; }
+  60%  { background-position: -200% center; }
+  100% { background-position: -200% center; }
 }
 </style>

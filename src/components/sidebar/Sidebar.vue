@@ -107,6 +107,14 @@
               <li>
                 <a href="#"
                   class="flex items-center px-3 py-2 text-xs text-gray-500 rounded-md hover:bg-indigo-500/10 hover:text-indigo-300 transition-all duration-150 group"
+                  @click.prevent="openProject(2)">
+                  <span class="w-1 h-1 rounded-full bg-gray-600 group-hover:bg-indigo-400 mr-2.5 flex-shrink-0 transition-colors"></span>
+                  Sentinel
+                </a>
+              </li>
+              <li>
+                <a href="#"
+                  class="flex items-center px-3 py-2 text-xs text-gray-500 rounded-md hover:bg-indigo-500/10 hover:text-indigo-300 transition-all duration-150 group"
                   @click.prevent="openProject(5)">
                   <span class="w-1 h-1 rounded-full bg-gray-600 group-hover:bg-indigo-400 mr-2.5 flex-shrink-0 transition-colors"></span>
                   Necro Brawl Showcase

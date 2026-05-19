@@ -56,6 +56,46 @@
         </div>
       </div>
 
+      <!-- Project Card 2 - Sentinel -->
+      <div 
+        id="project-2"
+        ref="card2"
+        @click="selectProject(2)"
+        @mouseenter="hovering2 = true"
+        @mouseleave="handleMouseLeave(2)"
+        @mousemove="(e) => handleMouseMove(e, 2)"
+        class="bg-modal-color-gradient rounded-2xl overflow-hidden border border-color cursor-pointer group portfolio-card transition-shadow duration-300 hover:shadow-[0_8px_30px_rgba(245,158,11,0.18)]"
+      >
+        <!-- Banner -->
+        <div class="h-44 relative overflow-hidden bg-gradient-to-br from-amber-500 via-orange-500 to-red-500">
+          <div class="absolute inset-0 banner-grid opacity-20"></div>
+          <div class="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/10 blur-2xl"></div>
+          <div class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/30 to-transparent"></div>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="p-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 shadow-xl">
+              <svg class="w-10 h-10 text-white drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="absolute top-3 right-3 flex items-center gap-1.5 bg-black/30 backdrop-blur-sm rounded-full px-2.5 py-1 border border-white/10">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-300 animate-pulse"></span>
+            <span class="text-[10px] font-semibold text-white/80 tracking-wider">FULL-STACK</span>
+          </div>
+        </div>
+
+        <div class="p-4">
+          <h3 class="text-base font-bold text-color mb-1.5 group-hover:text-amber-600 dark:group-hover:text-amber-300 transition-colors duration-200">Sentinel</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-3 leading-relaxed">Uptime monitoring platform with real-time alerts and response-time analytics</p>
+          <div class="flex flex-wrap gap-1.5">
+            <span class="tag tag-amber">Vue.js</span>
+            <span class="tag tag-orange">Node.js</span>
+            <span class="tag tag-red">Redis</span>
+            <span class="tag tag-indigo">PostgreSQL</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Project Card 5 - Necro Brawl -->
       <div 
         id="project-5"
@@ -274,6 +314,12 @@ function handleMouseLeave(cardId) {
 .tag-cyan    { background: rgba(6,182,212,0.12);   color: #67e8f9; border-color: rgba(6,182,212,0.25); }
 .tag-pink    { background: rgba(236,72,153,0.12);  color: #f9a8d4; border-color: rgba(236,72,153,0.25); }
 .tag-fuchsia { background: rgba(217,70,239,0.12);  color: #e879f9; border-color: rgba(217,70,239,0.25); }
+.tag-emerald { background: rgba(16,185,129,0.12);  color: #6ee7b7; border-color: rgba(16,185,129,0.25); }
+.tag-teal    { background: rgba(20,184,166,0.12);   color: #5eead4; border-color: rgba(20,184,166,0.25); }
+.tag-green   { background: rgba(34,197,94,0.12);    color: #86efac; border-color: rgba(34,197,94,0.25); }
+.tag-amber   { background: rgba(245,158,11,0.12);   color: #fcd34d; border-color: rgba(245,158,11,0.25); }
+.tag-orange  { background: rgba(249,115,22,0.12);   color: #fdba74; border-color: rgba(249,115,22,0.25); }
+.tag-red     { background: rgba(239,68,68,0.12);    color: #fca5a5; border-color: rgba(239,68,68,0.25); }
 
 /* Light mode overrides — darker text for legibility on white cards */
 :global(:root:not(.dark)) .tag-blue    { background: rgba(59,130,246,0.08);  color: #1d4ed8; border-color: rgba(59,130,246,0.3); }
@@ -282,4 +328,10 @@ function handleMouseLeave(cardId) {
 :global(:root:not(.dark)) .tag-cyan    { background: rgba(6,182,212,0.08);   color: #0e7490; border-color: rgba(6,182,212,0.3); }
 :global(:root:not(.dark)) .tag-pink    { background: rgba(236,72,153,0.08);  color: #be185d; border-color: rgba(236,72,153,0.3); }
 :global(:root:not(.dark)) .tag-fuchsia { background: rgba(217,70,239,0.08);  color: #a21caf; border-color: rgba(217,70,239,0.3); }
+:global(:root:not(.dark)) .tag-emerald { background: rgba(16,185,129,0.08);  color: #047857; border-color: rgba(16,185,129,0.3); }
+:global(:root:not(.dark)) .tag-teal    { background: rgba(20,184,166,0.08);   color: #0f766e; border-color: rgba(20,184,166,0.3); }
+:global(:root:not(.dark)) .tag-green   { background: rgba(34,197,94,0.08);    color: #15803d; border-color: rgba(34,197,94,0.3); }
+:global(:root:not(.dark)) .tag-amber   { background: rgba(245,158,11,0.08);   color: #b45309; border-color: rgba(245,158,11,0.3); }
+:global(:root:not(.dark)) .tag-orange  { background: rgba(249,115,22,0.08);   color: #c2410c; border-color: rgba(249,115,22,0.3); }
+:global(:root:not(.dark)) .tag-red     { background: rgba(239,68,68,0.08);    color: #b91c1c; border-color: rgba(239,68,68,0.3); }
 </style>
